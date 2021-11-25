@@ -1,0 +1,5 @@
+= Cilium
+
+cilium is a Commodore component to manage Cilium.
+
+See the xref:references/parameters.adoc[parameters] reference for further details.

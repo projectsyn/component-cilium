@@ -1,0 +1,4 @@
+parameters:
+  cilium:
+    =_metadata: {}
+    namespace: syn-cilium
