@@ -1,5 +1,12 @@
 parameters:
   kapitan:
+    dependencies:
+      - type: helm
+        chart_name: ${cilium:charts:cilium:name}
+        version: ${cilium:charts:cilium:version}
+        source: ${cilium:charts:cilium:source}
+        output_path: dependencies/cilium/helmcharts/cilium/${cilium:charts:cilium:name}/${cilium:charts:cilium:version}/
+
     compile:
       - input_paths:
           - cilium/component/app.jsonnet
@@ -9,3 +16,13 @@ parameters:
           - cilium/component/main.jsonnet
         input_type: jsonnet
         output_path: cilium/
+
+      - output_path: ${_instance}/01_cilium_helmchart
+        input_type: helm
+        output_type: yaml
+        input_paths:
+          - cilium/helmcharts/cilium/${cilium:charts:cilium:name}/${cilium:charts:cilium:version}/
+        helm_params:
+          name: ${cilium:release_name}
+          namespace: ${cilium:namespace}
+        helm_values: ${cilium:helm_values}

@@ -1,4 +1,38 @@
 parameters:
   cilium:
     =_metadata: {}
-    namespace: syn-cilium
+    namespace: cilium
+    release_name: cilium
+
+    charts:
+      cilium:
+        source: https://helm.isovalent.com
+        name: cilium-enterprise
+        version: "1.10.5"
+
+    helm_values:
+      cilium:
+        cni:
+          binPath: /var/lib/cni/bin
+          confPath: /var/run/multus/cni/net.d
+        endpointRoutes:
+          enabled: true
+        hubble:
+          tls:
+            enabled: false
+        ipam:
+          mode: cluster-pool
+          operator:
+            clusterPoolIPv4MaskSize: "23"
+            clusterPoolIPv4PodCIDR: 10.128.0.0/14
+        kubeProxyReplacement: probe
+        nativeRoutingCIDR: 10.128.0.0/14
+        prometheus:
+          serviceMonitor:
+            enabled: false
+      hubble-enterprise:
+        enabled: false
+        enterprise:
+          enabled: false
+      hubble-ui:
+        enabled: false
