@@ -17,6 +17,10 @@ parameters:
         input_type: jsonnet
         output_path: cilium/
 
+      - input_paths:
+          - cilium/component/namespace.jsonnet
+        input_type: jsonnet
+        output_path: ${_instance}/01_cilium_helmchart
       - output_path: ${_instance}/01_cilium_helmchart
         input_type: helm
         output_type: yaml

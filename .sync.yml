@@ -13,3 +13,4 @@ docs/antora.yml:
     key: instance
     entries:
       - defaults
+      - openshift
