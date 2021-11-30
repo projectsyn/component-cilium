@@ -1,3 +1,0 @@
-parameters:
-  facts:
-    distribution: openshift4

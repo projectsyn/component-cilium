@@ -4,8 +4,11 @@ parameters:
     namespace: cilium
     release_name: cilium
 
+    # Possible values "olm", "helm"
+    install_method: helm
     # Possible values "opensource", "enterprise"
-    release: enterprise
+    # Enterprise is currently only supported for "helm"
+    release: opensource
 
     cilium_helm_values: &common_helm_values
       cni:
@@ -36,6 +39,9 @@ parameters:
         source: https://helm.isovalent.com
         name: cilium-enterprise
         version: "1.10.5"
+
+    olm:
+      version: "1.10.4"
 
     charts:
       cilium:
