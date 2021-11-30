@@ -1,3 +1,5 @@
+:helm-minor-version: v1.10
+
 = Parameters
 
 The parent key for all of the following parameters is `cilium`.
@@ -6,14 +8,110 @@ The parent key for all of the following parameters is `cilium`.
 
 [horizontal]
 type:: string
-default:: `syn-cilium`
+default:: `cilium`
 
 The namespace in which to deploy this component.
+
+== `install_method`
+
+[horizontal]
+type:: string
+default:: `helm`
+possible values:: `helm`, `olm`
+
+The installation method for Cilium.
+`olm` uses the https://docs.openshift.com/container-platform/4.1/applications/operators/olm-understanding-olm.html[Openshift Operator Lifecycle Manager].
+OLM installation is required for OpenShift clusters.
+The Cilium OLM is a thin wrapper around Helm, because of this the Helm values are used for OLM configuration too.
+
+.Supported Combinations
+|===
+| |Helm |OLM
+|Opensource
+|✅
+|✅
+|Enterprise
+|✅
+|⛔️
+|===
+
+== `release`
+
+[horizontal]
+type:: string
+default:: `opensource`
+possible values:: `opensource`, `enterprise`
+
+Two version of Cilium exist. The open-source version and the enterprise version.
+Currently there exists no enterprise version of the OLM installation.
+
+
+== `charts.cilium.source`
+
+[horizontal]
+type:: string
+example:: `https://helm.cilium.io`
+
+The Helm repository for the downloaded chart.
+
+
+== `charts.cilium.name`
+
+[horizontal]
+type:: string
+example:: `cilium`
+
+The name of the downloaded Helm chart.
+
+
+== `charts.cilium.version`
+
+[horizontal]
+type:: string
+example:: `1.10.5`
+
+The version of the downloaded Helm chart.
+
+
+== `olm.version`
+
+[horizontal]
+type:: string
+example:: `1.10.4`
+
+The version of the downloaded OLM release.
+
+
+== `cilium_helm_values`
+
+[horizontal]
+type:: object
+
+The configuration values of the underlying Cilium helm chart.
+See https://docs.cilium.io/en/{helm-minor-version}/helm-reference/[Reference].
+
+
+== `helm_values`
+
+[horizontal]
+type:: object
+
+Allows setting additional values for the Cilium enterprise Helm chart.
+Cilium configuration is under the key `cilium`.
 
 
 == Example
 
 [source,yaml]
 ----
-namespace: example-namespace
+namespace: cilium
+release_name: cilium
+
+install_method: helm
+release: opensource
+
+cilium_helm_values:
+  prometheus:
+    serviceMonitor:
+      enabled: false
 ----
