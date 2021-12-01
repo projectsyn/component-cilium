@@ -22,3 +22,4 @@ docs/antora.yml:
 .gitignore:
   additionalEntries:
     - dependencies/cilium/olm/
+    - jsonnetfile.json
