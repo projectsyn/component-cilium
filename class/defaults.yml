@@ -10,7 +10,7 @@ parameters:
     # Enterprise is currently only supported for "helm"
     release: opensource
 
-    cilium_helm_values: &cilium_helm_values
+    cilium_helm_values:
       cni:
         binPath: /var/lib/cni/bin
         confPath: /var/run/multus/cni/net.d
@@ -48,10 +48,10 @@ parameters:
         ${cilium:_helm_charts:${cilium:release}}
 
     =_helm_values:
-      opensource: *cilium_helm_values
+      opensource: ${cilium:cilium_helm_values}
 
       enterprise:
-        cilium: *cilium_helm_values
+        cilium: ${cilium:cilium_helm_values}
         hubble-enterprise:
           enabled: false
           enterprise:
