@@ -1,11 +1,51 @@
 parameters:
+
+  =_kapitan:
+    olm:
+      dependencies:
+        - type: https
+          source: https://github.com/cilium/cilium-olm/archive/master.tar.gz
+          output_path: dependencies/cilium/olm/cilium/cilium-olm/
+          unpack: true
+
+      compile:
+        - input_paths:
+            - cilium/component/app.jsonnet
+          input_type: jsonnet
+          output_path: apps/
+
+        - input_paths:
+            - cilium/component/olm.jsonnet
+          input_type: jsonnet
+          output_path: ${_instance}/olm/
+
+    helm:
+      dependencies:
+        - type: helm
+          chart_name: ${cilium:charts:cilium:name}
+          version: ${cilium:charts:cilium:version}
+          source: ${cilium:charts:cilium:source}
+          output_path: dependencies/cilium/helmcharts/cilium/${cilium:charts:cilium:name}/${cilium:charts:cilium:version}/
+
+      compile:
+        - input_paths:
+            - cilium/component/app.jsonnet
+          input_type: jsonnet
+          output_path: apps/
+
+        - input_paths:
+            - cilium/component/helm-namespace.jsonnet
+          input_type: jsonnet
+          output_path: ${_instance}/01_cilium_helmchart
+        - output_path: ${_instance}/01_cilium_helmchart
+          input_type: helm
+          output_type: yaml
+          input_paths:
+            - cilium/helmcharts/cilium/${cilium:charts:cilium:name}/${cilium:charts:cilium:version}/
+          helm_params:
+            name: ${cilium:release_name}
+            namespace: ${cilium:_namespace}
+          helm_values: ${cilium:helm_values}
+
   kapitan:
-    compile:
-      - input_paths:
-          - cilium/component/app.jsonnet
-        input_type: jsonnet
-        output_path: apps/
-      - input_paths:
-          - cilium/component/main.jsonnet
-        input_type: jsonnet
-        output_path: cilium/
+    ${_kapitan:${cilium:install_method}}

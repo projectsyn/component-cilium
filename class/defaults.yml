@@ -1,4 +1,63 @@
 parameters:
   cilium:
     =_metadata: {}
-    namespace: syn-cilium
+    =_namespace: cilium
+    release_name: cilium
+
+    # Possible values "olm", "helm"
+    install_method: helm
+    # Possible values "opensource", "enterprise"
+    # Enterprise is currently only supported for "helm"
+    release: opensource
+
+    cilium_helm_values:
+      cni:
+        binPath: /var/lib/cni/bin
+        confPath: /var/run/multus/cni/net.d
+      endpointRoutes:
+        enabled: true
+      hubble:
+        tls:
+          enabled: false
+      ipam:
+        mode: cluster-pool
+        operator:
+          clusterPoolIPv4MaskSize: "23"
+          clusterPoolIPv4PodCIDR: 10.128.0.0/14
+      kubeProxyReplacement: probe
+      nativeRoutingCIDR: 10.128.0.0/14
+      prometheus:
+        serviceMonitor:
+          enabled: false
+
+    =_helm_charts:
+      opensource:
+        source: https://helm.cilium.io
+        name: cilium
+        version: "1.10.5"
+      enterprise:
+        source: https://helm.isovalent.com
+        name: cilium-enterprise
+        version: "1.10.5"
+
+    olm:
+      version: "1.10.4"
+
+    charts:
+      cilium:
+        ${cilium:_helm_charts:${cilium:release}}
+
+    =_helm_values:
+      opensource: ${cilium:cilium_helm_values}
+
+      enterprise:
+        cilium: ${cilium:cilium_helm_values}
+        hubble-enterprise:
+          enabled: false
+          enterprise:
+            enabled: false
+        hubble-ui:
+          enabled: false
+
+    helm_values:
+      ${cilium:_helm_values:${cilium:release}}

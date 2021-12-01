@@ -33,6 +33,10 @@ jobs:
       matrix:
         instance:
           - defaults
+          - helm-opensource
+          - helm-enterprise
+          - helm-enterprise-openshift
+          - olm-opensource
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}

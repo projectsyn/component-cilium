@@ -1,0 +1,7 @@
+parameters:
+  cilium:
+    install_method: helm
+    release: enterprise
+
+  facts:
+    distribution: openshift4

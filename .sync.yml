@@ -6,6 +6,7 @@
 docs/antora.yml:
   name: cilium
   title: Cilium
+
 .github/workflows/test.yaml:
   test_makeTarget: test -e instance=${{ matrix.instance }}
   goldenTest_makeTarget: golden-diff -e instance=${{ matrix.instance }}
@@ -13,3 +14,12 @@ docs/antora.yml:
     key: instance
     entries:
       - defaults
+      - helm-opensource
+      - helm-enterprise
+      - helm-enterprise-openshift
+      - olm-opensource
+
+.gitignore:
+  additionalEntries:
+    - dependencies/cilium/olm/
+    - jsonnetfile.json

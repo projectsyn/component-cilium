@@ -1,0 +1,24 @@
+apiVersion: cilium.io/v1alpha1
+kind: CiliumConfig
+metadata:
+  name: cilium
+  namespace: cilium
+spec:
+  cni:
+    binPath: /var/lib/cni/bin
+    confPath: /var/run/multus/cni/net.d
+  endpointRoutes:
+    enabled: true
+  hubble:
+    tls:
+      enabled: false
+  ipam:
+    mode: cluster-pool
+    operator:
+      clusterPoolIPv4MaskSize: '23'
+      clusterPoolIPv4PodCIDR: 10.128.0.0/14
+  kubeProxyReplacement: probe
+  nativeRoutingCIDR: 10.128.0.0/14
+  prometheus:
+    serviceMonitor:
+      enabled: false

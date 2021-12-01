@@ -18,3 +18,5 @@ _archive/
 _public/
 
 # Additional entries
+dependencies/cilium/olm/
+jsonnetfile.json
