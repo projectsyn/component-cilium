@@ -42,7 +42,8 @@ type:: string
 default:: `opensource`
 possible values:: `opensource`, `enterprise`
 
-Two version of Cilium exist. The open-source version and the enterprise version.
+Two version of Cilium exist.
+The open-source version and the enterprise version.
 Currently there exists no enterprise version of the OLM installation.
 
 
