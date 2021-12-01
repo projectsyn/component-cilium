@@ -44,7 +44,7 @@ parameters:
             - cilium/helmcharts/cilium/${cilium:charts:cilium:name}/${cilium:charts:cilium:version}/
           helm_params:
             name: ${cilium:release_name}
-            namespace: ${cilium:namespace}
+            namespace: ${cilium:_namespace}
           helm_values: ${cilium:helm_values}
 
   kapitan:

@@ -1,7 +1,7 @@
 parameters:
   cilium:
     =_metadata: {}
-    namespace: cilium
+    =_namespace: cilium
     release_name: cilium
 
     # Possible values "olm", "helm"

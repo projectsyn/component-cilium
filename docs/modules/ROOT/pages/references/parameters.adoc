@@ -4,13 +4,8 @@
 
 The parent key for all of the following parameters is `cilium`.
 
-== `namespace`
-
-[horizontal]
-type:: string
-default:: `cilium`
-
-The namespace in which to deploy this component.
+[NOTE]
+The namespace is `cilium` and currently non configurable.
 
 == `install_method`
 
@@ -105,7 +100,6 @@ Cilium configuration is under the key `cilium`.
 
 [source,yaml]
 ----
-namespace: cilium
 release_name: cilium
 
 install_method: helm

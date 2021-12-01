@@ -24,7 +24,7 @@ local additionalOpenshiftMeta =
 
 // Define outputs below
 {
-  '00_cilium_namespace': kube.Namespace(params.namespace) {
+  '00_cilium_namespace': kube.Namespace(params._namespace) {
     metadata+: additionalOpenshiftMeta,
   },
 }
