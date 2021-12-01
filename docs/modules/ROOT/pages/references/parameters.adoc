@@ -20,7 +20,7 @@ default:: `helm`
 possible values:: `helm`, `olm`
 
 The installation method for Cilium.
-`olm` uses the https://docs.openshift.com/container-platform/4.1/applications/operators/olm-understanding-olm.html[Openshift Operator Lifecycle Manager].
+`olm` uses the https://docs.openshift.com/container-platform/4.9/operators/understanding/olm/olm-understanding-olm.html[Openshift Operator Lifecycle Manager].
 OLM installation is required for OpenShift clusters.
 The Cilium OLM is a thin wrapper around Helm, because of this the Helm values are used for OLM configuration too.
 
