@@ -30,22 +30,16 @@ parameters:
         serviceMonitor:
           enabled: false
 
-    =_helm_charts:
-      opensource:
-        source: https://helm.cilium.io
-        name: cilium
-        version: "1.10.5"
-      enterprise:
-        source: https://helm.isovalent.com
-        name: cilium-enterprise
-        version: "1.10.5"
-
     olm:
       version: "1.10.4"
 
     charts:
       cilium:
-        ${cilium:_helm_charts:${cilium:release}}
+        source: https://helm.cilium.io
+        version: "1.10.5"
+      cilium-enterprise:
+        source: https://helm.isovalent.com
+        version: "1.10.5"
 
     =_helm_values:
       opensource: ${cilium:cilium_helm_values}

@@ -46,28 +46,35 @@ Currently there exists no enterprise version of the OLM installation.
 
 [horizontal]
 type:: string
-example:: `https://helm.cilium.io`
+default:: `https://helm.cilium.io`
 
-The Helm repository for the downloaded chart.
-
-
-== `charts.cilium.name`
-
-[horizontal]
-type:: string
-example:: `cilium`
-
-The name of the downloaded Helm chart.
+The Helm repository from which to download the `cilium` Helm chart.
 
 
 == `charts.cilium.version`
 
 [horizontal]
 type:: string
-example:: `1.10.5`
+default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
 
-The version of the downloaded Helm chart.
+The version to use for the `cilium` Helm chart.
 
+== `charts.cilium-enterprise.source`
+
+[horizontal]
+type:: string
+default:: `https://helm.isovalent.com`
+
+The Helm repository from which to download the `cilium-enterprise` Helm chart.
+
+
+== `charts.cilium-enterprise.version`
+
+[horizontal]
+type:: string
+default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
+
+The version to use for the `cilium-enterprise` Helm chart.
 
 == `olm.version`
 
