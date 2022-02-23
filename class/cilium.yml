@@ -1,5 +1,8 @@
 parameters:
 
+  =_helm_chart_name:
+    opensource: cilium
+    enterprise: cilium-enterprise
   =_kapitan:
     olm:
       dependencies:
@@ -22,10 +25,10 @@ parameters:
     helm:
       dependencies:
         - type: helm
-          chart_name: ${cilium:charts:cilium:name}
-          version: ${cilium:charts:cilium:version}
-          source: ${cilium:charts:cilium:source}
-          output_path: dependencies/cilium/helmcharts/cilium/${cilium:charts:cilium:name}/${cilium:charts:cilium:version}/
+          chart_name: ${_helm_chart_name:${cilium:release}}
+          version: ${cilium:charts:${_helm_chart_name:${cilium:release}}:version}
+          source: ${cilium:charts:${_helm_chart_name:${cilium:release}}:source}
+          output_path: dependencies/cilium/helmcharts/cilium/${cilium:release}/${cilium:charts:${_helm_chart_name:${cilium:release}}:version}/
 
       compile:
         - input_paths:
@@ -41,7 +44,7 @@ parameters:
           input_type: helm
           output_type: yaml
           input_paths:
-            - cilium/helmcharts/cilium/${cilium:charts:cilium:name}/${cilium:charts:cilium:version}/
+            - cilium/helmcharts/cilium/${cilium:release}/${cilium:charts:${_helm_chart_name:${cilium:release}}:version}/
           helm_params:
             name: ${cilium:release_name}
             namespace: ${cilium:_namespace}
