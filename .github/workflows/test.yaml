@@ -34,8 +34,6 @@ jobs:
         instance:
           - defaults
           - helm-opensource
-          - helm-enterprise
-          - helm-enterprise-openshift
           - olm-opensource
     defaults:
       run:
@@ -53,8 +51,6 @@ jobs:
         instance:
           - defaults
           - helm-opensource
-          - helm-enterprise
-          - helm-enterprise-openshift
           - olm-opensource
     defaults:
       run:

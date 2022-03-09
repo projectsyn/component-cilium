@@ -15,8 +15,6 @@ docs/antora.yml:
     entries:
       - defaults
       - helm-opensource
-      - helm-enterprise
-      - helm-enterprise-openshift
       - olm-opensource
 
 .gitignore:
