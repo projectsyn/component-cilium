@@ -27,7 +27,7 @@ The Cilium OLM is a thin wrapper around Helm, because of this the Helm values ar
 |✅
 |Enterprise
 |✅
-|⛔️
+|✅
 |===
 
 == `release`
@@ -39,7 +39,6 @@ possible values:: `opensource`, `enterprise`
 
 Two version of Cilium exist.
 The open-source version and the enterprise version.
-Currently there exists no enterprise version of the OLM installation.
 
 
 == `charts.cilium.source`
@@ -89,14 +88,64 @@ default:: https://github.com/projectsyn/component-cilium/blob/master/class/defau
 
 The version to use for the `cilium-enterprise` Helm chart.
 
+== `olm.source`
+
+[horizontal]
+type:: object
+default::
++
+[source,yaml]
+----
+opensource: https://github.com/cilium/cilium-olm/archive/master.tar.gz
+enterprise: <CILIUM-ENTERPRISE-OLM-MANIFESTS-TARGZ-URL>
+----
+
+The source for the OLM manifests.
+The component selects the `opensource` or `enterprise` field based on the value of component parameter `release`.
+The component doesn't provide the URL of the Cilium Enterprise OLM manifests `.tar.gz` archive.
+Users must provide the URL themselves in their Project Syn configuration hierarchy.
+
+TIP: The component default is an invalid string (`<CILIUM-ENTERPRISE-OLM-MANIFESTS-TARGZ-URL>`) instead of `~` to make the Kapitan error message somewhat useful when the user hasn't reconfigured the chart repository.
+
+=== Example
+
+[source,yaml]
+----
+parameters:
+  cilium:
+    olm:
+      source:
+        enterprise: https://cilium-ee.example.com/downloads/v${cilium:olm:version}/cilium-ee-${cilium:olm:full_version}.tar.gz <1>
+----
+<1> The example configuration uses Reclass references to construct URL parts containing the desired version.
+The component explicitly provides separate parameters for the OLM minor version and patchlevel.
+
 == `olm.version`
 
 [horizontal]
 type:: string
-example:: `1.10.4`
+example:: `1.10`
+default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
 
-The version of the downloaded OLM release.
+The minor version of the OLM release to download.
 
+== `olm.patchlevel`
+
+[horizontal]
+type:: string
+example:: `4`
+default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
+
+The patch level of the OLM release to download.
+
+== `olm.full_version`
+
+[horizontal]
+type:: string
+default:: `${cilium:olm:version}.${cilium:olm:patchlevel}`
+
+The complete version of the OLM release to download.
+By default, the component constructs the value for this parameter from parameters `version` and `patchlevel`.
 
 == `cilium_helm_values`
 
