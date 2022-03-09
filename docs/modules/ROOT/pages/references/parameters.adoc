@@ -63,10 +63,23 @@ The version to use for the `cilium` Helm chart.
 
 [horizontal]
 type:: string
-default:: `https://helm.isovalent.com`
+default:: `<CILIUM-ENTERPRISE-CHART-REPO-URL>`
 
-The Helm repository from which to download the `cilium-enterprise` Helm chart.
+The chart repository URL of the `cilium-enterprise` Helm chart.
+Users must provide the chart repository URL themselves in their Project Syn global or tenant configuration.
 
+TIP: The component default is an invalid string (`<CILIUM-ENTERPRISE-CHART-REPO-URL>`) instead of `~` to make the Kapitan error message somewhat useful when the user hasn't reconfigured the chart repository.
+
+=== Example
+
+[source,yaml]
+----
+parameters:
+  cilium:
+    charts:
+      cilium-enterprise:
+        source: https://cilium-ee-charts.example.org
+----
 
 == `charts.cilium-enterprise.version`
 
@@ -99,8 +112,11 @@ See https://docs.cilium.io/en/{helm-minor-version}/helm-reference/[Reference].
 [horizontal]
 type:: object
 
-Allows setting additional values for the Cilium enterprise Helm chart.
-Cilium configuration is under the key `cilium`.
+The final merged Helm values provided to Helm when rendering the chart.
+This parameter is configured dynamically to match the expected structure for Helm chart parameters for the opensource and enterprise charts.
+
+When the enterprise chart is used, the actual Cilium configuration is nested under key `cilium` in the Helm values and additional top-level keys exist to configure the Cilium Enterprise components.
+Users should prefer to configure Cilium itself through parameter `cilium_helm_values`.
 
 
 == Example

@@ -38,7 +38,7 @@ parameters:
         source: https://helm.cilium.io
         version: "1.10.5"
       cilium-enterprise:
-        source: https://helm.isovalent.com
+        source: "<CILIUM-ENTERPRISE-CHART-REPO-URL>" # Configure the Chart repository URL in your global defaults
         version: "1.10.5"
 
     =_helm_values:
