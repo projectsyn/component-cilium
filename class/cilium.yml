@@ -7,7 +7,7 @@ parameters:
     olm:
       dependencies:
         - type: https
-          source: https://github.com/cilium/cilium-olm/archive/master.tar.gz
+          source: ${cilium:olm:source:${cilium:release}}
           output_path: dependencies/cilium/olm/cilium/cilium-olm/
           unpack: true
 

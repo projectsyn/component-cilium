@@ -5,7 +5,13 @@ local inv = kap.inventory();
 // The hiera parameters for the component
 local params = inv.parameters.cilium;
 
-local olmDir = 'dependencies/cilium/olm/cilium/cilium-olm/cilium-olm-master/manifests/cilium.v%s/' % params.olm.version;
+local olmDir =
+  if params.release == 'opensource' then
+    'dependencies/cilium/olm/cilium/cilium-olm/cilium-olm-master/manifests/cilium.v%s/' % params.olm.full_version
+  else if params.release == 'enterprise' then
+    'dependencies/cilium/olm/cilium/cilium-olm/cilium.v%s/' % params.olm.full_version
+  else
+    error "Unknown release '%s'" % [ params.release ];
 
 local olmFiles = std.map(
   function(name) {
@@ -16,10 +22,18 @@ local olmFiles = std.map(
 );
 
 local patchConfig = function(file)
-  if file.contents.kind == 'CiliumConfig' && file.contents.metadata.name == 'cilium' && file.contents.metadata.namespace == 'cilium' then
+  local metadata_name_map = {
+    opensource: 'cilium',
+    enterprise: 'cilium-enterprise',
+  };
+  if (
+    file.contents.kind == 'CiliumConfig'
+    && file.contents.metadata.name == metadata_name_map[params.release]
+    && file.contents.metadata.namespace == 'cilium'
+  ) then
     file {
       contents+: {
-        spec: params.cilium_helm_values,
+        spec: params.helm_values,
       },
     }
   else
