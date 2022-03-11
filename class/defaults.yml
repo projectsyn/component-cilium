@@ -45,6 +45,13 @@ parameters:
       version: "1.10"
       patchlevel: "4"
       full_version: ${cilium:olm:version}.${cilium:olm:patchlevel}
+      resources:
+        requests:
+          cpu: 100m
+          memory: 250Mi
+        limits:
+          cpu: 100m
+          memory: 250Mi
 
     charts:
       cilium:
