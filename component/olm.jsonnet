@@ -21,14 +21,37 @@ local olmFiles = std.map(
   kap.dir_files_list(olmDir)
 );
 
-local patchConfig = function(file)
+local patchManifests = function(file)
   local metadata_name_map = {
-    opensource: 'cilium',
-    enterprise: 'cilium-enterprise',
+    opensource: {
+      CiliumConfig: 'cilium',
+      Deployment: 'cilium-olm',
+    },
+    enterprise: {
+      CiliumConfig: 'cilium-enterprise',
+      Deployment: 'cilium-ee-olm',
+    },
+  };
+  local deploymentPatch = {
+    spec+: {
+      template+: {
+        spec+: {
+          containers: [
+            if c.name == 'operator' then
+              c {
+                resources+: params.olm.resources,
+              }
+            else
+              c
+            for c in super.containers
+          ],
+        },
+      },
+    },
   };
   if (
     file.contents.kind == 'CiliumConfig'
-    && file.contents.metadata.name == metadata_name_map[params.release]
+    && file.contents.metadata.name == metadata_name_map[params.release].CiliumConfig
     && file.contents.metadata.namespace == 'cilium'
   ) then
     file {
@@ -37,10 +60,41 @@ local patchConfig = function(file)
       },
     }
   else
-    file;
+    if (
+      file.contents.kind == 'Deployment'
+      && file.contents.metadata.name == metadata_name_map[params.release].Deployment
+      && file.contents.metadata.namespace == 'cilium'
+    ) then
+      file {
+        contents+: deploymentPatch,
+      }
+    else
+      if (
+        file.contents.kind == 'ClusterServiceVersion' &&
+        file.contents.metadata.namespace == 'cilium'
+      ) then
+        file {
+          contents+: {
+            spec+: {
+              install+: {
+                spec+: {
+                  deployments: [
+                    if d.name == metadata_name_map[params.release].Deployment then
+                      d + deploymentPatch
+                    else
+                      d
+                    for d in super.deployments
+                  ],
+                },
+              },
+            },
+          },
+        }
+      else
+        file;
 
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
-  std.map(patchConfig, olmFiles),
+  std.map(patchManifests, olmFiles),
   {}
 )
