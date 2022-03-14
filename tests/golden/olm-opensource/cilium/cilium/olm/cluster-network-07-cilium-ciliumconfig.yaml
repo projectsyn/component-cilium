@@ -19,6 +19,14 @@ spec:
       clusterPoolIPv4PodCIDR: 10.128.0.0/14
   kubeProxyReplacement: probe
   nativeRoutingCIDR: 10.128.0.0/14
+  operator:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 250Mi
+      requests:
+        cpu: 100m
+        memory: 250Mi
   prometheus:
     serviceMonitor:
       enabled: false
