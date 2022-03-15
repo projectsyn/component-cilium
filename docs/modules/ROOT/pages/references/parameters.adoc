@@ -147,14 +147,22 @@ default:: `${cilium:olm:version}.${cilium:olm:patchlevel}`
 The complete version of the OLM release to download.
 By default, the component constructs the value for this parameter from parameters `version` and `patchlevel`.
 
+== `olm.resources`
+
+[horizontal]
+type:: object
+default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
+
+The resource requests and limits for the Cilium OLM Deployment.
+
 == `cilium_helm_values`
 
 [horizontal]
 type:: object
+default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
 
 The configuration values of the underlying Cilium helm chart.
 See https://docs.cilium.io/en/{helm-minor-version}/helm-reference/[Reference].
-
 
 == `helm_values`
 
