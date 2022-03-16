@@ -18,7 +18,6 @@ spec:
       clusterPoolIPv4MaskSize: '23'
       clusterPoolIPv4PodCIDR: 10.128.0.0/14
   kubeProxyReplacement: probe
-  nativeRoutingCIDR: 10.128.0.0/14
   operator:
     resources:
       limits:
