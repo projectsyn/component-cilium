@@ -47,7 +47,6 @@ data:
   monitor-aggregation: medium
   monitor-aggregation-flags: all
   monitor-aggregation-interval: 5s
-  native-routing-cidr: 10.128.0.0/14
   node-port-bind-protection: 'true'
   operator-api-serve-addr: 127.0.0.1:9234
   preallocate-bpf-maps: 'false'
