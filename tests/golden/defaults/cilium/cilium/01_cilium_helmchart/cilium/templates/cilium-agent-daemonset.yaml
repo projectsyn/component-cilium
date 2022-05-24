@@ -69,7 +69,7 @@ spec:
                   key: custom-cni-conf
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/cilium:v1.10.5@sha256:0612218e28288db360c63677c09fafa2d17edda4f13867bcabf87056046b33bb
+          image: quay.io/cilium/cilium:v1.10.11@sha256:48e1a261046c2e534e370f960f0920233f9fd5ad4623aebdca0e403264a06202
           imagePullPolicy: IfNotPresent
           lifecycle:
             postStart:
@@ -129,6 +129,7 @@ spec:
             successThreshold: 1
           volumeMounts:
             - mountPath: /sys/fs/bpf
+              mountPropagation: Bidirectional
               name: bpf-maps
             - mountPath: /var/run/cilium
               name: cilium-run
@@ -160,7 +161,7 @@ spec:
               value: /run/cilium/cgroupv2
             - name: BIN_PATH
               value: /var/lib/cni/bin
-          image: quay.io/cilium/cilium:v1.10.5@sha256:0612218e28288db360c63677c09fafa2d17edda4f13867bcabf87056046b33bb
+          image: quay.io/cilium/cilium:v1.10.11@sha256:48e1a261046c2e534e370f960f0920233f9fd5ad4623aebdca0e403264a06202
           imagePullPolicy: IfNotPresent
           name: mount-cgroup
           securityContext:
@@ -185,7 +186,7 @@ spec:
                   key: clean-cilium-bpf-state
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/cilium:v1.10.5@sha256:0612218e28288db360c63677c09fafa2d17edda4f13867bcabf87056046b33bb
+          image: quay.io/cilium/cilium:v1.10.11@sha256:48e1a261046c2e534e370f960f0920233f9fd5ad4623aebdca0e403264a06202
           imagePullPolicy: IfNotPresent
           name: clean-cilium-state
           resources:
