@@ -42,7 +42,7 @@ parameters:
         opensource: https://github.com/cilium/cilium-olm/archive/master.tar.gz
         enterprise: <CILIUM-ENTERPRISE-OLM-MANIFESTS-TARGZ-URL> # Configure the URL in your global defaults.
       version: "1.10"
-      patchlevel: "4"
+      patchlevel: "10"
       full_version: ${cilium:olm:version}.${cilium:olm:patchlevel}
       resources:
         requests:
