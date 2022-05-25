@@ -11,7 +11,20 @@ rules:
       - get
       - list
       - watch
-      - delete
+  - apiGroups:
+      - ''
+    resources:
+      - nodes
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - nodes
+      - nodes/status
+    verbs:
+      - patch
   - apiGroups:
       - discovery.k8s.io
     resources:
