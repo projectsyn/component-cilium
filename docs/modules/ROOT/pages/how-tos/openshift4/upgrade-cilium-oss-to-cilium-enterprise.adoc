@@ -3,7 +3,6 @@
 == Starting situation
 
 * You have an OpenShift 4 cluster with Cilium OSS installed.
-* You want to register a new cluster in Lieutenant and are about to install Openshift 4 on Cloudscale
 
 [CAUTION]
 While we didn't notice any downtime during the upgrade, we recommend to expect a downtime of a few seconds.
