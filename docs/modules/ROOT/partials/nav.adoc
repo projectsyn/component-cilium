@@ -1,2 +1,7 @@
 * xref:index.adoc[Home]
 * xref:references/parameters.adoc[Parameters]
+
+.How-Tos
+
+* OpenShift 4
+** xref:how-tos/openshift4/upgrade-cilium-oss-to-cilium-enterprise.adoc[Upgrade Cilium OSS to Cilium Enterprise]

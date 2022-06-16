@@ -1,0 +1,64 @@
+= Upgrade Cilium OSS to Cilium Enterprise (OpenShift 4)
+
+== Starting situation
+
+* You have an OpenShift 4 cluster with Cilium OSS installed.
+
+[CAUTION]
+While we didn't notice any downtime during the upgrade, we recommend to expect a downtime of a few seconds.
+
+
+== Prerequisites
+
+* `kubectl`
+* `jq`
+* Optionally `yq` https://mikefarah.gitbook.io/yq[yq YAML processor] (version 4 or higher)
+* A local setup to compile a cluster catalog, see https://syn.tools/commodore/explanation/running-commodore.html[Running Commodore] for details.
+* `olm.source` parameter set either in the global defaults or in the tenant repository.
+
+This guide assumes that you're familiar with making changes to a Project Syn cluster and compiling the cluster catalog to deploy those changes.
+
+== Upgrade to Cilium Enterprise
+
+. Switch the release to enterprise in your cluster config.
++
+.`c-cluster-id.yml` diff
+[source,diff]
+----
+   cilium:
++    release: enterprise
+----
++
+You can also use `yq`:
++
+[source,shell]
+----
+yq eval -i '.parameters.cilium.release = "enterprise"' c-cluster-id.yml
+----
+
+. Compile the cluster catalog.
+
+. Ensure the ArgoCD app is synced within the cluster.
++
+Either use the GUI or the CLI by looking at the `.status.history` field:
++
+[source,shell]
+----
+k -nsyn get applications cilium -oyaml | yq '.status.history'
+----
+
+. Cleanup objects the RedHat OLM Operator leaves behind.
++
+[source,shell]
+----
+kubectl -n cilium get clusterserviceversion -ojson \
+  | jq -r '.items[] | select(.spec.displayName == "Cilium") | .metadata.name' \
+  | xargs kubectl -n cilium delete clusterserviceversion
+----
+
+. Ensure the Cilium OSS config file can be deleted.
++
+[source,shell]
+----
+kubectl -n cilium patch ciliumconfig cilium -p '{"metadata":{"finalizers":null}}' --type=merge
+----
