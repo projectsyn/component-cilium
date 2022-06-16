@@ -40,6 +40,7 @@ possible values:: `opensource`, `enterprise`
 Two version of Cilium exist.
 The open-source version and the enterprise version.
 
+See xref:how-tos/openshift4/upgrade-cilium-oss-to-cilium-enterprise.adoc[Upgrade Cilium OSS to Cilium Enterprise (OpenShift 4)] for upgrading from the OSS version to the enterprise version.
 
 == `charts.cilium.source`
 
