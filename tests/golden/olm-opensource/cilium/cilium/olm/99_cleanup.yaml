@@ -1,0 +1,91 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations: {}
+  labels:
+    name: cleanup-old-clusterserviceversions
+  name: cleanup-old-clusterserviceversions
+  namespace: cilium
+rules:
+  - apiGroups:
+      - operators.coreos.com
+    resources:
+      - clusterserviceversions
+    verbs:
+      - get
+      - list
+      - delete
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations: {}
+  labels:
+    name: cleanup-old-clusterserviceversions
+  name: cleanup-old-clusterserviceversions
+  namespace: cilium
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations: {}
+  labels:
+    name: cleanup-old-clusterserviceversions
+  name: cleanup-old-clusterserviceversions
+  namespace: cilium
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cleanup-old-clusterserviceversions
+subjects:
+  - kind: ServiceAccount
+    name: cleanup-old-clusterserviceversions
+    namespace: cilium
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+  labels:
+    name: cleanup-old-clusterserviceversions
+  name: cleanup-old-clusterserviceversions
+  namespace: cilium
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      labels:
+        name: cleanup-old-clusterserviceversions
+    spec:
+      containers:
+        - args:
+            - "kubectl -n cilium get clusterserviceversion -ojson \\\n  | jq '.items[]\
+              \ | select(.spec.version | test(\"^1.11.5[+]\") | not) | .metadata.name'\
+              \ \\\n  | xargs --no-run-if-empty kubectl -n cilium delete clusterserviceversions\n"
+          command:
+            - sh
+            - -c
+          env:
+            - name: HOME
+              value: /home
+          image: docker.io/bitnami/kubectl:1.24.1@sha256:77b081817ad5eaaa3f6a6e25a44746377535e66657cb55ec47e9b22ea472112f
+          imagePullPolicy: IfNotPresent
+          name: cleanup-old-clusterserviceversions
+          ports: []
+          stdin: false
+          tty: false
+          volumeMounts:
+            - mountPath: /home
+              name: home
+          workingDir: /home
+      imagePullSecrets: []
+      initContainers: []
+      restartPolicy: OnFailure
+      serviceAccountName: cleanup-old-clusterserviceversions
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: home
