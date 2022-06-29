@@ -74,3 +74,9 @@ parameters:
 
     helm_values:
       ${cilium:_helm_values:${cilium:release}}
+
+    images:
+      kubectl:
+        registry: docker.io
+        image: bitnami/kubectl
+        tag: '1.24.1@sha256:77b081817ad5eaaa3f6a6e25a44746377535e66657cb55ec47e9b22ea472112f'

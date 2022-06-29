@@ -96,5 +96,7 @@ local patchManifests = function(file)
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
   std.map(patchManifests, olmFiles),
-  {}
+  {
+    '99_cleanup': (import 'cleanup.libsonnet'),
+  }
 )
