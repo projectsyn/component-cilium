@@ -44,7 +44,18 @@ Either use the GUI or the CLI by looking at the `.status.history` field:
 +
 [source,shell]
 ----
-k -nsyn get applications cilium -oyaml | yq '.status.history'
+kubectl -nsyn get applications cilium -oyaml | yq '.status.history'
+----
+
+. Fix ownership of unscoped Helm/OLM resources.
++
+[source,shell]
+----
+kubectl annotate \
+  clusterrole/cilium clusterrolebinding/cilium \
+  clusterrole/cilium-operator clusterrolebinding/cilium-operator \
+  meta.helm.sh/release-name=cilium-enterprise \
+  --overwrite
 ----
 
 . Cleanup objects the RedHat OLM Operator leaves behind.
