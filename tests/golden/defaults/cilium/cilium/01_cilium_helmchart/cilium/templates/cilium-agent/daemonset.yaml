@@ -69,7 +69,7 @@ spec:
                   key: custom-cni-conf
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/cilium:v1.10.11@sha256:48e1a261046c2e534e370f960f0920233f9fd5ad4623aebdca0e403264a06202
+          image: quay.io/cilium/cilium:v1.11.5@sha256:79e66c3c2677e9ecc3fd5b2ed8e4ea7e49cf99ed6ee181f2ef43400c4db5eef0
           imagePullPolicy: IfNotPresent
           lifecycle:
             postStart:
@@ -110,10 +110,6 @@ spec:
             successThreshold: 1
             timeoutSeconds: 5
           securityContext:
-            capabilities:
-              add:
-                - NET_ADMIN
-                - SYS_MODULE
             privileged: true
           startupProbe:
             failureThreshold: 105
@@ -152,16 +148,21 @@ spec:
       initContainers:
         - command:
             - sh
-            - -c
-            - cp /usr/bin/cilium-mount /hostbin/cilium-mount && nsenter --cgroup=/hostproc/1/ns/cgroup
-              --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT;
+            - -ec
+            - 'cp /usr/bin/cilium-mount /hostbin/cilium-mount;
+
+              nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount"
+              $CGROUP_ROOT;
+
               rm /hostbin/cilium-mount
+
+              '
           env:
             - name: CGROUP_ROOT
               value: /run/cilium/cgroupv2
             - name: BIN_PATH
               value: /var/lib/cni/bin
-          image: quay.io/cilium/cilium:v1.10.11@sha256:48e1a261046c2e534e370f960f0920233f9fd5ad4623aebdca0e403264a06202
+          image: quay.io/cilium/cilium:v1.11.5@sha256:79e66c3c2677e9ecc3fd5b2ed8e4ea7e49cf99ed6ee181f2ef43400c4db5eef0
           imagePullPolicy: IfNotPresent
           name: mount-cgroup
           securityContext:
@@ -186,7 +187,7 @@ spec:
                   key: clean-cilium-bpf-state
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/cilium:v1.10.11@sha256:48e1a261046c2e534e370f960f0920233f9fd5ad4623aebdca0e403264a06202
+          image: quay.io/cilium/cilium:v1.11.5@sha256:79e66c3c2677e9ecc3fd5b2ed8e4ea7e49cf99ed6ee181f2ef43400c4db5eef0
           imagePullPolicy: IfNotPresent
           name: clean-cilium-state
           resources:
@@ -194,9 +195,6 @@ spec:
               cpu: 100m
               memory: 100Mi
           securityContext:
-            capabilities:
-              add:
-                - NET_ADMIN
             privileged: true
           volumeMounts:
             - mountPath: /sys/fs/bpf
@@ -247,7 +245,7 @@ spec:
           name: xtables-lock
         - name: clustermesh-secrets
           secret:
-            defaultMode: 420
+            defaultMode: 256
             optional: true
             secretName: cilium-clustermesh
         - configMap:

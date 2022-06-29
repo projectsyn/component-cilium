@@ -11,6 +11,7 @@ rules:
       - get
       - list
       - watch
+      - delete
   - apiGroups:
       - ''
     resources:
@@ -73,6 +74,7 @@ rules:
       - ciliumnodes/status
       - ciliumnodes/finalizers
       - ciliumidentities
+      - ciliumendpointslices
       - ciliumidentities/status
       - ciliumidentities/finalizers
       - ciliumlocalredirectpolicies

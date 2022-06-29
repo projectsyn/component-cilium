@@ -4,9 +4,9 @@ metadata:
   name: cilium
   namespace: cilium
 spec:
-  channel: '1.10'
+  channel: '1.11'
   installPlanApproval: Manual
   name: cilium
   source: certified-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: cilium.v1.10.10-x6adc6ff
+  startingCSV: cilium.v1.11.5-xf646bca
