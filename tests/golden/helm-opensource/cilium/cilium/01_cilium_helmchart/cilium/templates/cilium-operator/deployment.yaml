@@ -28,11 +28,8 @@ spec:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
-                matchExpressions:
-                  - key: io.cilium/app
-                    operator: In
-                    values:
-                      - operator
+                matchLabels:
+                  io.cilium/app: operator
               topologyKey: kubernetes.io/hostname
       containers:
         - args:
@@ -57,7 +54,7 @@ spec:
                   key: debug
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/operator-generic:v1.11.5@sha256:8ace281328b27d4216218c604d720b9a63a8aec2bd1996057c79ab0168f9d6d8
+          image: quay.io/cilium/operator-generic:v1.12.0@sha256:bb2a42eda766e5d4a87ee8a5433f089db81b72dd04acf6b59fcbb445a95f9410
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -81,6 +78,8 @@ spec:
               name: cilium-config-path
               readOnly: true
       hostNetwork: true
+      nodeSelector:
+        kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       restartPolicy: Always
       serviceAccount: cilium-operator
