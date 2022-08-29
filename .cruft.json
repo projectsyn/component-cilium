@@ -1,0 +1,21 @@
+{
+  "template": "https://github.com/projectsyn/commodore-component-template.git",
+  "commit": "e6c4fd69190db1ad12e941d578b9423d0e2f993c",
+  "checkout": "main",
+  "context": {
+    "cookiecutter": {
+      "name": "Cilium",
+      "slug": "cilium",
+      "parameter_key": "cilium",
+      "test_cases": "defaults helm-opensource olm-opensource",
+      "add_golden": "y",
+      "add_matrix": "y",
+      "add_go_unit": "n",
+      "github_owner": "projectsyn",
+      "github_name": "component-cilium",
+      "github_url": "https://github.com/projectsyn/component-cilium",
+      "_template": "https://github.com/projectsyn/commodore-component-template.git"
+    }
+  },
+  "directory": null
+}
