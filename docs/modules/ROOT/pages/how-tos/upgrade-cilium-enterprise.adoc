@@ -1,0 +1,85 @@
+= Upgrade Cilium Enterprise
+
+== Starting situation
+
+* You have a kubernetes cluster with Cilium Enterprise installed and want to perform a version upgrade.
+
+[CAUTION]
+Always check the release notes of the version to be installed for relevant changes.
+
+[CAUTION]
+While we didn't notice any downtime during the upgrade, we recommend to expect a downtime of a few seconds.
+
+
+== Prerequisites
+
+* `kubectl`
+* Optionally `yq` https://mikefarah.gitbook.io/yq[yq YAML processor] (version 4 or higher)
+
+This guide assumes that you're familiar with making changes to a Project Syn cluster and compiling the cluster catalog to deploy those changes.
+
+== Preparation
+
+. Configure `upgradeCompatibility` to the currently installed minor version. This step is only necessary for major or minor updates, but not for patch updates.
++
+.`c-cluster-id.yml` diff
+[source,diff]
+----
+   cilium:
+     cilium_helm_values:
++      upgradeCompatibility: "1.X"
+----
++
+You can also use `yq`:
++
+[source,shell]
+----
+yq eval -i '.parameters.cilium.cilium_helm_values.upgradeCompatibility = "1.X"' c-cluster-id.yml
+----
+
+. Compile the cluster catalog.
+
+. Ensure the ArgoCD app is synced within the cluster.
++
+Either use the GUI or the CLI by looking at the `.status.history` field:
++
+[source,shell]
+----
+kubectl -n syn get applications cilium -oyaml | yq '.status.history'
+----
+
+== Upgrade Cilium Enterprise
+
+. Configure the desired version
++
+.`c-cluster-id.yml` diff
+[source,diff]
+----
+   cilium:
+     olm:
++      version: "1.X"
++      patchlevel: "Y"
+----
++
+You can also use `yq`:
++
+[source,shell]
+----
+yq eval -i '.parameters.cilium.olm.version = "1.X"' c-cluster-id.yml
+yq eval -i '.parameters.cilium.olm.patchlevel = "Y"' c-cluster-id.yml
+----
+
+. Compile the cluster catalog.
+
+. Ensure the ArgoCD app is synced within the cluster.
++
+Either use the GUI or the CLI by looking at the `.status.history` field:
++
+[source,shell]
+----
+kubectl -n syn get applications cilium -oyaml | yq '.status.history'
+----
+
+== Cleanup
+
+. Remove `upgradeCompatibility` configuration from `c-cluster-id.yml`, compile the cluster catalog and ensure the ArgoCD app is synced within the cluster.
