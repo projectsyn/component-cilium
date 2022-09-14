@@ -1,15 +1,17 @@
 apiVersion: v1
 data:
-  annotate-k8s-node: 'true'
+  agent-not-ready-taint-key: node.cilium.io/agent-not-ready
   arping-refresh-period: 30s
   auto-direct-node-routes: 'false'
   bpf-lb-external-clusterip: 'false'
   bpf-lb-map-max: '65536'
+  bpf-lb-sock: 'false'
   bpf-map-dynamic-size-ratio: '0.0025'
   bpf-policy-map-max: '16384'
+  bpf-root: /sys/fs/bpf
   cgroup-root: /run/cilium/cgroupv2
   cilium-endpoint-gc-interval: 5m0s
-  cluster-id: ''
+  cluster-id: '0'
   cluster-name: default
   cluster-pool-ipv4-cidr: 10.128.0.0/14
   cluster-pool-ipv4-mask-size: '23'
@@ -18,7 +20,7 @@ data:
   disable-cnp-status-updates: 'true'
   disable-endpoint-crd: 'false'
   enable-auto-protect-node-port-range: 'true'
-  enable-bandwidth-manager: 'false'
+  enable-bgp-control-plane: 'false'
   enable-bpf-clock-probe: 'true'
   enable-endpoint-health-checking: 'true'
   enable-endpoint-routes: 'true'
@@ -35,7 +37,8 @@ data:
   enable-local-redirect-policy: 'false'
   enable-policy: default
   enable-remote-node-identity: 'true'
-  enable-session-affinity: 'true'
+  enable-svc-source-range-check: 'true'
+  enable-vtep: 'false'
   enable-well-known-identities: 'false'
   enable-xt-socket-fallback: 'true'
   hubble-disable-tls: 'true'
@@ -54,11 +57,24 @@ data:
   nodes-gc-interval: 5m0s
   operator-api-serve-addr: 127.0.0.1:9234
   preallocate-bpf-maps: 'false'
+  procfs: /host/proc
   remove-cilium-node-taints: 'true'
   set-cilium-is-up-condition: 'true'
   sidecar-istio-proxy-image: cilium/istio_proxy
+  synchronize-k8s-nodes: 'true'
+  tofqdns-dns-reject-response-code: refused
+  tofqdns-enable-dns-compression: 'true'
+  tofqdns-endpoint-max-ip-per-hostname: '50'
+  tofqdns-idle-connection-grace-period: 0s
+  tofqdns-max-deferred-connection-deletes: '10000'
+  tofqdns-min-ttl: '3600'
+  tofqdns-proxy-response-max-delay: 100ms
   tunnel: vxlan
   unmanaged-pod-watcher-interval: '15'
+  vtep-cidr: ''
+  vtep-endpoint: ''
+  vtep-mac: ''
+  vtep-mask: ''
 kind: ConfigMap
 metadata:
   name: cilium-config

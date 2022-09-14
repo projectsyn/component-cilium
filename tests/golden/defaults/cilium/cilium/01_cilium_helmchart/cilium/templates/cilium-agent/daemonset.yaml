@@ -12,32 +12,19 @@ spec:
   template:
     metadata:
       annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
+        container.apparmor.security.beta.kubernetes.io/apply-sysctl-overwrites: unconfined
+        container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
+        container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
+        container.apparmor.security.beta.kubernetes.io/mount-cgroup: unconfined
       labels:
         k8s-app: cilium
     spec:
       affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/os
-                    operator: In
-                    values:
-                      - linux
-              - matchExpressions:
-                  - key: beta.kubernetes.io/os
-                    operator: In
-                    values:
-                      - linux
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
-                matchExpressions:
-                  - key: k8s-app
-                    operator: In
-                    values:
-                      - cilium
+                matchLabels:
+                  k8s-app: cilium
               topologyKey: kubernetes.io/hostname
       containers:
         - args:
@@ -69,7 +56,7 @@ spec:
                   key: custom-cni-conf
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/cilium:v1.11.5@sha256:79e66c3c2677e9ecc3fd5b2ed8e4ea7e49cf99ed6ee181f2ef43400c4db5eef0
+          image: quay.io/cilium/cilium:v1.12.2@sha256:986f8b04cfdb35cf714701e58e35da0ee63da2b8a048ab596ccb49de58d5ba36
           imagePullPolicy: IfNotPresent
           lifecycle:
             postStart:
@@ -78,6 +65,7 @@ spec:
                   - /cni-install.sh
                   - --enable-debug=false
                   - --cni-exclusive=true
+                  - --log-file=/var/run/cilium/cilium-cni.log
             preStop:
               exec:
                 command:
@@ -90,7 +78,7 @@ spec:
                 - name: brief
                   value: 'true'
               path: /healthz
-              port: 9876
+              port: 9879
               scheme: HTTP
             periodSeconds: 30
             successThreshold: 1
@@ -104,13 +92,31 @@ spec:
                 - name: brief
                   value: 'true'
               path: /healthz
-              port: 9876
+              port: 9879
               scheme: HTTP
             periodSeconds: 30
             successThreshold: 1
             timeoutSeconds: 5
           securityContext:
-            privileged: true
+            capabilities:
+              add:
+                - CHOWN
+                - KILL
+                - NET_ADMIN
+                - NET_RAW
+                - IPC_LOCK
+                - SYS_MODULE
+                - SYS_ADMIN
+                - SYS_RESOURCE
+                - DAC_OVERRIDE
+                - FOWNER
+                - SETGID
+                - SETUID
+              drop:
+                - ALL
+            seLinuxOptions:
+              level: s0
+              type: spc_t
           startupProbe:
             failureThreshold: 105
             httpGet:
@@ -119,13 +125,18 @@ spec:
                 - name: brief
                   value: 'true'
               path: /healthz
-              port: 9876
+              port: 9879
               scheme: HTTP
             periodSeconds: 2
             successThreshold: 1
+          terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
+            - mountPath: /host/proc/sys/net
+              name: host-proc-sys-net
+            - mountPath: /host/proc/sys/kernel
+              name: host-proc-sys-kernel
             - mountPath: /sys/fs/bpf
-              mountPropagation: Bidirectional
+              mountPropagation: HostToContainer
               name: bpf-maps
             - mountPath: /var/run/cilium
               name: cilium-run
@@ -162,16 +173,75 @@ spec:
               value: /run/cilium/cgroupv2
             - name: BIN_PATH
               value: /var/lib/cni/bin
-          image: quay.io/cilium/cilium:v1.11.5@sha256:79e66c3c2677e9ecc3fd5b2ed8e4ea7e49cf99ed6ee181f2ef43400c4db5eef0
+          image: quay.io/cilium/cilium:v1.12.2@sha256:986f8b04cfdb35cf714701e58e35da0ee63da2b8a048ab596ccb49de58d5ba36
           imagePullPolicy: IfNotPresent
           name: mount-cgroup
           securityContext:
-            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - SYS_CHROOT
+                - SYS_PTRACE
+              drop:
+                - ALL
+            seLinuxOptions:
+              level: s0
+              type: spc_t
+          terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
             - mountPath: /hostproc
               name: hostproc
             - mountPath: /hostbin
               name: cni-path
+        - command:
+            - sh
+            - -ec
+            - 'cp /usr/bin/cilium-sysctlfix /hostbin/cilium-sysctlfix;
+
+              nsenter --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-sysctlfix";
+
+              rm /hostbin/cilium-sysctlfix
+
+              '
+          env:
+            - name: BIN_PATH
+              value: /var/lib/cni/bin
+          image: quay.io/cilium/cilium:v1.12.2@sha256:986f8b04cfdb35cf714701e58e35da0ee63da2b8a048ab596ccb49de58d5ba36
+          imagePullPolicy: IfNotPresent
+          name: apply-sysctl-overwrites
+          securityContext:
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - SYS_CHROOT
+                - SYS_PTRACE
+              drop:
+                - ALL
+            seLinuxOptions:
+              level: s0
+              type: spc_t
+          terminationMessagePolicy: FallbackToLogsOnError
+          volumeMounts:
+            - mountPath: /hostproc
+              name: hostproc
+            - mountPath: /hostbin
+              name: cni-path
+        - args:
+            - mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf
+          command:
+            - /bin/bash
+            - -c
+            - --
+          image: quay.io/cilium/cilium:v1.12.2@sha256:986f8b04cfdb35cf714701e58e35da0ee63da2b8a048ab596ccb49de58d5ba36
+          imagePullPolicy: IfNotPresent
+          name: mount-bpf-fs
+          securityContext:
+            privileged: true
+          terminationMessagePolicy: FallbackToLogsOnError
+          volumeMounts:
+            - mountPath: /sys/fs/bpf
+              mountPropagation: Bidirectional
+              name: bpf-maps
         - command:
             - /init-container.sh
           env:
@@ -187,7 +257,7 @@ spec:
                   key: clean-cilium-bpf-state
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/cilium:v1.11.5@sha256:79e66c3c2677e9ecc3fd5b2ed8e4ea7e49cf99ed6ee181f2ef43400c4db5eef0
+          image: quay.io/cilium/cilium:v1.12.2@sha256:986f8b04cfdb35cf714701e58e35da0ee63da2b8a048ab596ccb49de58d5ba36
           imagePullPolicy: IfNotPresent
           name: clean-cilium-state
           resources:
@@ -195,7 +265,18 @@ spec:
               cpu: 100m
               memory: 100Mi
           securityContext:
-            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_MODULE
+                - SYS_ADMIN
+                - SYS_RESOURCE
+              drop:
+                - ALL
+            seLinuxOptions:
+              level: s0
+              type: spc_t
+          terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
             - mountPath: /sys/fs/bpf
               name: bpf-maps
@@ -204,6 +285,8 @@ spec:
               name: cilium-cgroup
             - mountPath: /var/run/cilium
               name: cilium-run
+      nodeSelector:
+        kubernetes.io/os: linux
       priorityClassName: system-node-critical
       restartPolicy: Always
       serviceAccount: cilium
@@ -251,6 +334,14 @@ spec:
         - configMap:
             name: cilium-config
           name: cilium-config-path
+        - hostPath:
+            path: /proc/sys/net
+            type: Directory
+          name: host-proc-sys-net
+        - hostPath:
+            path: /proc/sys/kernel
+            type: Directory
+          name: host-proc-sys-kernel
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 2
