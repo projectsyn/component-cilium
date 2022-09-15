@@ -2,10 +2,10 @@
 
 == Starting situation
 
-* You have a kubernetes cluster with Cilium Enterprise installed and want to perform a version upgrade.
+* You have a Kubernetes cluster with Cilium Enterprise installed and want to perform a version upgrade.
 
 [CAUTION]
-Always check the release notes of the version to be installed for relevant changes.
+Always check the https://docs.isovalent.com/operations-guide/releases/release-notes/cilium/index.html[release notes] of the version to be installed for relevant changes.
 
 [CAUTION]
 While we didn't notice any downtime during the upgrade, we recommend to expect a downtime of a few seconds.
