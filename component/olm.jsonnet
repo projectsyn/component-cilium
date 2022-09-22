@@ -59,43 +59,49 @@ local patchManifests = function(file)
         spec: params.helm_values,
       },
     }
-  else
-    if (
-      file.contents.kind == 'Deployment'
-      && file.contents.metadata.name == metadata_name_map[params.release].Deployment
-      && file.contents.metadata.namespace == 'cilium'
-    ) then
-      file {
-        contents+: deploymentPatch,
-      }
-    else
-      if (
-        file.contents.kind == 'ClusterServiceVersion' &&
-        file.contents.metadata.namespace == 'cilium'
-      ) then
-        file {
-          contents+: {
+  else if (
+    file.contents.kind == 'Deployment'
+    && file.contents.metadata.name == metadata_name_map[params.release].Deployment
+    && file.contents.metadata.namespace == 'cilium'
+  ) then
+    file {
+      contents+: deploymentPatch,
+    }
+  else if (
+    file.contents.kind == 'ClusterServiceVersion' &&
+    file.contents.metadata.namespace == 'cilium'
+  ) then
+    file {
+      contents+: {
+        spec+: {
+          install+: {
             spec+: {
-              install+: {
-                spec+: {
-                  deployments: [
-                    if d.name == metadata_name_map[params.release].Deployment then
-                      d + deploymentPatch
-                    else
-                      d
-                    for d in super.deployments
-                  ],
-                },
-              },
+              deployments: [
+                if d.name == metadata_name_map[params.release].Deployment then
+                  d + deploymentPatch
+                else
+                  d
+                for d in super.deployments
+              ],
             },
           },
-        }
-      else
-        file;
+        },
+      },
+    }
+  else if (
+    file.contents.kind == 'Subscription' &&
+    file.contents.metadata.namespace == 'cilium'
+  ) then
+    null
+  else
+    file;
 
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
-  std.map(patchManifests, olmFiles),
+  std.filter(
+    function(obj) obj != null,
+    std.map(patchManifests, olmFiles),
+  ),
   {
     '99_cleanup': (import 'cleanup.libsonnet'),
   }
