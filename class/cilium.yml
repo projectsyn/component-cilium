@@ -22,6 +22,11 @@ parameters:
           input_type: jsonnet
           output_path: ${_instance}/olm/
 
+        - input_paths:
+            - ${_base_directory}/component/aggregated-clusterroles.jsonnet
+          input_type: jsonnet
+          output_path: ${_instance}/
+
     helm:
       dependencies:
         - type: helm
@@ -40,6 +45,10 @@ parameters:
             - cilium/component/helm-namespace.jsonnet
           input_type: jsonnet
           output_path: ${_instance}/01_cilium_helmchart
+        - input_paths:
+            - ${_base_directory}/component/aggregated-clusterroles.jsonnet
+          input_type: jsonnet
+          output_path: ${_instance}/
         - output_path: ${_instance}/01_cilium_helmchart
           input_type: helm
           output_type: yaml
