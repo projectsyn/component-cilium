@@ -69,11 +69,6 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 3
           name: cilium-operator
-          ports:
-            - containerPort: 6942
-              hostPort: 6942
-              name: prometheus
-              protocol: TCP
           resources:
             limits:
               cpu: 100m

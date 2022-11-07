@@ -20,7 +20,7 @@ spec:
   kubeProxyReplacement: probe
   operator:
     prometheus:
-      enabled: true
+      enabled: false
       serviceMonitor:
         enabled: true
     resources:

@@ -31,7 +31,7 @@ parameters:
           enabled: true
       operator:
         prometheus:
-          enabled: true
+          enabled: false
           serviceMonitor:
             enabled: true
         resources:
