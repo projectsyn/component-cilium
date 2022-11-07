@@ -57,6 +57,7 @@ parameters:
           helm_params:
             name: ${cilium:release_name}
             namespace: ${cilium:_namespace}
+            api_versions: monitoring.coreos.com/v1
           helm_values: ${cilium:helm_values}
 
   kapitan:

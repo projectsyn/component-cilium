@@ -96,6 +96,15 @@ spec:
             successThreshold: 1
             timeoutSeconds: 5
           name: cilium-agent
+          ports:
+            - containerPort: 9090
+              hostPort: 9090
+              name: prometheus
+              protocol: TCP
+            - containerPort: 9095
+              hostPort: 9095
+              name: envoy-metrics
+              protocol: TCP
           readinessProbe:
             failureThreshold: 3
             httpGet:
