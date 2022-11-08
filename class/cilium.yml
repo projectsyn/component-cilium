@@ -8,17 +8,17 @@ parameters:
       dependencies:
         - type: https
           source: ${cilium:olm:source:${cilium:release}}
-          output_path: dependencies/cilium/olm/cilium/cilium-olm/
+          output_path: ${_base_directory}/olm/cilium/cilium-olm/
           unpack: true
 
       compile:
         - input_paths:
-            - cilium/component/app.jsonnet
+            - ${_base_directory}/component/app.jsonnet
           input_type: jsonnet
           output_path: apps/
 
         - input_paths:
-            - cilium/component/olm.jsonnet
+            - ${_base_directory}/component/olm.jsonnet
           input_type: jsonnet
           output_path: ${_instance}/olm/
 
@@ -33,16 +33,16 @@ parameters:
           chart_name: ${_helm_chart_name:${cilium:release}}
           version: ${cilium:charts:${_helm_chart_name:${cilium:release}}:version}
           source: ${cilium:charts:${_helm_chart_name:${cilium:release}}:source}
-          output_path: dependencies/cilium/helmcharts/cilium/${cilium:release}/${cilium:charts:${_helm_chart_name:${cilium:release}}:version}/
+          output_path: ${_base_directory}/helmcharts/cilium/${cilium:release}/${cilium:charts:${_helm_chart_name:${cilium:release}}:version}/
 
       compile:
         - input_paths:
-            - cilium/component/app.jsonnet
+            - ${_base_directory}/component/app.jsonnet
           input_type: jsonnet
           output_path: apps/
 
         - input_paths:
-            - cilium/component/helm-namespace.jsonnet
+            - ${_base_directory}/component/helm-namespace.jsonnet
           input_type: jsonnet
           output_path: ${_instance}/01_cilium_helmchart
         - input_paths:
@@ -53,7 +53,7 @@ parameters:
           input_type: helm
           output_type: yaml
           input_paths:
-            - cilium/helmcharts/cilium/${cilium:release}/${cilium:charts:${_helm_chart_name:${cilium:release}}:version}/
+            - ${_base_directory}/helmcharts/cilium/${cilium:release}/${cilium:charts:${_helm_chart_name:${cilium:release}}:version}/
           helm_params:
             name: ${cilium:release_name}
             namespace: ${cilium:_namespace}
