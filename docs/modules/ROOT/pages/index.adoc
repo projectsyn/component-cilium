@@ -4,6 +4,13 @@ cilium is a Commodore component to manage the Cilium networkplugin.
 
 See the xref:references/parameters.adoc[parameters] reference for further details on how to use the component to configure and deploy Cilium.
 
+== Metrics scraping
+
+By default, the component enables the metrics endpoint for the Cilium agent.
+The component assumes that prometheus-operator will be present on the target cluster, and creates a `ServiceMonitor` resource for the agent metrics endpoint.
+
+See the https://docs.cilium.io/en/v1.11/operations/metrics/#cilium-agent[Cilium docs] for available agent metrics.
+
 == Aggregated permissions
 
 The component creates the following `ClusterRoles` which are aggregated to the cluster's default `ClusterRoles`:
