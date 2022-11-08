@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  annotations: null
+  labels: null
+  name: cilium-agent
+  namespace: cilium
+spec:
+  endpoints:
+    - honorLabels: true
+      interval: 10s
+      path: /metrics
+      port: metrics
+  namespaceSelector:
+    matchNames:
+      - cilium
+  selector:
+    matchLabels:
+      k8s-app: cilium
+  targetLabels:
+    - k8s-app

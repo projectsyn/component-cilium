@@ -26,9 +26,14 @@ parameters:
           clusterPoolIPv4PodCIDR: 10.128.0.0/14
       kubeProxyReplacement: probe
       prometheus:
+        enabled: true
         serviceMonitor:
-          enabled: false
+          enabled: true
       operator:
+        prometheus:
+          enabled: false
+          serviceMonitor:
+            enabled: true
         resources:
           requests:
             cpu: 100m

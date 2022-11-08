@@ -54,6 +54,8 @@ data:
   nodes-gc-interval: 5m0s
   operator-api-serve-addr: 127.0.0.1:9234
   preallocate-bpf-maps: 'false'
+  prometheus-serve-addr: :9090
+  proxy-prometheus-port: '9095'
   remove-cilium-node-taints: 'true'
   set-cilium-is-up-condition: 'true'
   sidecar-istio-proxy-image: cilium/istio_proxy
