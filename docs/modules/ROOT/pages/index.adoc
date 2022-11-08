@@ -1,5 +1,39 @@
 = Cilium
 
-cilium is a Commodore component to manage Cilium.
+cilium is a Commodore component to manage the Cilium networkplugin.
 
-See the xref:references/parameters.adoc[parameters] reference for further details.
+See the xref:references/parameters.adoc[parameters] reference for further details on how to use the component to configure and deploy Cilium.
+
+== Aggregated permissions
+
+The component creates the following `ClusterRoles` which are aggregated to the cluster's default `ClusterRoles`:
+
+[cols="1,1,1"]
+|===
+|Name |Resources |Aggregated to
+
+|`syn-cilium-view`
+a|
+* `ciliumnetworkpolicies.cilium.io`
+* `ciliumendpoints.cilium.io`
+a|
+* `view`
+* `edit`
+* `admin`
+
+|`syn-cilium-edit`
+a|
+* `ciliumnetworkpolicies.cilium.io`
+a|
+* `edit`
+* `admin`
+
+|`syn-cilium-cluster-reader`
+|All resources in `cilium.io`
+|`cluster-reader`
+
+|===
+
+This enables users to viewfootnote:view[View permission grants RBAC verbs `get`, `list` and `watch`] `ciliumnetworkpolicy` and `ciliumendpoint` resources in their namespaces.
+Users which have `edit` or `admin` permissions in a namespace, can additionally create, modify, and delete `ciliumnetworkpolicy` resources in that namespace.
+Finally, users which have `cluster-reader` permissions can viewfootnote:view[] at all resources in `cilium.io` in all namespaces.
