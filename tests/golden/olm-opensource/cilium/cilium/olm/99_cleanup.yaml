@@ -62,9 +62,10 @@ spec:
     spec:
       containers:
         - args:
-            - "kubectl -n cilium get clusterserviceversion -ojson \\\n  | jq '.items[]\
-              \ | select(.spec.version | test(\"^1.11.5[+]\") | not) | .metadata.name'\
-              \ \\\n  | xargs --no-run-if-empty kubectl -n cilium delete clusterserviceversions\n"
+            - |
+              kubectl -n cilium get clusterserviceversion -ojson \
+                | jq '.items[] | select(.spec.version | test("^1.11.5[+]") | not) | .metadata.name' \
+                | xargs --no-run-if-empty kubectl -n cilium delete clusterserviceversions
           command:
             - sh
             - -c
