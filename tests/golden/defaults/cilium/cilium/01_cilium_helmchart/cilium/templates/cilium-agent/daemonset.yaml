@@ -158,14 +158,10 @@ spec:
         - command:
             - sh
             - -ec
-            - 'cp /usr/bin/cilium-mount /hostbin/cilium-mount;
-
-              nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount"
-              $CGROUP_ROOT;
-
+            - |
+              cp /usr/bin/cilium-mount /hostbin/cilium-mount;
+              nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT;
               rm /hostbin/cilium-mount
-
-              '
           env:
             - name: CGROUP_ROOT
               value: /run/cilium/cgroupv2
