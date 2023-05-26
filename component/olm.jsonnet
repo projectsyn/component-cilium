@@ -6,10 +6,20 @@ local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
 local olmDir =
+  local prefix = '%s/olm/cilium/cilium-olm/' % inv.parameters._base_directory;
   if params.release == 'opensource' then
-    'dependencies/cilium/olm/cilium/cilium-olm/cilium-olm-master/manifests/cilium.v%s/' % params.olm.full_version
+    prefix + 'cilium-olm-master/manifests/cilium.v%s/' % params.olm.full_version
   else if params.release == 'enterprise' then
-    'dependencies/cilium/olm/cilium/cilium-olm/cilium.v%s/' % params.olm.full_version
+    local newpath = 'tmp/cilium-ee-olm/manifests/';
+    local manifests_dir = 'cilium.v%s/' % params.olm.full_version;
+    if kap.file_exists(prefix + manifests_dir).exists then
+      prefix + manifests_dir
+    else if kap.file_exists(prefix + newpath + manifests_dir).exists then
+      prefix + newpath + manifests_dir
+    else
+      error
+        'Unable to find manifests path for Cilium EE %s. ' % params.olm.full_version
+        + 'Check structure of .tar.gz and update component.'
   else
     error "Unknown release '%s'" % [ params.release ];
 

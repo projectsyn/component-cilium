@@ -19,5 +19,6 @@
 /_public
 
 # Additional entries
-dependencies/cilium/olm/
-jsonnetfile.json
+/dependencies/cilium/olm
+/jsonnetfile.json
+/olm
