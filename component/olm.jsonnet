@@ -10,16 +10,31 @@ local olmDir =
   if params.release == 'opensource' then
     prefix + 'cilium-olm-master/manifests/cilium.v%s/' % params.olm.full_version
   else if params.release == 'enterprise' then
-    local newpath = 'tmp/cilium-ee-olm/manifests/';
+    local path_variants = [
+      // Known releases: 1.11.5, 1.12.6
+      '',
+      // Known releases: 1.11.17
+      'tmp/cilium-ee-olm/manifests/',
+      // Known releases: 1.13.2
+      'cilium-ee-olm/manifests/',
+    ];
     local manifests_dir = 'cilium.v%s/' % params.olm.full_version;
-    if kap.file_exists(prefix + manifests_dir).exists then
-      prefix + manifests_dir
-    else if kap.file_exists(prefix + newpath + manifests_dir).exists then
-      prefix + newpath + manifests_dir
-    else
+    local dir = std.foldl(
+      function(curr, variant)
+        local cand = prefix + variant + manifests_dir;
+        if kap.file_exists(cand).exists then
+          cand
+        else
+          curr,
+      path_variants,
+      null
+    );
+    if dir == null then
       error
         'Unable to find manifests path for Cilium EE %s. ' % params.olm.full_version
         + 'Check structure of .tar.gz and update component.'
+    else
+      dir
   else
     error "Unknown release '%s'" % [ params.release ];
 
