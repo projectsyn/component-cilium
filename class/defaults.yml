@@ -24,7 +24,22 @@ parameters:
         operator:
           clusterPoolIPv4MaskSize: "23"
           clusterPoolIPv4PodCIDR: 10.128.0.0/14
-      kubeProxyReplacement: probe
+      kubeProxyReplacement: partial
+      sessionAffinity: true
+      hostServices:
+        enabled: true
+      nodePort:
+        # Explicitly select ensX device as direct routing device for node-port
+        # traffic. If multiple ens* devices are present on a node, the one
+        # with the lowest alphanumerical name is picked.
+        # Adjust this parameter if your nodes don't have host interfaces which
+        # start with ens.
+        directRoutingDevice: ens+
+        enabled: true
+      externalIPs:
+        enabled: true
+      hostPort:
+        enabled: true
       prometheus:
         enabled: true
         serviceMonitor:
