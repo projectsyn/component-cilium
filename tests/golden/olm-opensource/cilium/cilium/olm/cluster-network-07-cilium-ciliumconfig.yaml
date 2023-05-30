@@ -9,6 +9,12 @@ spec:
     confPath: /var/run/multus/cni/net.d
   endpointRoutes:
     enabled: true
+  externalIPs:
+    enabled: true
+  hostPort:
+    enabled: true
+  hostServices:
+    enabled: true
   hubble:
     tls:
       enabled: false
@@ -17,7 +23,10 @@ spec:
     operator:
       clusterPoolIPv4MaskSize: '23'
       clusterPoolIPv4PodCIDR: 10.128.0.0/14
-  kubeProxyReplacement: probe
+  kubeProxyReplacement: partial
+  nodePort:
+    directRoutingDevice: ens+
+    enabled: true
   operator:
     prometheus:
       enabled: false
@@ -34,3 +43,4 @@ spec:
     enabled: true
     serviceMonitor:
       enabled: true
+  sessionAffinity: true
