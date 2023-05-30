@@ -26,7 +26,7 @@ parameters:
           clusterPoolIPv4PodCIDR: 10.128.0.0/14
       kubeProxyReplacement: partial
       sessionAffinity: true
-      hostServices:
+      socketLB:
         enabled: true
       nodePort:
         # Explicitly select ensX device as direct routing device for node-port
@@ -61,8 +61,8 @@ parameters:
       source:
         opensource: https://github.com/isovalent/olm-for-cilium/archive/master.tar.gz
         enterprise: <CILIUM-ENTERPRISE-OLM-MANIFESTS-TARGZ-URL> # Configure the URL in your global defaults.
-      version: "1.11"
-      patchlevel: "5"
+      version: "1.13"
+      patchlevel: "3"
       full_version: ${cilium:olm:version}.${cilium:olm:patchlevel}
       resources:
         requests:
@@ -75,10 +75,10 @@ parameters:
     charts:
       cilium:
         source: https://helm.cilium.io
-        version: "1.11.5"
+        version: "1.13.3"
       cilium-enterprise:
         source: "<CILIUM-ENTERPRISE-CHART-REPO-URL>" # Configure the Chart repository URL in your global defaults
-        version: "1.11.5"
+        version: "1.13.3"
 
     =_helm_values:
       opensource: ${cilium:cilium_helm_values}

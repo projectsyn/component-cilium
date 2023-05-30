@@ -13,8 +13,6 @@ spec:
     enabled: true
   hostPort:
     enabled: true
-  hostServices:
-    enabled: true
   hubble:
     tls:
       enabled: false
@@ -44,3 +42,5 @@ spec:
     serviceMonitor:
       enabled: true
   sessionAffinity: true
+  socketLB:
+    enabled: true
