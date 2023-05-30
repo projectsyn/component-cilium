@@ -23,7 +23,10 @@ local olmDir =
   else
     error "Unknown release '%s'" % [ params.release ];
 
-local olmFiles = std.map(
+local olmFiles = std.filterMap(
+  function(name)
+    // drop hidden files
+    !std.startsWith(name, '.'),
   function(name) {
     filename: name,
     contents: std.parseJson(kap.yaml_load(olmDir + name)),
