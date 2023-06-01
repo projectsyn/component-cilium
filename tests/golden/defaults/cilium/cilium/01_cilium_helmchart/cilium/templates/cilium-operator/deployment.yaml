@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app.kubernetes.io/name: cilium-operator
+    app.kubernetes.io/part-of: cilium
     io.cilium/app: operator
     name: cilium-operator
   name: cilium-operator
@@ -21,6 +23,8 @@ spec:
     metadata:
       annotations: null
       labels:
+        app.kubernetes.io/name: cilium-operator
+        app.kubernetes.io/part-of: cilium
         io.cilium/app: operator
         name: cilium-operator
     spec:
@@ -28,12 +32,10 @@ spec:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
-                matchExpressions:
-                  - key: io.cilium/app
-                    operator: In
-                    values:
-                      - operator
+                matchLabels:
+                  io.cilium/app: operator
               topologyKey: kubernetes.io/hostname
+      automountServiceAccountToken: true
       containers:
         - args:
             - --config-dir=/tmp/cilium/config-map
@@ -57,7 +59,7 @@ spec:
                   key: debug
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/operator-generic:v1.11.5@sha256:8ace281328b27d4216218c604d720b9a63a8aec2bd1996057c79ab0168f9d6d8
+          image: quay.io/cilium/operator-generic:v1.13.3@sha256:fa7003cbfdf8358cb71786afebc711b26e5e44a2ed99bd4944930bba915b8910
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -76,11 +78,14 @@ spec:
             requests:
               cpu: 100m
               memory: 250Mi
+          terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
             - mountPath: /tmp/cilium/config-map
               name: cilium-config-path
               readOnly: true
       hostNetwork: true
+      nodeSelector:
+        kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       restartPolicy: Always
       serviceAccount: cilium-operator

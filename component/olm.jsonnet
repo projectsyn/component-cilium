@@ -8,7 +8,7 @@ local params = inv.parameters.cilium;
 local olmDir =
   local prefix = '%s/olm/cilium/cilium-olm/' % inv.parameters._base_directory;
   if params.release == 'opensource' then
-    prefix + 'cilium-olm-master/manifests/cilium.v%s/' % params.olm.full_version
+    prefix + 'olm-for-cilium-main/manifests/cilium.v%s/' % params.olm.full_version
   else if params.release == 'enterprise' then
     local path_variants = [
       // Known releases: 1.11.5, 1.12.6
