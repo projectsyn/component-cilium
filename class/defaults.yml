@@ -10,6 +10,10 @@ parameters:
     # Enterprise is currently only supported for "helm"
     release: opensource
 
+    =_egressgw_l7proxy:
+      "True": false
+      "False": true
+
     cilium_helm_values:
       cni:
         binPath: /var/lib/cni/bin
@@ -40,6 +44,11 @@ parameters:
         enabled: true
       hostPort:
         enabled: true
+      egressGateway:
+        enabled: ${cilium:egress_gateway:enabled}
+      bpf:
+        masquerade: ${cilium:egress_gateway:enabled}
+      l7Proxy: ${cilium:_egressgw_l7proxy:${cilium:egress_gateway:enabled}}
       prometheus:
         enabled: true
         serviceMonitor:
@@ -56,6 +65,10 @@ parameters:
           limits:
             cpu: 100m
             memory: 250Mi
+
+    egress_gateway:
+      enabled: false
+      policies: {}
 
     olm:
       source:
