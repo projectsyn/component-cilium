@@ -1,0 +1,21 @@
+# Overwrite parameters here
+
+parameters:
+  cilium:
+    egress_gateway:
+      enabled: true
+      policies:
+        all-example-namespace:
+          spec:
+            destinationCIDRs:
+              - 0.0.0.0/0
+            egressGroups:
+              - nodeSelector:
+                  matchLabels:
+                    node-role.kubernetes.io/infra: ""
+                egressIP: 203.0.113.100
+            selectors:
+              - podSelector:
+                  matchLabels:
+                    io.kubernetes.pod.namespace: example-namespace
+        removed: null
