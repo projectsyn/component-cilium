@@ -4,9 +4,13 @@ metadata:
   name: cilium
   namespace: cilium
 spec:
+  bpf:
+    masquerade: false
   cni:
     binPath: /var/lib/cni/bin
     confPath: /var/run/multus/cni/net.d
+  egressGateway:
+    enabled: false
   endpointRoutes:
     enabled: true
   externalIPs:
@@ -22,6 +26,7 @@ spec:
       clusterPoolIPv4MaskSize: '23'
       clusterPoolIPv4PodCIDR: 10.128.0.0/14
   kubeProxyReplacement: partial
+  l7Proxy: true
   nodePort:
     directRoutingDevice: ens+
     enabled: true

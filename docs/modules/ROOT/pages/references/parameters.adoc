@@ -165,6 +165,97 @@ default:: https://github.com/projectsyn/component-cilium/blob/master/class/defau
 The configuration values of the underlying Cilium helm chart.
 See https://docs.cilium.io/en/{helm-minor-version}/helm-reference/[Reference].
 
+== `egress_gateway`
+
+This section allows users to configure the [Cilium EgressGatewayPolicy] feature.
+
+=== `egress_gateway.enabled`
+
+[horizontal]
+type:: boolean
+default:: `false`
+
+This parameter allows users to set all the configurations necessary to enable the egress gateway policy feature through a single parameter.
+The parameter sets the following Helm values:
+
+[source,yaml]
+----
+egressGateway:
+  enabled: true
+bpf:
+  masquerade: true
+l7Proxy: false
+----
+
+Notably, the L7 proxy feature is disabled by default when egress gateway policies are enabled.
+This is recommended by the Cilium documentation, see also https://docs.cilium.io/en/v1.13/network/egress-gateway/#incompatibility-with-other-features[the upstream documentation].
+
+=== `egress_gateway.policies`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to deploy `CiliumEgressGatewayPolicy` resources.
+Each key-value pair in the parameter is converted to a `CiliumEgressGatewayPolicy` resource.
+Entries can be removed by setting the value to `null`.
+
+==== Example
+
+
+[source,yaml]
+----
+egress_gateway:
+  policies:
+    all-example:
+      metadata:
+        annotations:
+          syn.tools/description: |
+            Route all egress traffic from example-namespace through
+            203.0.113.100.
+      spec:
+        destinationCIDRs:
+          - 0.0.0.0/0
+        egressGroups:
+          - nodeSelector:
+              matchLabels:
+                node-role.kubernetes.io/infra: ""
+            egressIP: 203.0.113.100
+        selectors:
+          - podSelector:
+              matchLabels:
+                io.kubernetes.pod.namespace: example-namespace
+    removed: null
+----
+
+The component configuration shown above is rendered as follows by the component:
+
+[source,yaml]
+----
+apiVersion: cilium.io/v2
+kind: CiliumEgressGatewayPolicy
+metadata:
+  annotations:
+    syn.tools/description: |
+      Route all egress traffic from example-namespace through
+      203.0.113.100.
+  labels:
+    name: all-example-namespace
+  name: all-example-namespace
+spec:
+  destinationCIDRs:
+    - 0.0.0.0/0
+  egressGroups:
+    - egressIP: 203.0.113.100
+      nodeSelector:
+        matchLabels:
+          node-role.kubernetes.io/infra: ''
+  selectors:
+    - podSelector:
+        matchLabels:
+          io.kubernetes.pod.namespace: example-namespace
+----
+
 == `helm_values`
 
 [horizontal]

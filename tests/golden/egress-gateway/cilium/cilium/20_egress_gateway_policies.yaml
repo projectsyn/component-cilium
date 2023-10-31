@@ -1,0 +1,19 @@
+apiVersion: cilium.io/v2
+kind: CiliumEgressGatewayPolicy
+metadata:
+  annotations: {}
+  labels:
+    name: all-example-namespace
+  name: all-example-namespace
+spec:
+  destinationCIDRs:
+    - 0.0.0.0/0
+  egressGroups:
+    - egressIP: 203.0.113.100
+      nodeSelector:
+        matchLabels:
+          node-role.kubernetes.io/infra: ''
+  selectors:
+    - podSelector:
+        matchLabels:
+          io.kubernetes.pod.namespace: example-namespace
