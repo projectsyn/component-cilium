@@ -75,7 +75,7 @@ parameters:
         opensource: https://github.com/isovalent/olm-for-cilium/archive/master.tar.gz
         enterprise: <CILIUM-ENTERPRISE-OLM-MANIFESTS-TARGZ-URL> # Configure the URL in your global defaults.
       version: "1.13"
-      patchlevel: "3"
+      patchlevel: "8"
       full_version: ${cilium:olm:version}.${cilium:olm:patchlevel}
       resources:
         requests:
@@ -88,10 +88,10 @@ parameters:
     charts:
       cilium:
         source: https://helm.cilium.io
-        version: "1.13.3"
+        version: "1.13.8"
       cilium-enterprise:
         source: "<CILIUM-ENTERPRISE-CHART-REPO-URL>" # Configure the Chart repository URL in your global defaults
-        version: "1.13.3"
+        version: "1.13.8"
 
     =_helm_values:
       opensource: ${cilium:cilium_helm_values}
