@@ -24,7 +24,7 @@ data:
   disable-endpoint-crd: 'false'
   enable-auto-protect-node-port-range: 'true'
   enable-bgp-control-plane: 'false'
-  enable-bpf-clock-probe: 'true'
+  enable-bpf-clock-probe: 'false'
   enable-bpf-masquerade: 'false'
   enable-endpoint-health-checking: 'true'
   enable-endpoint-routes: 'true'
