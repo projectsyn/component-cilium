@@ -72,7 +72,7 @@ spec:
           env:
             - name: HOME
               value: /home
-          image: docker.io/bitnami/kubectl:1.27.2@sha256:8f91a6ef9c317d70f1697062e48681fc39daa0bef89ecb0e6443c630143edad6
+          image: docker.io/bitnami/kubectl:1.27.8@sha256:66ab0ca309cd64c6649e7b97229c9a13d513d7c2371b74679d9f462bfe10e002
           imagePullPolicy: IfNotPresent
           name: cleanup-old-clusterserviceversions
           ports: []
