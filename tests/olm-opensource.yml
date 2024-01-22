@@ -2,3 +2,6 @@ parameters:
   cilium:
     install_method: olm
     release: opensource
+    cilium_helm_values:
+      k8sServiceHost: 172.30.0.1
+      k8sServicePort: 443

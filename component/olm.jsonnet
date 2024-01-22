@@ -50,6 +50,8 @@ local olmFiles = std.filterMap(
 );
 
 local patchManifests = function(file)
+  local hasK8sHost = std.objectHas(params.cilium_helm_values, 'k8sServiceHost');
+  local hasK8sPort = std.objectHas(params.cilium_helm_values, 'k8sServicePort');
   local metadata_name_map = {
     opensource: {
       CiliumConfig: 'cilium',
@@ -68,6 +70,28 @@ local patchManifests = function(file)
             if c.name == 'operator' then
               c {
                 resources+: params.olm.resources,
+                env+:
+                  if params.release == 'opensource' then
+                    (
+                      if hasK8sHost then
+                        [
+                          {
+                            name: 'KUBERNETES_SERVICE_HOST',
+                            value: params.cilium_helm_values.k8sServiceHost,
+                          },
+                        ]
+                      else []
+                    ) + (
+                      if hasK8sPort then
+                        [
+                          {
+                            name: 'KUBERNETES_SERVICE_PORT',
+                            value: params.cilium_helm_values.k8sServicePort,
+                          },
+                        ]
+                      else []
+                    )
+                  else [],
               }
             else
               c
@@ -85,6 +109,22 @@ local patchManifests = function(file)
     file {
       contents+: {
         spec: params.helm_values,
+      },
+    }
+  else if (
+    params.release == 'enterprise'
+    && file.contents.kind == 'ConfigMap'
+    && file.contents.metadata.name == 'cilium-ee-olm-overrides'
+    && file.contents.metadata.namespace == 'cilium'
+  ) then
+    file {
+      contents+: {
+        data+: {
+          [if hasK8sHost then 'KUBERNETES_SERVICE_HOST']:
+            params.cilium_helm_values.k8sServiceHost,
+          [if hasK8sPort then 'KUBERNETES_SERVICE_PORT']:
+            params.cilium_helm_values.k8sServicePort,
+        },
       },
     }
   else if (

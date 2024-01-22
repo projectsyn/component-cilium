@@ -25,6 +25,8 @@ spec:
     operator:
       clusterPoolIPv4MaskSize: '23'
       clusterPoolIPv4PodCIDR: 10.128.0.0/14
+  k8sServiceHost: 172.30.0.1
+  k8sServicePort: 443
   kubeProxyReplacement: partial
   l7Proxy: true
   nodePort:
