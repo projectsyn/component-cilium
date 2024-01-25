@@ -31,6 +31,7 @@ spec:
   l7Proxy: true
   nodePort:
     directRoutingDevice: ens+
+    enableHealthCheck: false
     enabled: true
   operator:
     prometheus:

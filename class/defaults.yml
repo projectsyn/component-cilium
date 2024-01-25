@@ -40,6 +40,12 @@ parameters:
         # start with ens.
         directRoutingDevice: ens+
         enabled: true
+        # We need to disable the node-port health check as long as we use
+        # `kubeProxyReplacement=partial`, as kube-proxy also deploys a
+        # health-check endpoint for services with type=LoadBalancer and
+        # externalTrafficPolicy=Local.
+        enableHealthCheck: false
+
       externalIPs:
         enabled: true
       hostPort:
