@@ -29,7 +29,7 @@ data:
   enable-endpoint-health-checking: 'true'
   enable-endpoint-routes: 'true'
   enable-external-ips: 'true'
-  enable-health-check-nodeport: 'true'
+  enable-health-check-nodeport: 'false'
   enable-health-checking: 'true'
   enable-host-port: 'true'
   enable-hubble: 'true'
