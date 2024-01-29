@@ -23,7 +23,7 @@ local view = kube.ClusterRole('syn-cilium-view') {
     // ciliumnetworkpolicies and ciliumendpoints are namespace-scoped, so we
     // aggregate them to `view`, `ciliumconfigs` as well, but the operator
     // already creates aggregations for that one.
-    ciliumRule([ 'networkpolicies', 'ciliumendpoints' ]),
+    ciliumRule([ 'ciliumnetworkpolicies', 'ciliumendpoints' ]),
   ],
 };
 
@@ -35,10 +35,9 @@ local edit = kube.ClusterRole('syn-cilium-edit') {
     },
   },
   rules: [
-    // ciliumnetworkpolicies and ciliumendpoints are namespace-scoped, so we
-    // aggregate them to `view`, `ciliumconfigs` as well, but the operator
-    // already creates aggregations for that one.
-    ciliumRule([ 'networkpolicies' ]) {
+    // We aggregate ciliumnetworkpolicies to `edit`, so that users can create
+    // and modify cilium networkpolicies in their namespace.
+    ciliumRule([ 'ciliumnetworkpolicies' ]) {
       verbs: [
         'create',
         'delete',
