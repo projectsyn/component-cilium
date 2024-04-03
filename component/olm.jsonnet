@@ -70,6 +70,13 @@ local patchManifests = function(file)
             if c.name == 'operator' then
               c {
                 resources+: params.olm.resources,
+                command: [
+                  cmd
+                  for cmd in super.command
+                  if cmd != '--zap-devel'
+                ] + [
+                  '--zap-log-level=%s' % params.olm.log_level,
+                ],
                 env+:
                   if params.release == 'opensource' then
                     (
