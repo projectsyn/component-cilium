@@ -22,9 +22,9 @@ spec:
             - --watches-file=watches.yaml
             - --enable-leader-election
             - --leader-election-id=cilium-olm
-            - --zap-devel
             - --metrics-addr=localhost:8082
             - --health-probe-bind-address=localhost:8081
+            - --zap-log-level=info
           env:
             - name: WATCH_NAMESPACE
               valueFrom:

@@ -156,6 +156,14 @@ default:: https://github.com/projectsyn/component-cilium/blob/master/class/defau
 
 The resource requests and limits for the Cilium OLM Deployment.
 
+== `olm.log_level`
+
+[horizontal]
+type:: string
+default:: `info`
+
+https://github.com/uber-go/zap[Zap] log level for the OLM operator.
+
 == `cilium_helm_values`
 
 [horizontal]

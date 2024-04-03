@@ -90,6 +90,7 @@ parameters:
         limits:
           cpu: 100m
           memory: 500Mi
+      log_level: info
 
     charts:
       cilium:
