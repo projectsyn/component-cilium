@@ -22,6 +22,7 @@ data:
   direct-routing-device: ens+
   disable-cnp-status-updates: 'true'
   disable-endpoint-crd: 'false'
+  dnsproxy-enable-transparent-mode: 'true'
   enable-auto-protect-node-port-range: 'true'
   enable-bgp-control-plane: 'false'
   enable-bpf-clock-probe: 'false'
