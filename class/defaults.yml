@@ -21,6 +21,8 @@ parameters:
       endpointRoutes:
         enabled: true
       hubble:
+        relay:
+          enabled: true
         tls:
           enabled: false
       ipam:
