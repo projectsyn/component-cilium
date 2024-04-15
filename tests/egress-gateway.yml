@@ -19,3 +19,14 @@ parameters:
                   matchLabels:
                     io.kubernetes.pod.namespace: example-namespace
         removed: null
+
+      egress_ip_ranges:
+        egress_a:
+          egress_range: '192.0.2.32 - 192.0.2.63'
+          node_selector:
+            node-role.kubernetes.io/infra: ''
+          namespace_egress_ips:
+            foo: 192.0.2.32
+            bar: 192.0.2.61
+            baz: null
+        egress_b: null

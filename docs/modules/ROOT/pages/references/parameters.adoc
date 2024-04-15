@@ -264,6 +264,141 @@ spec:
           io.kubernetes.pod.namespace: example-namespace
 ----
 
+=== `egress_gateway.egress_ip_ranges`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to configure `CiliumEgressGatewayPolicy` resources which assign a single egress IP to a namespace according to the design selected in https://kb.vshn.ch/oc4/explanations/decisions/cloudscale-cilium-egressip.html[Floating egress IPs with Cilium on cloudscale].
+
+Each entry in the parameter is intended to describe a group of dummy interfaces that can be used in `CiliumEgressGatewayPolicy` resources.
+The component expects that each value is an object with fields `egress_range`, `node_selector` and `namespace_egress_ips`.
+
+==== Prerequisites
+
+The component expects that the key for each entry matches the prefix of the dummy interface names that are assigned the shadow IPs which map to the egress IP range defined in `egress_range`.
+To expand, the component expects that each node matching the selector in `node_selector` has a dummy interfaces which is named `<prefix>_<i>` for stem:[i \in [0, n)] where stem:[n] is the number of IPs contained in the specified egress range.
+
+Additionally, the component expects that the network environment of the cluster ensures that all traffic which originates from the IPs assigned to the dummy interfaces on each node is mapped to the IPs in the range given in `egress_range`.
+The details of the mapping are left to the operator of the cluster's network environment, but the component expects that traffic that originates from the IPs assigned to the same dummy interface on different nodes is mapped to a single egress IP.
+
+[TIP]
+====
+We recommend that cluster operators allocate a shadow egress IP range of the same size as the egress IP range specified in field `egress_range` for each node that matches the node selector defined in `node_selector`.
+
+For example, a cluster operator could select shadow IP CIDRs `192.0.2.32/27`, `192.0.2.64/27` and `192.0.2.96/27` for an egress IP CIDR of `192.0.2.0/27` if 3 nodes in the cluster match the node selector.
+
+In this case, the operator would need to ensure that traffic originating from each shadow IP CIDR is mapped to the egress CIDR. One option to realize this mapping are iptables `NETMAP` rules on the cluster's default gateway:
+
+[source,bash]
+----
+iptables -t nat -A POSTROUTING -j NETMAP -s 192.0.2.32/27 --to 192.0.2.0/27 -p all
+iptables -t nat -A POSTROUTING -j NETMAP -s 192.0.2.64/27 --to 192.0.2.0/27 -p all
+iptables -t nat -A POSTROUTING -j NETMAP -s 192.0.2.96/27 --to 192.0.2.0/27 -p all
+----
+
+This approach assumes that the default gateway has suitable routes to ensure that traffic to `192.0.2.0/25` is routed to the nodes matching the node selector.
+The easiest option to do so is to define a link-local route for `192.0.2.0/25` on the network interface of the default gateway which is attached to the L2 network of the cluster nodes.
+====
+
+==== Policy generation
+
+The component will generate one `CiliumEgressGatewayPolicy` for each key-value pair in field `namespace_egress_ips` for each egress range.
+
+NOTE: The compilation will abort with an error if the same namespace appears in multiple egress range definitions.
+
+NOTE: The component doesn't enforce that different egress ranges are non-overlapping.
+
+The component expects that keys in field `namespace_egress_ips` are namespace names.
+Additionally, the component expects that values in that field are IPs in the defined egress IP range.
+
+NOTE: The component allows users to assign the same egress IP to multiple namespaces.
+
+The component expects that the value of `egress_range` has format `192.0.2.32-192.0.2.63`.
+If the range isn't given in the expected format or if the component detects that the given range is empty (for example if the first IP is larger than the last IP) compilation is aborted with an error.
+Additionally, the component also aborts compilation with an error if an egress IP that's assigned to a namespace is outside the specified egress range.
+
+Finally, entries in `egress_ip_ranges` and `namespace_egress_ips` can be removed by setting the value to `null`.
+
+==== Example
+
+[source,yaml]
+----
+egress_ip_ranges:
+  egress_a:
+    egress_range: '192.0.2.32 - 192.0.2.63'
+    node_selector:
+      node-role.kubernetes.io/infra: ''
+    namespace_egress_ips:
+      foo: 192.0.2.32
+      bar: 192.0.2.61
+----
+
+The configuration shown above results in the two `CiliumEgressGatewayPolicy` resources shown below.
+
+[source,yaml]
+----
+apiVersion: cilium.io/v2
+kind: CiliumEgressGatewayPolicy
+metadata:
+  annotations: <1>
+    cilium.syn.tools/description: Generated policy to assign egress IP 192.0.2.61
+      in egress range "egress_a" (192.0.2.32 - 192.0.2.63) to namespace bar.
+    cilium.syn.tools/egress-ip: 192.0.2.61
+    cilium.syn.tools/egress-range: 192.0.2.32 - 192.0.2.63
+    cilium.syn.tools/interface-prefix: egress_a
+    cilium.syn.tools/source-namespace: bar
+  labels:
+    name: bar
+  name: bar <2>
+spec:
+  destinationCIDRs:
+    - 0.0.0.0/0 <3>
+  egressGroups:
+    - interface: egress_a_29 <4>
+      nodeSelector:
+        matchLabels:
+          node-role.kubernetes.io/infra: '' <5>
+  selectors:
+    - podSelector:
+        matchLabels:
+          io.kubernetes.pod.namespace: bar <6>
+---
+apiVersion: cilium.io/v2
+kind: CiliumEgressGatewayPolicy
+metadata:
+  annotations: <1>
+    cilium.syn.tools/description: Generated policy to assign egress IP 192.0.2.32
+      in egress range "egress_a" (192.0.2.32 - 192.0.2.63) to namespace foo.
+    cilium.syn.tools/egress-ip: 192.0.2.32
+    cilium.syn.tools/egress-range: 192.0.2.32 - 192.0.2.63
+    cilium.syn.tools/interface-prefix: egress_a
+    cilium.syn.tools/source-namespace: foo
+  labels:
+    name: foo
+  name: foo <2>
+spec:
+  destinationCIDRs:
+    - 0.0.0.0/0 <3>
+  egressGroups:
+    - interface: egress_a_0 <4>
+      nodeSelector:
+        matchLabels:
+          node-role.kubernetes.io/infra: '' <5>
+  selectors:
+    - podSelector:
+        matchLabels:
+          io.kubernetes.pod.namespace: foo <6>
+----
+<1> The component adds a number of annotations that contain the input data that was used to generate the policy.
+Additionally, the component adds an annotation that gives a human-readable description of the policy.
+<2> The namespace name is used as the name for the `CiliumEgressGatewayPolicy` resource.
+<3> The policy always masquerades all traffic from the namespace with the defined egress IP.
+<4> The policy uses the key in `egress_ip_ranges` and the offset of the selected egress IP into the range to generate the name of the dummy interface that's expected to be assigned the shadow IPs that map to the egress IP.
+<5> The policy uses the node selector that's defined in the parameter.
+<6> The policy always matches all traffic originating in the specified namespace.
+
 == `helm_values`
 
 [horizontal]
