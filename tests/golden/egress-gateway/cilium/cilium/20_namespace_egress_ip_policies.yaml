@@ -31,6 +31,34 @@ kind: CiliumEgressGatewayPolicy
 metadata:
   annotations:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    cilium.syn.tools/debug-interface-index: start=3221226048, end=3221226079, ip=3221226077
+    cilium.syn.tools/description: Generated policy to assign egress IP 192.0.2.93
+      in egress range "egress_c" (192.0.2.64 - 192.0.2.95) to namespace baz.
+    cilium.syn.tools/egress-ip: 192.0.2.93
+    cilium.syn.tools/egress-range: 192.0.2.64 - 192.0.2.95
+    cilium.syn.tools/interface-prefix: egress_c
+    cilium.syn.tools/source-namespace: baz
+  labels:
+    name: baz
+  name: baz
+spec:
+  destinationCIDRs:
+    - 0.0.0.0/0
+  egressGroups:
+    - interface: egress_c_29
+      nodeSelector:
+        matchLabels:
+          node-role.kubernetes.io/infra: ''
+  selectors:
+    - podSelector:
+        matchLabels:
+          io.kubernetes.pod.namespace: baz
+---
+apiVersion: cilium.io/v2
+kind: CiliumEgressGatewayPolicy
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     cilium.syn.tools/debug-interface-index: start=3221226016, end=3221226047, ip=3221226016
     cilium.syn.tools/description: Generated policy to assign egress IP 192.0.2.32
       in egress range "egress_a" (192.0.2.32 - 192.0.2.63) to namespace foo.
