@@ -18,6 +18,8 @@ spec:
   hostPort:
     enabled: true
   hubble:
+    relay:
+      enabled: true
     tls:
       enabled: false
   ipam:
