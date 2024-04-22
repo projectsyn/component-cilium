@@ -264,6 +264,17 @@ spec:
           io.kubernetes.pod.namespace: example-namespace
 ----
 
+=== `egress_gateway.generate_shadow_ranges_configmap`
+
+[horizontal]
+type:: boolean
+default:: `false`
+
+When this parameter is set to true, the component will deploy a ConfigMap which is suitable for the systemd unit which creates dummy interfaces managed by component openshift4-nodes.
+Additionally, the component will deploy one or more DaemonSets (depending on the contents of `egress_gateway.egress_ip_ranges`) to ensure the Kubelets on all nodes where egress interfaces need to be created can access the ConfigMap.
+
+See also the documentation for https://hub.syn.tools/openshift4-nodes/references/parameters.html#_egressinterfaces[parameter `egressInterfaces` in openshift4-nodes].
+
 === `egress_gateway.egress_ip_ranges`
 
 [horizontal]
@@ -273,7 +284,9 @@ default:: `{}`
 This parameter allows users to configure `CiliumEgressGatewayPolicy` resources which assign a single egress IP to a namespace according to the design selected in https://kb.vshn.ch/oc4/explanations/decisions/cloudscale-cilium-egressip.html[Floating egress IPs with Cilium on cloudscale].
 
 Each entry in the parameter is intended to describe a group of dummy interfaces that can be used in `CiliumEgressGatewayPolicy` resources.
-The component expects that each value is an object with fields `egress_range`, `node_selector` and `namespace_egress_ips`.
+The component expects that each value is an object with fields `egress_range`, `node_selector`, `namespace_egress_ips`, and `shadow_ranges`.
+
+NOTE: Field `shadow_ranges` is optional, see the section on <<_shadow_ranges,shadow ranges>> for more details.
 
 ==== Prerequisites
 
@@ -321,6 +334,21 @@ Additionally, the component also aborts compilation with an error if an egress I
 
 Finally, entries in `egress_ip_ranges` and `namespace_egress_ips` can be removed by setting the value to `null`.
 
+==== Shadow ranges
+
+The component optionally deploys a ConfigMap which contains a map from node names to egress shadow IP ranges.
+This ConfigMap is only deployed when parameter `egress_gateway.generate_shadow_ranges_configmap` is set to `true`.
+If the shadow ranges ConfigMap is enabled, the component will check that each shadow range is the same size as the egress IP range it's associated with.
+If there are any mismatches compilation aborts with an error.
+
+If that parameter is set to true, the component will extract the node names and associated shadow IP ranges from field `shadow_ranges` in each entry of `egress_ip_ranges`.
+Ranges which don't define this field (or where it's set to `null`) are skipped.
+
+This ConfigMap is intended to be consumed by a component running on the node (such as the systemd unit deployed by openshift4-nodes, see the documentation for https://hub.syn.tools/openshift4-nodes/references/parameters.html#_egressinterfaces[parameter `egressInterfaces` in openshift4-nodes].
+
+To ensure the Kubelet Kubeconfig on the nodes can be used to access this ConfigMap, the component also deploys a DaemonSet which mounts the ConfigMap for each unique node selector in all egress IP ranges.
+The DaemonSet pods establish a link between the node and the ConfigMap which is required in order for the Kubernetes Node authorization mode to allow the Kubelet to access the ConfigMap.
+
 ==== Example
 
 [source,yaml]
@@ -333,6 +361,9 @@ egress_ip_ranges:
     namespace_egress_ips:
       foo: 192.0.2.32
       bar: 192.0.2.61
+    shadow_ranges:
+      infra-foo: 198.51.100.32 - 198.51.100.63
+      infra-bar: 198.51.100.64 - 198.51.100.95
 ----
 
 The configuration shown above results in the two `CiliumEgressGatewayPolicy` resources shown below.
@@ -398,6 +429,57 @@ Additionally, the component adds an annotation that gives a human-readable descr
 <4> The policy uses the key in `egress_ip_ranges` and the offset of the selected egress IP into the range to generate the name of the dummy interface that's expected to be assigned the shadow IPs that map to the egress IP.
 <5> The policy uses the node selector that's defined in the parameter.
 <6> The policy always matches all traffic originating in the specified namespace.
+
+Additionally, if parameter `egress_gateway.generate_shadow_ranges_configmap` is set to `true`, the `ConfigMap` and `DaemonSet` shown below are created.
+
+[source,yaml]
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eip-shadow-ranges
+data: <1>
+  infra-foo: '{"egress_a":{"base":"198.51.100","from":"32","to":"63"}}'
+  infra-bar: '{"egress_a":{"base":"198.51.100","from":"64","to":"95"}}'
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    cilium.syn.tools/description: Daemonset which ensures that the Kubelet on the
+      nodes where the pods are scheduled can access configmap eip-shadow-ranges in
+      namespace cilium.
+  name: eip-shadow-ranges-e70e8
+spec:
+  selector:
+    matchLabels:
+      name: eip-shadow-ranges-e70e8
+  template:
+    metadata:
+      labels:
+        name: eip-shadow-ranges-e70e8
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - -c
+            - 'trap : TERM INT; sleep infinity & wait'
+          image: docker.io/bitnami/kubectl:1.29.4@sha256:f3cee231ead7d61434b7f418b6d10e1b43ff0d33dca43b341bcf3088fcaaa769
+          imagePullPolicy: IfNotPresent
+          name: sleep
+          volumeMounts: <2>
+            - mountPath: /data/eip-shadow-ranges
+              name: shadow-ranges
+      nodeSelector:
+        node-role.kubernetes.io/infra: '' <3>
+      volumes: <2>
+        - configMap:
+            name: eip-shadow-ranges
+          name: shadow-ranges
+----
+<1> The contents of the ConfigMap are generated in the format that the systemd unit managed by component `openshift4-nodes` expects.
+<2> The DaemonSet mounts the `eip-shadow-ranges` ConfigMap as a volume.
+<3> The DaemonSet is scheduled using the same node selector that's used for the `CiliumEgressGatewayPolicy` resources
 
 == `helm_values`
 

@@ -77,6 +77,7 @@ parameters:
     egress_gateway:
       enabled: false
       policies: {}
+      generate_shadow_ranges_configmap: false
       egress_ip_ranges: {}
 
     olm:

@@ -1,0 +1,61 @@
+apiVersion: v1
+data:
+  infra-8344: '{"egress_a":{"base":"198.51.100","from":"0","to":"31"},"egress_c":{"base":"198.51.100","from":"96","to":"127"}}'
+  infra-87c9: '{"egress_a":{"base":"198.51.100","from":"32","to":"63"},"egress_c":{"base":"198.51.100","from":"128","to":"159"}}'
+  infra-eba2: '{"egress_a":{"base":"198.51.100","from":"64","to":"95"},"egress_c":{"base":"198.51.100","from":"160","to":"191"}}'
+kind: ConfigMap
+metadata:
+  annotations: {}
+  labels:
+    name: eip-shadow-ranges
+  name: eip-shadow-ranges
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    cilium.syn.tools/description: Daemonset which ensures that the Kubelet on the
+      nodes where the pods are scheduled can access configmap eip-shadow-ranges in
+      namespace cilium.
+  labels:
+    name: eip-shadow-ranges-e70e8
+  name: eip-shadow-ranges-e70e8
+spec:
+  selector:
+    matchLabels:
+      name: eip-shadow-ranges-e70e8
+  template:
+    metadata:
+      annotations: {}
+      labels:
+        name: eip-shadow-ranges-e70e8
+    spec:
+      containers:
+        - args: []
+          command:
+            - /bin/sh
+            - -c
+            - 'trap : TERM INT; sleep infinity & wait'
+          env: []
+          image: docker.io/bitnami/kubectl:1.29.4@sha256:f3cee231ead7d61434b7f418b6d10e1b43ff0d33dca43b341bcf3088fcaaa769
+          imagePullPolicy: IfNotPresent
+          name: sleep
+          ports: []
+          stdin: false
+          tty: false
+          volumeMounts:
+            - mountPath: /data/eip-shadow-ranges
+              name: shadow-ranges
+      imagePullSecrets: []
+      initContainers: []
+      nodeSelector:
+        node-role.kubernetes.io/infra: ''
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            name: eip-shadow-ranges
+          name: shadow-ranges
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
