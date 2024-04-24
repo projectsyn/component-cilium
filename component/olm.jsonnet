@@ -5,6 +5,8 @@ local inv = kap.inventory();
 // The hiera parameters for the component
 local params = inv.parameters.cilium;
 
+local helm = import 'render-helm-values.jsonnet';
+
 local olmDir =
   local prefix = '%s/olm/cilium/cilium-olm/' % inv.parameters._base_directory;
   if params.release == 'opensource' then
@@ -50,8 +52,8 @@ local olmFiles = std.filterMap(
 );
 
 local patchManifests = function(file)
-  local hasK8sHost = std.objectHas(params.cilium_helm_values, 'k8sServiceHost');
-  local hasK8sPort = std.objectHas(params.cilium_helm_values, 'k8sServicePort');
+  local hasK8sHost = std.objectHas(helm.cilium_values, 'k8sServiceHost');
+  local hasK8sPort = std.objectHas(helm.cilium_values, 'k8sServicePort');
   local metadata_name_map = {
     opensource: {
       CiliumConfig: 'cilium',
@@ -84,7 +86,7 @@ local patchManifests = function(file)
                         [
                           {
                             name: 'KUBERNETES_SERVICE_HOST',
-                            value: params.cilium_helm_values.k8sServiceHost,
+                            value: helm.cilium_values.k8sServiceHost,
                           },
                         ]
                       else []
@@ -93,7 +95,7 @@ local patchManifests = function(file)
                         [
                           {
                             name: 'KUBERNETES_SERVICE_PORT',
-                            value: params.cilium_helm_values.k8sServicePort,
+                            value: helm.cilium_values.k8sServicePort,
                           },
                         ]
                       else []
@@ -115,7 +117,7 @@ local patchManifests = function(file)
   ) then
     file {
       contents+: {
-        spec: params.helm_values,
+        spec: helm.values,
       },
     }
   else if (
@@ -128,9 +130,9 @@ local patchManifests = function(file)
       contents+: {
         data+: {
           [if hasK8sHost then 'KUBERNETES_SERVICE_HOST']:
-            params.cilium_helm_values.k8sServiceHost,
+            helm.cilium_values.k8sServiceHost,
           [if hasK8sPort then 'KUBERNETES_SERVICE_PORT']:
-            params.cilium_helm_values.k8sServicePort,
+            helm.cilium_values.k8sServicePort,
         },
       },
     }

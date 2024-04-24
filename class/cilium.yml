@@ -67,7 +67,7 @@ parameters:
           helm_values_files:
             - ${_base_directory}/helm_values/values.yaml
         - input_paths:
-            - ${_base_directory}/helm_values/values.yaml
+            - ${_base_directory}/helm_values/
           input_type: remove
           output_path: .
 
