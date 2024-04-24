@@ -38,17 +38,18 @@ local renderPodCIDRList = {
   },
 };
 
-local cilium_values =
+local cilium_values = std.prune(
   params.cilium_helm_values +
   replaceDeprecatedIPv4PodCIDR +
-  renderPodCIDRList;
+  renderPodCIDRList
+);
 
 local helm_values = {
   opensource: cilium_values,
   enterprise: {
     cilium: cilium_values,
-    'hubble-enterprise': params.hubble_enterprise_helm_values,
-    'hubble-ui': params.hubble_ui_helm_values,
+    'hubble-enterprise': std.prune(params.hubble_enterprise_helm_values),
+    'hubble-ui': std.prune(params.hubble_ui_helm_values),
   },
 };
 
