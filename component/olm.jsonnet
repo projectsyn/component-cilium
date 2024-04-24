@@ -40,18 +40,30 @@ local olmDir =
   else
     error "Unknown release '%s'" % [ params.release ];
 
-local olmFiles = std.filterMap(
-  function(name)
-    // drop hidden files
-    !std.startsWith(name, '.'),
-  function(name) {
-    filename: name,
-    contents: std.parseJson(kap.yaml_load(olmDir + name)),
-  },
-  kap.dir_files_list(olmDir)
+local olmFiles = std.foldl(
+  function(status, file)
+    status {
+      files+: [ file ],
+      has_csv: status.has_csv || (file.contents.kind == 'ClusterServiceVersion'),
+    },
+
+  std.filterMap(
+    function(name)
+      // drop hidden files
+      !std.startsWith(name, '.'),
+    function(name) {
+      filename: name,
+      contents: std.parseJson(kap.yaml_load(olmDir + name)),
+    },
+    kap.dir_files_list(olmDir)
+  ),
+  {
+    files: [],
+    has_csv: false,
+  }
 );
 
-local patchManifests = function(file)
+local patchManifests = function(file, has_csv)
   local hasK8sHost = std.objectHas(helm.cilium_values, 'k8sServiceHost');
   local hasK8sPort = std.objectHas(helm.cilium_values, 'k8sServicePort');
   local metadata_name_map = {
@@ -170,6 +182,12 @@ local patchManifests = function(file)
     file.contents.metadata.namespace == 'cilium'
   ) then
     null
+  else if (
+    !has_csv &&
+    file.contents.kind == 'OperatorGroup' &&
+    file.contents.metadata.namespace == 'cilium'
+  ) then
+    null
   else
     file;
 
@@ -177,7 +195,7 @@ std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
   std.filter(
     function(obj) obj != null,
-    std.map(patchManifests, olmFiles),
+    std.map(function(obj) patchManifests(obj, olmFiles.has_csv), olmFiles.files),
   ),
   {
     '99_cleanup': (import 'cleanup.libsonnet'),
