@@ -75,6 +75,14 @@ parameters:
             cpu: 100m
             memory: 250Mi
 
+    hubble_enterprise_helm_values:
+      enabled: false
+      enterprise:
+        enabled: false
+
+    hubble_ui_helm_values:
+      enabled: false
+
     egress_gateway:
       enabled: false
       policies: {}
@@ -104,8 +112,6 @@ parameters:
       cilium-enterprise:
         source: "<CILIUM-ENTERPRISE-CHART-REPO-URL>" # Configure the Chart repository URL in your global defaults
         version: "1.13.8"
-
-    helm_values: {}
 
     images:
       kubectl:

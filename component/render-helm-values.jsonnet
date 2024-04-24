@@ -47,17 +47,21 @@ local helm_values = {
   opensource: cilium_values,
   enterprise: {
     cilium: cilium_values,
-    'hubble-enterprise': {
-      enabled: false,
-      enterprise: {
-        enabled: false,
-      },
-    },
-    'hubble-ui': {
-      enabled: false,
-    },
+    'hubble-enterprise': params.hubble_enterprise_helm_values,
+    'hubble-ui': params.hubble_ui_helm_values,
   },
 };
+
+local legacy_values =
+  if std.objectHas(params, 'helm_values') then
+    std.trace(
+      'Parameter `helm_values` is deprecated. ' +
+      'Please move your configs to `cilium_helm_values`, ' +
+      '`hubble_enterprise_helm_values` or\n  `hubble_ui_helm_values`.',
+      com.makeMergeable(params.helm_values)
+    )
+  else
+    {};
 
 {
   cilium_values: cilium_values,
@@ -65,5 +69,5 @@ local helm_values = {
     if !std.member([ 'opensource', 'enterprise' ], params.release) then
       error 'Unknown release type "%s". Supported values are "opensource" and "enterprise".' % params.release
     else
-      helm_values[params.release] + com.makeMergeable(params.helm_values),
+      helm_values[params.release] + legacy_values,
 }
