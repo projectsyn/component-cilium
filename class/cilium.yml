@@ -51,6 +51,10 @@ parameters:
             - ${_base_directory}/component/egress-gateway-policies.jsonnet
           input_type: jsonnet
           output_path: ${_instance}/
+        - input_paths:
+            - ${_base_directory}/component/render-helm-values.jsonnet
+          input_type: jsonnet
+          output_path: ${_base_directory}/helm_values/
         - output_path: ${_instance}/01_cilium_helmchart
           input_type: helm
           output_type: yaml
@@ -60,7 +64,12 @@ parameters:
             name: ${cilium:release_name}
             namespace: ${cilium:_namespace}
             api_versions: monitoring.coreos.com/v1
-          helm_values: ${cilium:helm_values}
+          helm_values_files:
+            - ${_base_directory}/helm_values/values.yaml
+        - input_paths:
+            - ${_base_directory}/helm_values/values.yaml
+          input_type: remove
+          output_path: .
 
   kapitan:
     ${_kapitan:${cilium:install_method}}
