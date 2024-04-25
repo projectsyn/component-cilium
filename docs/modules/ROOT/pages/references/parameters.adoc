@@ -198,6 +198,19 @@ See the https://docs.isovalent.com/operations-guide[Isovalent Cilium Enterprise 
 
 This section allows users to configure the [Cilium EgressGatewayPolicy] feature.
 
+[TIP]
+====
+When deploying Cilium OSS, the component will generate `CiliumEgressGatewayPolicy` resources.
+
+When deploying Cilium EE, the component will generate `IsovalentEgressGatewayPolicy` resources.
+====
+
+[NOTE]
+====
+The current implementation (and therefore examples shown here) has only been tested with Cilium EE.
+Please refer to the https://docs.cilium.io/en/stable/network/egress-gateway/#example-policy[example policy in the upstream documentation] for Cilium OSS.
+====
+
 === `egress_gateway.enabled`
 
 [horizontal]
@@ -226,11 +239,14 @@ type:: object
 default:: `{}`
 
 This parameter allows users to deploy `CiliumEgressGatewayPolicy` resources.
-Each key-value pair in the parameter is converted to a `CiliumEgressGatewayPolicy` resource.
+When deploying Cilium EE, the parameter will generate `IsovalentEgressGatewayPolicy` resources instead.
+
+Each key-value pair in the parameter is converted to a `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resource.
 Entries can be removed by setting the value to `null`.
 
 ==== Example
 
+NOTE: The examples are written for Cilium EE's `IsovalentEgressGatewayPolicy` resources.
 
 [source,yaml]
 ----
@@ -261,8 +277,8 @@ The component configuration shown above is rendered as follows by the component:
 
 [source,yaml]
 ----
-apiVersion: cilium.io/v2
-kind: CiliumEgressGatewayPolicy
+apiVersion: isovalent.com/v1
+kind: IsovalentEgressGatewayPolicy
 metadata:
   annotations:
     syn.tools/description: |
@@ -302,9 +318,9 @@ See also the documentation for https://hub.syn.tools/openshift4-nodes/references
 type:: object
 default:: `{}`
 
-This parameter allows users to configure `CiliumEgressGatewayPolicy` resources which assign a single egress IP to a namespace according to the design selected in https://kb.vshn.ch/oc4/explanations/decisions/cloudscale-cilium-egressip.html[Floating egress IPs with Cilium on cloudscale].
+This parameter allows users to configure `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resources which assign a single egress IP to a namespace according to the design selected in https://kb.vshn.ch/oc4/explanations/decisions/cloudscale-cilium-egressip.html[Floating egress IPs with Cilium on cloudscale].
 
-Each entry in the parameter is intended to describe a group of dummy interfaces that can be used in `CiliumEgressGatewayPolicy` resources.
+Each entry in the parameter is intended to describe a group of dummy interfaces that can be used in `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resources.
 The component expects that each value is an object with fields `egress_range`, `node_selector`, `namespace_egress_ips`, and `shadow_ranges`.
 
 NOTE: Field `shadow_ranges` is optional, see the section on <<_shadow_ranges,shadow ranges>> for more details.
@@ -338,7 +354,7 @@ The easiest option to do so is to define a link-local route for `192.0.2.0/25` o
 
 ==== Policy generation
 
-The component will generate one `CiliumEgressGatewayPolicy` for each key-value pair in field `namespace_egress_ips` for each egress range.
+The component will generate one `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) for each key-value pair in field `namespace_egress_ips` for each egress range.
 
 NOTE: The compilation will abort with an error if the same namespace appears in multiple egress range definitions.
 
@@ -387,12 +403,12 @@ egress_ip_ranges:
       infra-bar: 198.51.100.64 - 198.51.100.95
 ----
 
-The configuration shown above results in the two `CiliumEgressGatewayPolicy` resources shown below.
+The configuration shown above results in the two `IsovalentEgressGatewayPolicy` resources shown below.
 
 [source,yaml]
 ----
-apiVersion: cilium.io/v2
-kind: CiliumEgressGatewayPolicy
+apiVersion: isovalent.com/v1
+kind: IsovalentEgressGatewayPolicy
 metadata:
   annotations: <1>
     cilium.syn.tools/description: Generated policy to assign egress IP 192.0.2.61
@@ -417,8 +433,8 @@ spec:
         matchLabels:
           io.kubernetes.pod.namespace: bar <6>
 ---
-apiVersion: cilium.io/v2
-kind: CiliumEgressGatewayPolicy
+apiVersion: isovalent.com/v1
+kind: IsovalentEgressGatewayPolicy
 metadata:
   annotations: <1>
     cilium.syn.tools/description: Generated policy to assign egress IP 192.0.2.32
@@ -445,7 +461,7 @@ spec:
 ----
 <1> The component adds a number of annotations that contain the input data that was used to generate the policy.
 Additionally, the component adds an annotation that gives a human-readable description of the policy.
-<2> The namespace name is used as the name for the `CiliumEgressGatewayPolicy` resource.
+<2> The namespace name is used as the name for the `IsovalentEgressGatewayPolicy` resource.
 <3> The policy always masquerades all traffic from the namespace with the defined egress IP.
 <4> The policy uses the key in `egress_ip_ranges` and the offset of the selected egress IP into the range to generate the name of the dummy interface that's expected to be assigned the shadow IPs that map to the egress IP.
 <5> The policy uses the node selector that's defined in the parameter.
@@ -500,7 +516,7 @@ spec:
 ----
 <1> The contents of the ConfigMap are generated in the format that the systemd unit managed by component `openshift4-nodes` expects.
 <2> The DaemonSet mounts the `eip-shadow-ranges` ConfigMap as a volume.
-<3> The DaemonSet is scheduled using the same node selector that's used for the `CiliumEgressGatewayPolicy` resources
+<3> The DaemonSet is scheduled using the same node selector that's used for the `IsovalentEgressGatewayPolicy` resources
 
 == Example
 
