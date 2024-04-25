@@ -9,7 +9,7 @@ local CiliumEgressGatewayPolicy(name) =
   kube._Object('cilium.io/v2', 'CiliumEgressGatewayPolicy', name) {
     metadata+: {
       annotations+: {
-        'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
+        'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true,Prune=false',
       },
     },
   };
