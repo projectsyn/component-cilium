@@ -70,10 +70,12 @@ local patchManifests = function(file, has_csv)
     opensource: {
       CiliumConfig: 'cilium',
       Deployment: 'cilium-olm',
+      OlmRole: 'cilium-olm',
     },
     enterprise: {
       CiliumConfig: 'cilium-enterprise',
       Deployment: 'cilium-ee-olm',
+      OlmRole: 'cilium-ee-olm',
     },
   };
   local deploymentPatch = {
@@ -188,6 +190,24 @@ local patchManifests = function(file, has_csv)
     file.contents.metadata.namespace == 'cilium'
   ) then
     null
+  else if (
+    file.contents.kind == 'Role' &&
+    file.contents.metadata.namespace == 'cilium' &&
+    file.contents.metadata.name == metadata_name_map[params.release].OlmRole
+  ) then
+    file {
+      contents+: {
+        rules: [
+          if r.apiGroups == [ '' ] && r.resources == [ 'events' ] then
+            r {
+              verbs+: [ 'patch' ],
+            }
+          else
+            r
+          for r in super.rules
+        ],
+      },
+    }
   else
     file;
 
