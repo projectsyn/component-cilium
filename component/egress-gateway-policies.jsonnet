@@ -14,10 +14,24 @@ local CiliumEgressGatewayPolicy(name) =
     },
   };
 
+local IsovalentEgressGatewayPolicy(name) =
+  kube._Object('isovalent.com/v1', 'IsovalentEgressGatewayPolicy', name) {
+    metadata+: {
+      annotations+: {
+        'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
+      },
+    },
+  };
+
+local EgressGatewayPolicy(name) =
+  if params.release == 'enterprise' then
+    IsovalentEgressGatewayPolicy(name)
+  else
+    CiliumEgressGatewayPolicy(name);
 
 local policies = com.generateResources(
   params.egress_gateway.policies,
-  CiliumEgressGatewayPolicy
+  EgressGatewayPolicy
 );
 
 // Convert an IPv4 address in A.B.C.D format that's already been split into an
@@ -101,7 +115,7 @@ local NamespaceEgressPolicy =
             debug: 'start=%d, end=%d, ip=%d' % [ start, end, ip ],
           };
 
-    CiliumEgressGatewayPolicy(namespace) {
+    EgressGatewayPolicy(namespace) {
       metadata+: {
         annotations+: {
           'cilium.syn.tools/description':
