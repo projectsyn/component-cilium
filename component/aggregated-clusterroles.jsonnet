@@ -11,6 +11,17 @@ local ciliumRule(resources) =
     ],
   };
 
+local isovalentRule(resources) =
+  {
+    apiGroups: [ 'isovalent.com' ],
+    resources: resources,
+    verbs: [
+      'get',
+      'list',
+      'watch',
+    ],
+  };
+
 local view = kube.ClusterRole('syn-cilium-view') {
   metadata+: {
     labels+: {
@@ -58,8 +69,9 @@ local cluster_reader = kube.ClusterRole('syn-cilium-cluster-reader') {
   rules: [
     // We could explicitly list and maintain cluster-scoped resources here, but
     // that's overhead we don't really need, so we just grant "view" permissions
-    // on all resources in `cilium.io` to `cluster-reader`.
+    // on all resources in `cilium.io` and `isovalent.com` to `cluster-reader`.
     ciliumRule([ '*' ]),
+    isovalentRule([ '*' ]),
   ],
 };
 

@@ -57,3 +57,11 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+      - isovalent.com
+    resources:
+      - '*'
+    verbs:
+      - get
+      - list
+      - watch
