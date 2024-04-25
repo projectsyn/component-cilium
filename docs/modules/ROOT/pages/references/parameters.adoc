@@ -171,7 +171,28 @@ type:: object
 default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
 
 The configuration values of the underlying Cilium helm chart.
-See https://docs.cilium.io/en/{helm-minor-version}/helm-reference/[Reference].
+See https://docs.cilium.io/en/{helm-minor-version}/helm-reference/[Opensource Cilium documentation] for supported values.
+
+The component will pre-process certain Helm values to allow users to more gracefully upgrade to newer Cilium versions which remove deprecated Helm values.
+
+== `hubble_enterprise_helm_values`
+
+[horizontal]
+type:: object
+default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
+
+The configuration values for the Hubble Enterprise helm chart.
+See the https://docs.isovalent.com/operations-guide[Isovalent Cilium Enterprise documentation] for supported values.
+
+== `hubble_ui_helm_values`
+
+[horizontal]
+type:: object
+default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
+
+The configuration values for the Hubble UI helm chart.
+See the https://docs.isovalent.com/operations-guide[Isovalent Cilium Enterprise documentation] for supported values.
+
 
 == `egress_gateway`
 
@@ -480,18 +501,6 @@ spec:
 <1> The contents of the ConfigMap are generated in the format that the systemd unit managed by component `openshift4-nodes` expects.
 <2> The DaemonSet mounts the `eip-shadow-ranges` ConfigMap as a volume.
 <3> The DaemonSet is scheduled using the same node selector that's used for the `CiliumEgressGatewayPolicy` resources
-
-== `helm_values`
-
-[horizontal]
-type:: object
-
-The final merged Helm values provided to Helm when rendering the chart.
-This parameter is configured dynamically to match the expected structure for Helm chart parameters for the opensource and enterprise charts.
-
-When the enterprise chart is used, the actual Cilium configuration is nested under key `cilium` in the Helm values and additional top-level keys exist to configure the Cilium Enterprise components.
-Users should prefer to configure Cilium itself through parameter `cilium_helm_values`.
-
 
 == Example
 

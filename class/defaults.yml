@@ -29,7 +29,8 @@ parameters:
         mode: cluster-pool
         operator:
           clusterPoolIPv4MaskSize: "23"
-          clusterPoolIPv4PodCIDR: 10.128.0.0/14
+          clusterPoolIPv4PodCIDRList:
+            - 10.128.0.0/14
       kubeProxyReplacement: partial
       sessionAffinity: true
       socketLB:
@@ -74,6 +75,14 @@ parameters:
             cpu: 100m
             memory: 250Mi
 
+    hubble_enterprise_helm_values:
+      enabled: false
+      enterprise:
+        enabled: false
+
+    hubble_ui_helm_values:
+      enabled: false
+
     egress_gateway:
       enabled: false
       policies: {}
@@ -103,21 +112,6 @@ parameters:
       cilium-enterprise:
         source: "<CILIUM-ENTERPRISE-CHART-REPO-URL>" # Configure the Chart repository URL in your global defaults
         version: "1.13.8"
-
-    =_helm_values:
-      opensource: ${cilium:cilium_helm_values}
-
-      enterprise:
-        cilium: ${cilium:cilium_helm_values}
-        hubble-enterprise:
-          enabled: false
-          enterprise:
-            enabled: false
-        hubble-ui:
-          enabled: false
-
-    helm_values:
-      ${cilium:_helm_values:${cilium:release}}
 
     images:
       kubectl:
