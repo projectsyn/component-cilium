@@ -69,7 +69,7 @@ local legacy_values =
     std.trace(
       'Parameter `helm_values` is deprecated. ' +
       'Please move your configs to `cilium_helm_values`, ' +
-      '`hubble_enterprise_helm_values` or\n  `hubble_ui_helm_values`.',
+      '`hubble_enterprise_helm_values` or `hubble_ui_helm_values`.',
       com.makeMergeable(params.helm_values)
     )
   else
