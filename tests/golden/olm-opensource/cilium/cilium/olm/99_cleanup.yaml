@@ -46,7 +46,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   annotations:
-    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook: PreSync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
   labels:
     name: cleanup-old-clusterserviceversions
@@ -64,7 +64,7 @@ spec:
         - args:
             - |
               kubectl -n cilium get clusterserviceversion -ojson \
-                | jq '.items[] | select(.spec.version | test("^1.13.8[+]") | not) | .metadata.name' \
+                | jq '.items[] | select(.spec.version | test("^1.14.7[+]") | not) | .metadata.name' \
                 | xargs --no-run-if-empty kubectl -n cilium delete clusterserviceversions
           command:
             - sh

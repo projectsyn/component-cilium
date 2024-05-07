@@ -31,7 +31,7 @@ local job = kube.Job(name) {
   metadata+: {
     namespace: namespace,
     annotations+: {
-      'argocd.argoproj.io/hook': 'Sync',
+      'argocd.argoproj.io/hook': 'PreSync',
       'argocd.argoproj.io/hook-delete-policy': 'HookSucceeded',
     },
   },

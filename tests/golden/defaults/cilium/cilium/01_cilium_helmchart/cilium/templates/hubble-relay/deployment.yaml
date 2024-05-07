@@ -37,7 +37,7 @@ spec:
             - serve
           command:
             - hubble-relay
-          image: quay.io/cilium/hubble-relay:v1.13.8@sha256:9e9971ff7a25f9b98810d6c5e623002df740a98bbde58a066b035a31d624846b
+          image: quay.io/cilium/hubble-relay:v1.14.10@sha256:c156c4fc2da520d2876142ea17490440b95431a1be755d2050e72115a495cfd0
           imagePullPolicy: IfNotPresent
           livenessProbe:
             tcpSocket:
@@ -49,6 +49,13 @@ spec:
           readinessProbe:
             tcpSocket:
               port: grpc
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 65532
+            runAsNonRoot: true
+            runAsUser: 65532
           terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
             - mountPath: /etc/hubble-relay
@@ -58,6 +65,8 @@ spec:
         kubernetes.io/os: linux
       priorityClassName: null
       restartPolicy: Always
+      securityContext:
+        fsGroup: 65532
       serviceAccount: hubble-relay
       serviceAccountName: hubble-relay
       terminationGracePeriodSeconds: 1

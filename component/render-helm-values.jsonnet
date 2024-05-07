@@ -47,7 +47,18 @@ local cilium_values = std.prune(
 local helm_values = {
   opensource: cilium_values,
   enterprise: {
-    cilium: cilium_values,
+    cilium: {
+      enterprise: {
+        egressGatewayHA: {
+          // Enable HA egress gateway on Cilium EE by default when the regular
+          // egress gateway is enabled.
+          // we do this before the user-provided values, so users can still
+          // enable the HA egress gateway without enabling the regular egress
+          // gateway.
+          enabled: cilium_values.egressGateway.enabled,
+        },
+      },
+    } + com.makeMergeable(cilium_values),
     'hubble-enterprise': std.prune(params.hubble_enterprise_helm_values),
     'hubble-ui': std.prune(params.hubble_ui_helm_values),
   },
@@ -58,7 +69,7 @@ local legacy_values =
     std.trace(
       'Parameter `helm_values` is deprecated. ' +
       'Please move your configs to `cilium_helm_values`, ' +
-      '`hubble_enterprise_helm_values` or\n  `hubble_ui_helm_values`.',
+      '`hubble_enterprise_helm_values` or `hubble_ui_helm_values`.',
       com.makeMergeable(params.helm_values)
     )
   else
