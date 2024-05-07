@@ -1,4 +1,4 @@
-:helm-minor-version: v1.13
+:helm-minor-version: v1.14
 
 = Parameters
 
@@ -231,7 +231,7 @@ l7Proxy: false
 ----
 
 Notably, the L7 proxy feature is disabled by default when egress gateway policies are enabled.
-This is recommended by the Cilium documentation, see also https://docs.cilium.io/en/v1.13/network/egress-gateway/#incompatibility-with-other-features[the upstream documentation].
+This is recommended by the Cilium documentation, see also https://docs.cilium.io/en/{helm-minor-version}/network/egress-gateway/#incompatibility-with-other-features[the upstream documentation].
 
 For Cilium EE, the component uses Helm value `egressGateway.enabled` for Helm value `enterprise.egressGatewayHA.enabled` by default.
 It's possible to override this by explicitly setting `egressGateway.enabled=false` and `enterprise.egressGatewayHA.enabled=true` in the component's `cilium_helm_values`.
