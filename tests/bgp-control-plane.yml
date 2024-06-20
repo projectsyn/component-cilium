@@ -2,3 +2,43 @@ parameters:
   cilium:
     bgp:
       enabled: true
+      peerings:
+        lb-services:
+          nodeSelector:
+            matchLabels:
+              node-role.kubernetes.io/infra: ''
+          virtualRouters:
+            lbs:
+              localASN: 64512
+              exportPodCIDR: false
+              neighbors:
+                '192.0.2.2/32':
+                  peerASN: 64512
+                '192.0.2.3/32':
+                  peerASN: 64512
+              serviceSelector:
+                matchLabels:
+                  syn.tools/load-balancer-class: cilium
+          spec:
+            virtualRouters:
+              - localASN: 64513
+                neighbors:
+                  - peerAddress: '192.0.2.100/32'
+                    peerASN: 64513
+      loadbalancer_ip_pools:
+        lb-services:
+          cidrs:
+            tn2:
+              cidr: 198.51.100.32/27
+            tn3:
+              start: 203.0.113.10
+              stop: 203.0.113.20
+          serviceSelector:
+            matchLabels:
+              syn.tools/load-balancer-class: cilium
+        lb-services-2:
+          cidrs:
+            tn3:
+              cidr: 203.0.113.32/27
+          spec:
+            enabled: false
