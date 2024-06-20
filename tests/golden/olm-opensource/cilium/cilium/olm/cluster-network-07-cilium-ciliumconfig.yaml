@@ -4,6 +4,9 @@ metadata:
   name: cilium
   namespace: cilium
 spec:
+  bgpControlPlane:
+    secretNamespace:
+      name: cilium
   bpf:
     masquerade: false
   cni:
