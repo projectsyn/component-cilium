@@ -1,0 +1,4 @@
+parameters:
+  cilium:
+    bgp:
+      enabled: true

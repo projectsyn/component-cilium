@@ -1,13 +1,13 @@
 {
   "template": "https://github.com/projectsyn/commodore-component-template.git",
-  "commit": "ea12efff947bce80cf31a3f1ed4412eab40e8b33",
+  "commit": "26ee71e475cca036551c68a6c6b2285fe86139a0",
   "checkout": "main",
   "context": {
     "cookiecutter": {
       "name": "Cilium",
       "slug": "cilium",
       "parameter_key": "cilium",
-      "test_cases": "defaults helm-opensource olm-opensource egress-gateway",
+      "test_cases": "defaults helm-opensource olm-opensource egress-gateway bgp-control-plane",
       "add_lib": "n",
       "add_pp": "n",
       "add_golden": "y",
