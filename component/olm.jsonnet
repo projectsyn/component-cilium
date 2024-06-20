@@ -63,21 +63,22 @@ local olmFiles = std.foldl(
   }
 );
 
+local metadata_name_map = {
+  opensource: {
+    CiliumConfig: 'cilium',
+    Deployment: 'cilium-olm',
+    OlmRole: 'cilium-olm',
+  },
+  enterprise: {
+    CiliumConfig: 'cilium-enterprise',
+    Deployment: 'cilium-ee-olm',
+    OlmRole: 'cilium-ee-olm',
+  },
+};
+
 local patchManifests = function(file, has_csv)
   local hasK8sHost = std.objectHas(helm.cilium_values, 'k8sServiceHost');
   local hasK8sPort = std.objectHas(helm.cilium_values, 'k8sServicePort');
-  local metadata_name_map = {
-    opensource: {
-      CiliumConfig: 'cilium',
-      Deployment: 'cilium-olm',
-      OlmRole: 'cilium-olm',
-    },
-    enterprise: {
-      CiliumConfig: 'cilium-enterprise',
-      Deployment: 'cilium-ee-olm',
-      OlmRole: 'cilium-ee-olm',
-    },
-  };
   local deploymentPatch = {
     spec+: {
       template+: {
@@ -211,6 +212,57 @@ local patchManifests = function(file, has_csv)
   else
     file;
 
+local olm_version =
+  local ver = params.olm.full_version;
+  local verparts = std.split(ver, '.');
+  local parseOrError(val, typ) =
+    local parsed = std.parseJson(val);
+    if std.isNumber(parsed) then
+      parsed
+    else
+      error
+        'Failed to parse %s version "%s" as number' % [
+          typ,
+          val,
+        ];
+  {
+    major: parseOrError(verparts[0], 'major'),
+    minor: parseOrError(verparts[1], 'minor'),
+  };
+
+local kubeSystemSecretRO = [
+  kube.Role(metadata_name_map[params.release].OlmRole) {
+    metadata+: {
+      namespace: 'kube-system',
+    },
+    rules: [
+      {
+        apiGroups: [ '' ],
+        resources: [ 'secrets' ],
+        verbs: [ 'get', 'list', 'watch' ],
+      },
+    ],
+  },
+  kube.RoleBinding(metadata_name_map[params.release].OlmRole) {
+    metadata+: {
+      namespace: 'kube-system',
+    },
+    roleRef: {
+      apiGroup: 'rbac.authorization.k8s.io',
+      kind: 'Role',
+      name: metadata_name_map[params.release].OlmRole,
+    },
+    subjects: [
+      {
+        kind: 'ServiceAccount',
+        namespace: 'cilium',
+        name: metadata_name_map[params.release].OlmRole,
+      },
+    ],
+  },
+];
+
+
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
   std.filter(
@@ -218,6 +270,7 @@ std.foldl(
     std.map(function(obj) patchManifests(obj, olmFiles.has_csv), olmFiles.files),
   ),
   {
+    [if olm_version.minor <= 14 then '98_fixup_bgp_controlpane_rbac']: kubeSystemSecretRO,
     '99_cleanup': (import 'cleanup.libsonnet'),
   }
 )
