@@ -59,7 +59,7 @@ spec:
                   key: debug
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/operator-generic:v1.14.10@sha256:415b7f0bb0e7339c6231d4b9ee74a6a513b2865acfccec884dbc806ecc3dd909
+          image: quay.io/cilium/operator-generic:v1.14.12@sha256:0dd45f29aadeca7b9ef9f42991130ca135e54801c65416bd727add19e4727ba6
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
