@@ -6,6 +6,7 @@ local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
 local helm = import 'render-helm-values.jsonnet';
+local util = import 'util.libsonnet';
 
 local olmDir =
   local prefix = '%s/olm/cilium/cilium-olm/' % inv.parameters._base_directory;
@@ -212,24 +213,6 @@ local patchManifests = function(file, has_csv)
   else
     file;
 
-local olm_version =
-  local ver = params.olm.full_version;
-  local verparts = std.split(ver, '.');
-  local parseOrError(val, typ) =
-    local parsed = std.parseJson(val);
-    if std.isNumber(parsed) then
-      parsed
-    else
-      error
-        'Failed to parse %s version "%s" as number' % [
-          typ,
-          val,
-        ];
-  {
-    major: parseOrError(verparts[0], 'major'),
-    minor: parseOrError(verparts[1], 'minor'),
-  };
-
 local kubeSystemSecretRO = [
   kube.Role(metadata_name_map[params.release].OlmRole) {
     metadata+: {
@@ -262,6 +245,7 @@ local kubeSystemSecretRO = [
   },
 ];
 
+local olm_version = util.parse_version(params.olm.full_version);
 
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
