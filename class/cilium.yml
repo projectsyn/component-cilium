@@ -25,6 +25,7 @@ parameters:
         - input_paths:
             - ${_base_directory}/component/aggregated-clusterroles.jsonnet
             - ${_base_directory}/component/egress-gateway-policies.jsonnet
+            - ${_base_directory}/component/bgp-control-plane.jsonnet
           input_type: jsonnet
           output_path: ${_instance}/
 
@@ -49,6 +50,7 @@ parameters:
         - input_paths:
             - ${_base_directory}/component/aggregated-clusterroles.jsonnet
             - ${_base_directory}/component/egress-gateway-policies.jsonnet
+            - ${_base_directory}/component/bgp-control-plane.jsonnet
           input_type: jsonnet
           output_path: ${_instance}/
         - input_paths:

@@ -1,0 +1,27 @@
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPPeeringPolicy
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    name: lb-services
+  name: lb-services
+spec:
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/infra: ''
+  virtualRouters:
+    - exportPodCIDR: false
+      localASN: 64512
+      neighbors:
+        - peerASN: 64512
+          peerAddress: 192.0.2.2/32
+        - peerASN: 64512
+          peerAddress: 192.0.2.3/32
+      serviceSelector:
+        matchLabels:
+          syn.tools/load-balancer-class: cilium
+    - localASN: 64513
+      neighbors:
+        - peerASN: 64513
+          peerAddress: 192.0.2.100/32

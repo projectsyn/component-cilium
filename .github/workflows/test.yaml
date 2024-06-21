@@ -36,6 +36,7 @@ jobs:
           - helm-opensource
           - olm-opensource
           - egress-gateway
+          - bgp-control-plane
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
@@ -54,6 +55,7 @@ jobs:
           - helm-opensource
           - olm-opensource
           - egress-gateway
+          - bgp-control-plane
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
