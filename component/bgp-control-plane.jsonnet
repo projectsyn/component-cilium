@@ -2,8 +2,22 @@ local com = import 'lib/commodore.libjsonnet';
 local kap = import 'lib/kapitan.libjsonnet';
 local kube = import 'lib/kube.libjsonnet';
 
+local util = import 'util.libsonnet';
+
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
+
+local version = util.parse_version(
+  if params.install_method == 'helm' then
+    local chart = if params.release == 'opensource'
+    then
+      'cilium'
+    else
+      'cilium-enterprise';
+    params.charts[chart].version
+  else
+    params.olm.full_version
+);
 
 local CiliumLoadBalancerIPPool(name) =
   kube._Object('cilium.io/v2alpha1', 'CiliumLoadBalancerIPPool', name) {
@@ -50,7 +64,8 @@ local peerings = com.generateResources(
 local render_ip_pool(name, pool) =
   {
     spec: {
-      cidrs: std.objectValues(pool.cidrs),
+      [if version.minor <= 14 then 'cidrs' else 'blocks']:
+        std.objectValues(pool.blocks),
       serviceSelector: std.get(pool, 'serviceSelector', {}),
     } + com.makeMergeable(std.get(pool, 'spec', {})),
   };

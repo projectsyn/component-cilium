@@ -27,7 +27,7 @@ parameters:
                     peerASN: 64513
       loadbalancer_ip_pools:
         lb-services:
-          cidrs:
+          blocks:
             tn2:
               cidr: 198.51.100.32/27
             tn3:
@@ -37,7 +37,7 @@ parameters:
             matchLabels:
               syn.tools/load-balancer-class: cilium
         lb-services-2:
-          cidrs:
+          blocks:
             tn3:
               cidr: 203.0.113.32/27
           spec:
