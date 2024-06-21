@@ -522,6 +522,71 @@ spec:
 <2> The DaemonSet mounts the `eip-shadow-ranges` ConfigMap as a volume.
 <3> The DaemonSet is scheduled using the same node selector that's used for the `IsovalentEgressGatewayPolicy` resources
 
+== `bgp`
+
+This section allows users to configure the https://docs.cilium.io/en/stable/network/bgp-control-plane/[Cilium BGP control plane].
+
+=== `bgp.enabled`
+
+[horizontal]
+type:: bool
+default:: `false`
+
+Whether to enable the BGP control plane feature in Cilium.
+
+=== `bgp.peerings`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to configure `CiliumBGPPeeringPolicy` resources.
+This resource is used to configure peers for the BGP control plane.
+
+The component expects the contents of this parameter to be key value pairs where the value is another object with field `virtualRouters` and optional fields `nodeSelector` and `spec`.
+The component generates a `CiliumBGPPeeringPolicy` for each entry in the parameter.
+The key of the entry is used as the name of the resulting resource.
+The values of fields `virtualRouters` and `nodeSelector` are processed and used as the base values for fields `spec.virtualRouters` and `spec.nodeSelector` in the resulting resource.
+The value of field `spec` is merged into `spec` of the resource.
+
+Field `virtualRouters` in the parameter entry value is expected to be an object.
+The key of each entry in this field is expected to be a peer address (in CIDR notation, such as `192.0.2.2/32`) and the value of each entry is expected to be a valid entry for `spec.virtualRouters`.
+The key is written into field `peerAddress` of the value to construct the final entry for `spec.virtualRouters`.
+
+See the https://docs.cilium.io/en/stable/network/bgp-control-plane/#ciliumbgppeeringpolicy-crd[upstream documentation] for the full set of supported fields.
+
+[NOTE]
+====
+Make sure to check the upstream documentation for the version of Cilium that you're running.
+The BGP control plane feature is relatively new and sometimes has significant changes between Cilium minor versions.
+====
+
+=== `bgp.loadbalancer_ip_pools`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to configure `CiliumLoadBalancerIPPool` resources.
+This resource is used to configure IP pools which Cilium can use to allocate IPs for services with `type=LoadBalancer`.
+
+The component expects the contents of this parametr to be key value pairs where the value is another object with field `blocks`, and optional fields `serviceSelector` and `spec`.
+The component generates a `CiliumLoadBalancerIPPool` for each entry in the parameter.
+The key of the entry is used as the name of the resulting resource.
+The values of fields `blocks` and `serviceSelector` are processed and used as the base values for fields `spec.blocks` (or `spec.cidrs` in Cilium <= 1.14) and `spec.serviceSelector`.
+The value of field `spec` is merged into `spec` of the resource.
+
+The component expects field `blocks` to be an object whose values are suitable entries for `spec.blocks` (or `spec.cidrs`) of the resulting resource.
+The keys of the object are not used by the component and are only present to allow users to make IP pool configurations more reusable.
+
+See the https://docs.cilium.io/en/stable/network/lb-ipam/[upstream documentation] for the full set of supported fields.
+
+[NOTE]
+====
+Make sure to check the upstream documentation for the version of Cilium that you're running.
+The LoadBalancer IP address management (LB IPAM) feature is under active development and sometimes has significant changes between Cilium minor versions.
+====
+
 == Example
 
 [source,yaml]
