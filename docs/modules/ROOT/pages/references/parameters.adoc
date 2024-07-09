@@ -42,6 +42,17 @@ The open-source version and the enterprise version.
 
 See xref:how-tos/openshift4/upgrade-cilium-oss-to-cilium-enterprise.adoc[Upgrade Cilium OSS to Cilium Enterprise (OpenShift 4)] for upgrading from the OSS version to the enterprise version.
 
+== `kubernetes_version`
+
+[horizontal]
+type:: string
+default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
+
+The Kubernetes version to provide to `helm template` when rendering the Helm chart.
+This parameter has no effect when `install_method` is set to `olm`.
+
+TIP: Set this parameter to `${dynamic_facts:kubernetesVersion:major}.${dynamic_facts:kubernetesVersion.minor}` to use the cluster's reported Kubernetes version when rendering the Helm chart.
+
 == `charts.cilium.source`
 
 [horizontal]

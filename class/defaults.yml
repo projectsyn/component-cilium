@@ -4,6 +4,9 @@ parameters:
     =_namespace: cilium
     release_name: cilium
 
+    # Used when rendering the Helm chart
+    kubernetes_version: "1.27"
+
     # Possible values "olm", "helm"
     install_method: helm
     # Possible values "opensource", "enterprise"
@@ -101,7 +104,7 @@ parameters:
     charts:
       cilium:
         source: https://helm.cilium.io
-        version: "1.14.10"
+        version: "1.15.6"
       cilium-enterprise:
         source: "<CILIUM-ENTERPRISE-CHART-REPO-URL>" # Configure the Chart repository URL in your global defaults
         version: "1.14.9"

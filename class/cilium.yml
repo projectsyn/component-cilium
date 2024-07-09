@@ -68,6 +68,7 @@ parameters:
             name: ${cilium:release_name}
             namespace: ${cilium:_namespace}
             api_versions: monitoring.coreos.com/v1
+            kube_version: ${cilium:kubernetes_version}
           helm_values_files:
             - ${_base_directory}/helm_values/values.yaml
         - input_paths:
