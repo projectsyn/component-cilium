@@ -175,6 +175,13 @@ See https://docs.cilium.io/en/{helm-minor-version}/helm-reference/[Opensource Ci
 
 The component will pre-process certain Helm values to allow users to more gracefully upgrade to newer Cilium versions which remove deprecated Helm values.
 
+[NOTE]
+====
+On OpenShift 4, the component will deploy a Patch which controls whether OpenShift deploys kube-proxy based on the value of `cilium_helm_values.kubeProxyReplacement`.
+If the `kubeProxyReplacement` Helm value is set to `true` or `strict` the component will configure OpenShift to not deploy kube-proxy.
+Otherwise, the component will configure OpenShift to deploy kube-proxy.
+====
+
 == `hubble_enterprise_helm_values`
 
 [horizontal]
