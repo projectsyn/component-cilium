@@ -17,10 +17,6 @@ spec:
     enabled: false
   endpointRoutes:
     enabled: true
-  externalIPs:
-    enabled: true
-  hostPort:
-    enabled: true
   hubble:
     relay:
       enabled: true
@@ -34,12 +30,8 @@ spec:
         - 10.128.0.0/14
   k8sServiceHost: 172.30.0.1
   k8sServicePort: 443
-  kubeProxyReplacement: partial
+  kubeProxyReplacement: 'true'
   l7Proxy: true
-  nodePort:
-    directRoutingDevice: ens+
-    enableHealthCheck: false
-    enabled: true
   operator:
     prometheus:
       enabled: false
@@ -56,6 +48,3 @@ spec:
     enabled: true
     serviceMonitor:
       enabled: true
-  sessionAffinity: true
-  socketLB:
-    enabled: true

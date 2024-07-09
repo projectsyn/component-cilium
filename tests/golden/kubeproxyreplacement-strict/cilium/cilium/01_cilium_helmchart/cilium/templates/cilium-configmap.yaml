@@ -5,7 +5,7 @@ data:
   auto-direct-node-routes: 'false'
   bpf-lb-external-clusterip: 'false'
   bpf-lb-map-max: '65536'
-  bpf-lb-sock: 'true'
+  bpf-lb-sock: 'false'
   bpf-map-dynamic-size-ratio: '0.0025'
   bpf-policy-map-max: '16384'
   bpf-root: /sys/fs/bpf
@@ -21,7 +21,6 @@ data:
   custom-cni-conf: 'false'
   debug: 'false'
   debug-verbose: ''
-  direct-routing-device: ens+
   disable-cnp-status-updates: 'true'
   dnsproxy-enable-transparent-mode: 'true'
   egress-gateway-reconciliation-trigger-interval: 1s
@@ -31,7 +30,7 @@ data:
   enable-bpf-masquerade: 'false'
   enable-endpoint-health-checking: 'true'
   enable-endpoint-routes: 'true'
-  enable-health-check-nodeport: 'false'
+  enable-health-check-nodeport: 'true'
   enable-health-checking: 'true'
   enable-hubble: 'true'
   enable-ipv4: 'true'
@@ -48,7 +47,6 @@ data:
   enable-policy: default
   enable-remote-node-identity: 'true'
   enable-sctp: 'false'
-  enable-session-affinity: 'true'
   enable-svc-source-range-check: 'true'
   enable-vtep: 'false'
   enable-well-known-identities: 'false'
