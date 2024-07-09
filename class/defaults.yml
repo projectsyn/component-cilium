@@ -4,6 +4,9 @@ parameters:
     =_namespace: cilium
     release_name: cilium
 
+    # Used when rendering the Helm chart
+    kubernetes_version: "1.27"
+
     # Possible values "olm", "helm"
     install_method: helm
     # Possible values "opensource", "enterprise"
