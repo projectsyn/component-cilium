@@ -16,6 +16,7 @@ parameters:
 
     cilium_helm_values:
       bgpControlPlane:
+        enabled: ${cilium:bgp:enabled}
         secretNamespace:
           # Ensure that Cilium's BGP control plane is configured to look for
           # peering secrets in the same namespace where Cilium is installed.
@@ -96,6 +97,11 @@ parameters:
       policies: {}
       generate_shadow_ranges_configmap: false
       egress_ip_ranges: {}
+
+    bgp:
+      enabled: false
+      peerings: {}
+      loadbalancer_ip_pools: {}
 
     olm:
       source:

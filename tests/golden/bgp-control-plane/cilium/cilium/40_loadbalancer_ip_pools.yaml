@@ -1,0 +1,30 @@
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    name: lb-services
+  name: lb-services
+spec:
+  cidrs:
+    - cidr: 198.51.100.32/27
+    - start: 203.0.113.10
+      stop: 203.0.113.20
+  serviceSelector:
+    matchLabels:
+      syn.tools/load-balancer-class: cilium
+---
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    name: lb-services-2
+  name: lb-services-2
+spec:
+  cidrs:
+    - cidr: 203.0.113.32/27
+  enabled: false
+  serviceSelector: {}
