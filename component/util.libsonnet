@@ -1,3 +1,8 @@
+local kap = import 'lib/kapitan.libjsonnet';
+
+local inv = kap.inventory();
+local isOpenshift = std.member([ 'openshift4', 'oke' ], inv.parameters.facts.distribution);
+
 local parse_version(ver) =
   local verparts = std.split(ver, '.');
   local parseOrError(val, typ) =
@@ -16,5 +21,6 @@ local parse_version(ver) =
   };
 
 {
+  isOpenshift: isOpenshift,
   parse_version: parse_version,
 }

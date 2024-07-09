@@ -1,4 +1,0 @@
-parameters:
-  cilium:
-    install_method: helm
-    release: enterprise
