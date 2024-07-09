@@ -37,6 +37,7 @@ jobs:
           - olm-opensource
           - egress-gateway
           - bgp-control-plane
+          - kubeproxyreplacement-strict
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
@@ -56,6 +57,7 @@ jobs:
           - olm-opensource
           - egress-gateway
           - bgp-control-plane
+          - kubeproxyreplacement-strict
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}

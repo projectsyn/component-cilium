@@ -1,0 +1,22 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: Patch
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    name: network-cluster-72f42451a05fa70
+  name: network-cluster-72f42451a05fa70
+  namespace: syn-patch-operator
+spec:
+  patches:
+    network-cluster-72f42451a05fa70-patch:
+      patchTemplate: |-
+        "spec":
+          "deployKubeProxy": false
+      patchType: application/merge-patch+json
+      targetObjectRef:
+        apiVersion: operator.openshift.io/v1
+        kind: Network
+        name: cluster
+  serviceAccountRef:
+    name: patch-sa

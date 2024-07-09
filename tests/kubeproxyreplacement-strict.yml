@@ -1,0 +1,18 @@
+parameters:
+  kapitan:
+    dependencies:
+      - type: https
+        source: https://raw.githubusercontent.com/projectsyn/component-patch-operator/v1.2.1/lib/patch-operator.libsonnet
+        output_path: vendor/lib/patch-operator.libsonnet
+
+  facts:
+    distribution: openshift4
+
+  patch_operator:
+    patch_serviceaccount:
+      name: patch-sa
+    namespace: syn-patch-operator
+
+  cilium:
+    cilium_helm_values:
+      kubeProxyReplacement: "true"
