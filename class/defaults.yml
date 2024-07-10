@@ -107,7 +107,7 @@ parameters:
         version: "1.15.6"
       cilium-enterprise:
         source: "<CILIUM-ENTERPRISE-CHART-REPO-URL>" # Configure the Chart repository URL in your global defaults
-        version: "1.14.9"
+        version: "1.15.6"
 
     images:
       kubectl:
