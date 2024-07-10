@@ -9,7 +9,7 @@ spec:
     secretNamespace:
       name: cilium
   bpf:
-    masquerade: false
+    masquerade: true
   cni:
     binPath: /var/lib/cni/bin
     confPath: /var/run/multus/cni/net.d
