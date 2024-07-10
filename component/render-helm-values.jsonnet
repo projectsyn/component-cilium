@@ -38,10 +38,32 @@ local renderPodCIDRList = {
   },
 };
 
+// Ensure that BPF masquerading is enabled when the Egress Gateway (or Egress
+// Gateway HA)feature is enabled.
+local forceBPFMasqueradeEgressGW = {
+  local egressGWHA =
+    std.get(
+      std.get(
+        std.get(self, 'enterprise', {}), 'egressGatewayHA', {}
+      ),
+      'enabled',
+      false
+    ),
+  local cfg = self,
+  bpf+: {
+    [if !super.bpf.masquerade && (cfg.egressGateway.enabled || egressGWHA) then 'masquerade']:
+      std.trace(
+        'Forcing BPF masquerading since Egress Gateway (or Egress Gateway HA) feature is enabled',
+        true
+      ),
+  },
+};
+
 local cilium_values = std.prune(
   params.cilium_helm_values +
   replaceDeprecatedIPv4PodCIDR +
-  renderPodCIDRList
+  renderPodCIDRList +
+  forceBPFMasqueradeEgressGW
 );
 
 local helm_values = {
