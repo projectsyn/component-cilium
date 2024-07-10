@@ -53,7 +53,7 @@ parameters:
       egressGateway:
         enabled: ${cilium:egress_gateway:enabled}
       bpf:
-        masquerade: ${cilium:egress_gateway:enabled}
+        masquerade: true
       l7Proxy: ${cilium:_egressgw_l7proxy:${cilium:egress_gateway:enabled}}
       prometheus:
         enabled: true
