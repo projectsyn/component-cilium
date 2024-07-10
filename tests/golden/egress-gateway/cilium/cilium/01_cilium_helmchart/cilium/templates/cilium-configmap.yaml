@@ -34,6 +34,7 @@ data:
   enable-health-check-nodeport: 'true'
   enable-health-checking: 'true'
   enable-hubble: 'true'
+  enable-hubble-open-metrics: 'false'
   enable-ipv4: 'true'
   enable-ipv4-big-tcp: 'false'
   enable-ipv4-egress-gateway: 'true'
@@ -59,6 +60,9 @@ data:
   hubble-export-file-max-backups: '5'
   hubble-export-file-max-size-mb: '10'
   hubble-listen-address: :4244
+  hubble-metrics: httpV2:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
+    drop:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
+  hubble-metrics-server: :9965
   hubble-socket-path: /var/run/cilium/hubble.sock
   identity-allocation-mode: crd
   identity-gc-interval: 15m0s
