@@ -113,6 +113,10 @@ spec:
               hostPort: 9964
               name: envoy-metrics
               protocol: TCP
+            - containerPort: 9965
+              hostPort: 9965
+              name: hubble-metrics
+              protocol: TCP
           readinessProbe:
             failureThreshold: 3
             httpGet:
