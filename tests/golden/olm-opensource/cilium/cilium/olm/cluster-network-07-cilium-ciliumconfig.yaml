@@ -21,6 +21,7 @@ spec:
     metrics:
       enabled:
         - httpV2:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
+        - dns:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
         - drop:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
       serviceMonitor:
         enabled: true
