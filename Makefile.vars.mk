@@ -57,4 +57,4 @@ KUBENT_IMAGE    ?= ghcr.io/doitintl/kube-no-trouble:latest
 KUBENT_DOCKER   ?= $(DOCKER_CMD) $(DOCKER_ARGS) $(root_volume) --entrypoint=/app/kubent $(KUBENT_IMAGE)
 
 instance ?= defaults
-test_instances = tests/defaults.yml tests/helm-opensource.yml tests/olm-opensource.yml tests/egress-gateway.yml tests/bgp-control-plane.yml tests/kubeproxyreplacement-strict.yml
+test_instances = tests/defaults.yml tests/helm-opensource.yml tests/olm-opensource.yml tests/egress-gateway.yml tests/bgp-control-plane.yml tests/kubeproxyreplacement-strict.yml tests/l2-announcement.yml
