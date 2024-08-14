@@ -55,6 +55,8 @@ parameters:
         enabled: ${cilium:egress_gateway:enabled}
       bpf:
         masquerade: true
+      l2announcements:
+        enabled: ${cilium:l2_announcements:enabled}
       l7Proxy: ${cilium:_egressgw_l7proxy:${cilium:egress_gateway:enabled}}
       prometheus:
         enabled: true
@@ -86,6 +88,10 @@ parameters:
       policies: {}
       generate_shadow_ranges_configmap: false
       egress_ip_ranges: {}
+
+    l2_announcements:
+      enabled: false
+      policies: {}
 
     bgp:
       enabled: false

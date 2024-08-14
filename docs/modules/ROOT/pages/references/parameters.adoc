@@ -542,6 +542,87 @@ spec:
 <2> The DaemonSet mounts the `eip-shadow-ranges` ConfigMap as a volume.
 <3> The DaemonSet is scheduled using the same node selector that's used for the `IsovalentEgressGatewayPolicy` resources
 
+
+== `l2_announcements`
+
+This section allows users to configure the [Cilium L2 Announcements / L2 Aware LB] feature.
+
+[NOTE]
+====
+The current implementation (and therefore examples shown here) has only been tested with Cilium EE.
+Please refer to the https://docs.cilium.io/en/stable/network/egress-gateway/#example-policy[example policy in the upstream documentation] for Cilium OSS.
+====
+
+=== `l2_announcements.enabled`
+
+[horizontal]
+type:: boolean
+default:: `false`
+
+This parameter allows users to set all the configurations necessary to enable the l2 announcement policy feature.
+
+[NOTE]
+====
+It is important to adjust the client rate limit when using this feature, due to increased API usage.
+See https://docs.cilium.io/en/latest/network/l2-announcements/#sizing-client-rate-limit[Sizing client rate limit] for sizing guidelines.
+====
+
+[NOTE]
+====
+Kube Proxy replacement mode must be enabled.
+====
+
+==== Example
+
+[source,yaml]
+----
+l2_announcements:
+  enabled: true
+cilium_helm_values:
+  kubeProxyReplacement: true
+  k8sServiceHost: api-int.${openshift:baseDomain}
+  k8sServicePort: "6443"
+  k8sClientRateLimit:
+    qps: 35 <1>
+    burst: 45 <2>
+----
+<1> Setting the base QPS rate.
+<2> The burst QPS should be slightly higher.
+
+=== `l2_announcements.policies`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to deploy `CiliumL2AnnouncementPolicy` resources.
+
+Each key-value pair in the parameter is converted to a `CiliumL2AnnouncementPolicy` resource.
+Entries can be removed by setting the value to `null`.
+
+See https://docs.cilium.io/en/latest/network/l2-announcements/#policies[the upstream documentation] for further explanation.
+
+==== Example
+
+[source,yaml]
+----
+l2_announcements:
+  policies:
+    color_blue:
+      spec:
+        serviceSelector:
+          matchLabels:
+            color: blue
+        nodeSelector:
+          matchExpressions:
+            - key: node-role.kubernetes.io/control-plane
+              operator: DoesNotExist
+        interfaces:
+        - ^eth[0-9]+
+        externalIPs: true
+        loadBalancerIPs: true
+----
+
 == `bgp`
 
 This section allows users to configure the https://docs.cilium.io/en/stable/network/bgp-control-plane/[Cilium BGP control plane].

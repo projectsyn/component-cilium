@@ -38,6 +38,8 @@ spec:
   k8sServiceHost: 172.30.0.1
   k8sServicePort: 443
   kubeProxyReplacement: 'true'
+  l2announcements:
+    enabled: false
   l7Proxy: true
   operator:
     prometheus:
