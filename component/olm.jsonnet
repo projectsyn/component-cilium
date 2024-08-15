@@ -69,11 +69,13 @@ local metadata_name_map = {
     CiliumConfig: 'cilium',
     Deployment: 'cilium-olm',
     OlmRole: 'cilium-olm',
+    OlmClusterRole: 'cilium-cilium-olm',
   },
   enterprise: {
     CiliumConfig: 'cilium-enterprise',
     Deployment: 'cilium-ee-olm',
     OlmRole: 'cilium-ee-olm',
+    OlmClusterRole: 'cilium-cilium-ee-olm',
   },
 };
 
@@ -208,6 +210,19 @@ local patchManifests = function(file, has_csv)
             r
           for r in super.rules
         ],
+      },
+    }
+  else if (
+    file.contents.kind == 'ClusterRole' &&
+    file.contents.metadata.name == metadata_name_map[params.release].OlmClusterRole
+  ) then
+    file {
+      contents+: {
+        rules+: [ {
+          apiGroups: [ 'coordination.k8s.io' ],
+          resources: [ 'leases' ],
+          verbs: [ 'create', 'get', 'update', 'list', 'delete' ],
+        } ],
       },
     }
   else
