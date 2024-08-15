@@ -623,6 +623,15 @@ l2_announcements:
         loadBalancerIPs: true
 ----
 
+=== `l2_announcements.loadbalancer_ip_pools`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+See xref:references/parameters.adoc#_bgp_loadbalancer_ip_pools[BGP LB IP Pool configuration].
+
+
 == `bgp`
 
 This section allows users to configure the https://docs.cilium.io/en/stable/network/bgp-control-plane/[Cilium BGP control plane].

@@ -245,8 +245,6 @@ local kubeSystemSecretRO = [
   },
 ];
 
-local olm_version = util.parse_version(params.olm.full_version);
-
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
   std.filter(
@@ -254,7 +252,7 @@ std.foldl(
     std.map(function(obj) patchManifests(obj, olmFiles.has_csv), olmFiles.files),
   ),
   {
-    [if olm_version.minor <= 14 then '98_fixup_bgp_controlpane_rbac']: kubeSystemSecretRO,
+    [if util.version.minor <= 14 then '98_fixup_bgp_controlpane_rbac']: kubeSystemSecretRO,
     '99_cleanup': (import 'cleanup.libsonnet'),
   }
 )
