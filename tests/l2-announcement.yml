@@ -21,3 +21,14 @@ parameters:
               - ^eth[0-9]+
             externalIPs: true
             loadBalancerIPs: true
+      loadbalancer_ip_pools:
+        lb-services:
+          blocks:
+            tn2:
+              cidr: 198.51.100.32/27
+            tn3:
+              start: 203.0.113.10
+              stop: 203.0.113.20
+          serviceSelector:
+            matchLabels:
+              syn.tools/load-balancer-class: cilium

@@ -7,27 +7,6 @@ local util = import 'util.libsonnet';
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
-local version = util.parse_version(
-  if params.install_method == 'helm' then
-    local chart = if params.release == 'opensource'
-    then
-      'cilium'
-    else
-      'cilium-enterprise';
-    params.charts[chart].version
-  else
-    params.olm.full_version
-);
-
-local CiliumLoadBalancerIPPool(name) =
-  kube._Object('cilium.io/v2alpha1', 'CiliumLoadBalancerIPPool', name) {
-    metadata+: {
-      annotations+: {
-        'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
-      },
-    },
-  };
-
 local CiliumBGPPeeringPolicy(name) =
   kube._Object('cilium.io/v2alpha1', 'CiliumBGPPeeringPolicy', name) {
     metadata+: {
@@ -61,19 +40,7 @@ local peerings = com.generateResources(
   CiliumBGPPeeringPolicy
 );
 
-local render_ip_pool(name, pool) =
-  {
-    spec: {
-      [if version.minor <= 14 then 'cidrs' else 'blocks']:
-        std.objectValues(pool.blocks),
-      serviceSelector: std.get(pool, 'serviceSelector', {}),
-    } + com.makeMergeable(std.get(pool, 'spec', {})),
-  };
-
-local lb_ip_pools = com.generateResources(
-  std.mapWithKey(render_ip_pool, params.bgp.loadbalancer_ip_pools),
-  CiliumLoadBalancerIPPool,
-);
+local lb_ip_pools = util.ipPool(params.bgp.loadbalancer_ip_pools);
 
 {
   [if params.bgp.enabled && std.length(peerings) > 0 then

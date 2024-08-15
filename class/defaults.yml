@@ -95,6 +95,7 @@ parameters:
     l2_announcements:
       enabled: false
       policies: {}
+      loadbalancer_ip_pools: {}
 
     bgp:
       enabled: false
