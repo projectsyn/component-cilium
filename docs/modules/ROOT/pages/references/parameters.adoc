@@ -618,7 +618,7 @@ l2_announcements:
             - key: node-role.kubernetes.io/control-plane
               operator: DoesNotExist
         interfaces:
-        - ^eth[0-9]+
+        - ^ens[0-9]+
         externalIPs: true
         loadBalancerIPs: true
 ----
