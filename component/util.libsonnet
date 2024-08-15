@@ -57,7 +57,7 @@ local render_ip_pool(name, pool) =
     } + com.makeMergeable(std.get(pool, 'spec', {})),
   };
 
-local lb_ip_pools(pools) = com.generateResources(
+local render_ip_pools(pools) = com.generateResources(
   std.mapWithKey(render_ip_pool, pools),
   CiliumLoadBalancerIPPool,
 );
@@ -65,5 +65,5 @@ local lb_ip_pools(pools) = com.generateResources(
 {
   isOpenshift: isOpenshift,
   version: version,
-  ipPool: lb_ip_pools,
+  ipPool: render_ip_pools,
 }
