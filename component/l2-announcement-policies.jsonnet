@@ -21,5 +21,5 @@ local policies = com.generateResources(
 
 {
   [if params.l2_announcements.enabled && std.length(params.l2_announcements.policies) > 0 then
-    '40_l2_announcement_policies']: policies,
+    '50_l2_announcement_policies']: policies,
 }
