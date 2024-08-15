@@ -25,6 +25,7 @@ parameters:
         - input_paths:
             - ${_base_directory}/component/aggregated-clusterroles.jsonnet
             - ${_base_directory}/component/egress-gateway-policies.jsonnet
+            - ${_base_directory}/component/l2-announcement-policies.jsonnet
             - ${_base_directory}/component/bgp-control-plane.jsonnet
             - ${_base_directory}/component/ocp-manage-kube-proxy.jsonnet
           input_type: jsonnet
@@ -51,6 +52,7 @@ parameters:
         - input_paths:
             - ${_base_directory}/component/aggregated-clusterroles.jsonnet
             - ${_base_directory}/component/egress-gateway-policies.jsonnet
+            - ${_base_directory}/component/l2-announcement-policies.jsonnet
             - ${_base_directory}/component/bgp-control-plane.jsonnet
             - ${_base_directory}/component/ocp-manage-kube-proxy.jsonnet
           input_type: jsonnet

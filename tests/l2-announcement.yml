@@ -1,3 +1,23 @@
-# Overwrite parameters here
+parameters:
+  cilium:
+    cilium_helm_values:
+      k8sClientRateLimit:
+        qps: 35
+        burst: 45
 
-# parameters: {...}
+    l2_announcements:
+      enabled: true
+      policies:
+        color_blue:
+          spec:
+            serviceSelector:
+              matchLabels:
+                color: blue
+            nodeSelector:
+              matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: DoesNotExist
+            interfaces:
+              - ^eth[0-9]+
+            externalIPs: true
+            loadBalancerIPs: true
