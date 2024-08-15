@@ -57,6 +57,9 @@ parameters:
         masquerade: true
       l2announcements:
         enabled: ${cilium:l2_announcements:enabled}
+      k8sClientRateLimit:
+        qps: 15
+        burst: 30
       l7Proxy: ${cilium:_egressgw_l7proxy:${cilium:egress_gateway:enabled}}
       prometheus:
         enabled: true

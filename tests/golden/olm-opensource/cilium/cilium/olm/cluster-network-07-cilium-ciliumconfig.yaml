@@ -35,6 +35,9 @@ spec:
       clusterPoolIPv4MaskSize: '23'
       clusterPoolIPv4PodCIDRList:
         - 10.128.0.0/14
+  k8sClientRateLimit:
+    burst: 30
+    qps: 15
   k8sServiceHost: 172.30.0.1
   k8sServicePort: 443
   kubeProxyReplacement: 'true'
