@@ -130,4 +130,4 @@ parameters:
       kubectl:
         registry: docker.io
         image: bitnami/kubectl
-        tag: '1.30.4@sha256:68a21ff34c2a67329faa4d6088272d54d4a4e7a21076b3a435624e45503a17ab'
+        tag: '1.30.4@sha256:4f74249f971f8ca158a03eaa0c8e7741a2a750fe53525dc69497cf23584df04a'
