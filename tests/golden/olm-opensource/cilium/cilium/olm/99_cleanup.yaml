@@ -19,7 +19,8 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  annotations: {}
+  annotations:
+    argocd.argoproj.io/hook: PreSync
   labels:
     name: cleanup-old-clusterserviceversions
   name: cleanup-old-clusterserviceversions

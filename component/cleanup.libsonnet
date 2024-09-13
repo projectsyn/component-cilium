@@ -18,7 +18,12 @@ local role = kube.Role(name) {
 };
 
 local serviceAccount = kube.ServiceAccount(name) {
-  metadata+: { namespace: namespace },
+  metadata+: {
+    namespace: namespace,
+    annotations+: {
+      'argocd.argoproj.io/hook': 'PreSync',
+    },
+  },
 };
 
 local roleBinding = kube.RoleBinding(name) {
