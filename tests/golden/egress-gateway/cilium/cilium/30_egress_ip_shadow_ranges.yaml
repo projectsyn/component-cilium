@@ -37,7 +37,7 @@ spec:
             - -c
             - 'trap : TERM INT; sleep infinity & wait'
           env: []
-          image: docker.io/bitnami/kubectl:1.30.5@sha256:c5402b16f7cbbcbce7ee7704917898dd2a2a7551483425d51c4afd7ad1963bd3
+          image: docker.io/bitnami/kubectl:1.30.5@sha256:793f21a46cd9dff71fb3e2d8bbae0213881b6266a31ced6db0603120c6b86641
           imagePullPolicy: IfNotPresent
           name: sleep
           ports: []
