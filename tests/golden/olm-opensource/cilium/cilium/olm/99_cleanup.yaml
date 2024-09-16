@@ -1,7 +1,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  annotations: {}
+  annotations:
+    argocd.argoproj.io/hook: PreSync
   labels:
     name: cleanup-old-clusterserviceversions
   name: cleanup-old-clusterserviceversions
@@ -19,7 +20,8 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  annotations: {}
+  annotations:
+    argocd.argoproj.io/hook: PreSync
   labels:
     name: cleanup-old-clusterserviceversions
   name: cleanup-old-clusterserviceversions
@@ -28,7 +30,8 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  annotations: {}
+  annotations:
+    argocd.argoproj.io/hook: PreSync
   labels:
     name: cleanup-old-clusterserviceversions
   name: cleanup-old-clusterserviceversions
