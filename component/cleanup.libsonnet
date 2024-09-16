@@ -7,7 +7,12 @@ local name = 'cleanup-old-clusterserviceversions';
 local namespace = params._namespace;
 
 local role = kube.Role(name) {
-  metadata+: { namespace: namespace },
+  metadata+: {
+    namespace: namespace,
+    annotations+: {
+      'argocd.argoproj.io/hook': 'PreSync',
+    },
+  },
   rules: [
     {
       apiGroups: [ 'operators.coreos.com' ],
@@ -27,7 +32,12 @@ local serviceAccount = kube.ServiceAccount(name) {
 };
 
 local roleBinding = kube.RoleBinding(name) {
-  metadata+: { namespace: namespace },
+  metadata+: {
+    namespace: namespace,
+    annotations+: {
+      'argocd.argoproj.io/hook': 'PreSync',
+    },
+  },
   subjects_: [ serviceAccount ],
   roleRef_: role,
 };
