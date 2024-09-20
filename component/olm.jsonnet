@@ -202,7 +202,11 @@ local patchManifests = function(file, has_csv)
     file {
       contents+: {
         rules: [
-          if r.apiGroups == [ '' ] && r.resources == [ 'events' ] then
+          if
+            r.apiGroups == [ '' ]
+            && r.resources == [ 'events' ]
+            && !std.member(r.verbs, 'patch')
+          then
             r {
               verbs+: [ 'patch' ],
             }
