@@ -59,7 +59,7 @@ spec:
                   key: debug
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/operator-generic:v1.15.6@sha256:5789f0935eef96ad571e4f5565a8800d3a8fbb05265cf6909300cd82fd513c3d
+          image: quay.io/cilium/operator-generic:v1.15.10@sha256:2f49dca6f9692e317601ae8b5bad7d2dc50cedad38cc8d410db14c1fc57719e4
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -98,7 +98,6 @@ spec:
         kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       restartPolicy: Always
-      serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
       tolerations:
         - operator: Exists
