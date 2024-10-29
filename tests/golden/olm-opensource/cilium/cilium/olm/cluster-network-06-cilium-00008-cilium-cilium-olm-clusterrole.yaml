@@ -43,3 +43,28 @@ rules:
       - update
       - list
       - delete
+  - apiGroups:
+      - ''
+    resources:
+      - secrets
+    verbs:
+      - create
+  - apiGroups:
+      - ''
+    resourceNames:
+      - hubble-server-certs
+      - hubble-relay-client-certs
+      - hubble-relay-server-certs
+    resources:
+      - secrets
+    verbs:
+      - update
+  - apiGroups:
+      - ''
+    resourceNames:
+      - cilium-ca
+    resources:
+      - secrets
+    verbs:
+      - get
+      - update
