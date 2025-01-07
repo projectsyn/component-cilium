@@ -15,7 +15,7 @@ parameters:
         - input_paths:
             - ${_base_directory}/component/app.jsonnet
           input_type: jsonnet
-          output_path: apps/
+          output_path: .
 
         - input_paths:
             - ${_base_directory}/component/olm.jsonnet
@@ -43,7 +43,7 @@ parameters:
         - input_paths:
             - ${_base_directory}/component/app.jsonnet
           input_type: jsonnet
-          output_path: apps/
+          output_path: .
 
         - input_paths:
             - ${_base_directory}/component/helm-namespace.jsonnet

@@ -5,6 +5,10 @@ local argocd = import 'lib/argocd.libjsonnet';
 
 local app = argocd.App('cilium', params._namespace);
 
+local appPath =
+  local project = std.get(std.get(app, 'spec', {}), 'project', 'syn');
+  if project == 'syn' then 'apps' else 'apps-%s' % project;
+
 {
-  cilium: app,
+  ['%s/cilium' % appPath]: app,
 }

@@ -1,6 +1,7 @@
 parameters:
   cilium:
-    =_metadata: {}
+    =_metadata:
+      multi_tenant: true
     =_namespace: cilium
     release_name: cilium
 
