@@ -213,6 +213,24 @@ local patchManifests = function(file, has_csv)
           else
             r
           for r in super.rules
+        ] + [
+          // Grant OLM operator permission to manage cert-manager certificate
+          // resources. This is required when setting `method: certmanager`
+          // for some Cilium TLS configuration (e.g. Hubble TLS).
+          {
+            apiGroups: [ 'cert-manager.io' ],
+            resources: [ 'certificates' ],
+            verbs: [
+              'create',
+              'delete',
+              'deletecollection',
+              'get',
+              'list',
+              'patch',
+              'update',
+              'watch',
+            ],
+          },
         ],
       },
     }
