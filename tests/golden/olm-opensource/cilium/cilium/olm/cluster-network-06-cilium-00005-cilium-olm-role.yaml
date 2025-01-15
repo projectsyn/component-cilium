@@ -65,3 +65,16 @@ rules:
       - servicemonitors
     verbs:
       - '*'
+  - apiGroups:
+      - cert-manager.io
+    resources:
+      - certificates
+    verbs:
+      - create
+      - delete
+      - deletecollection
+      - get
+      - list
+      - patch
+      - update
+      - watch
