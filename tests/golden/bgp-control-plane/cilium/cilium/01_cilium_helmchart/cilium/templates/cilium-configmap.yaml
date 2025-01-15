@@ -24,6 +24,7 @@ data:
   debug: 'false'
   debug-verbose: ''
   dnsproxy-enable-transparent-mode: 'true'
+  dnsproxy-socket-linger-timeout: '10'
   egress-gateway-reconciliation-trigger-interval: 1s
   enable-auto-protect-node-port-range: 'true'
   enable-bgp-control-plane: 'true'
