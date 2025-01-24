@@ -17,6 +17,8 @@ spec:
     enabled: false
   endpointRoutes:
     enabled: true
+  envoy:
+    enabled: false
   hubble:
     metrics:
       enabled:
@@ -32,7 +34,7 @@ spec:
   ipam:
     mode: cluster-pool
     operator:
-      clusterPoolIPv4MaskSize: '23'
+      clusterPoolIPv4MaskSize: 23
       clusterPoolIPv4PodCIDRList:
         - 10.128.0.0/14
   k8sClientRateLimit:
