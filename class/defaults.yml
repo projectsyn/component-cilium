@@ -51,7 +51,7 @@ parameters:
       ipam:
         mode: cluster-pool
         operator:
-          clusterPoolIPv4MaskSize: "23"
+          clusterPoolIPv4MaskSize: 23
           clusterPoolIPv4PodCIDRList:
             - 10.128.0.0/14
       kubeProxyReplacement: "true"
@@ -125,10 +125,10 @@ parameters:
     charts:
       cilium:
         source: https://helm.cilium.io
-        version: "1.15.6"
+        version: "1.16.4"
       cilium-enterprise:
         source: "<CILIUM-ENTERPRISE-CHART-REPO-URL>" # Configure the Chart repository URL in your global defaults
-        version: "1.15.6"
+        version: "1.16.4"
 
     images:
       kubectl:
