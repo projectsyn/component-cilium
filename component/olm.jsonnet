@@ -128,6 +128,25 @@ local patchManifests = function(file, has_csv)
       },
     },
   };
+  local clusterPoolIPv4MaskSizePatch =
+    local patch = {
+      ipam+: if util.version.minor >= 16 then {
+        operator+: {
+          clusterPoolIPv4MaskSize:
+            if std.isString(super.clusterPoolIPv4MaskSize) then
+              std.trace(
+                '`clusterPoolIPv4MaskSize` must be an integer for Cilium >= 1.16, converting from string',
+                std.parseInt(super.clusterPoolIPv4MaskSize)
+              )
+            else
+              super.clusterPoolIPv4MaskSize,
+        },
+      } else {},
+    };
+    if params.release == 'enterprise' then {
+      cilium+: patch,
+    } else
+      patch;
   if (
     file.contents.kind == 'CiliumConfig'
     && file.contents.metadata.name == metadata_name_map[params.release].CiliumConfig
@@ -135,7 +154,7 @@ local patchManifests = function(file, has_csv)
   ) then
     file {
       contents+: {
-        spec: helm.values,
+        spec: helm.values + clusterPoolIPv4MaskSizePatch,
       },
     }
   else if (
