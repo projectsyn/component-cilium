@@ -4,6 +4,12 @@ parameters:
     opensource: cilium
     enterprise: cilium-enterprise
   =_kapitan:
+    jsonnet_input_paths:
+      - ${_base_directory}/component/aggregated-clusterroles.jsonnet
+      - ${_base_directory}/component/egress-gateway-policies.jsonnet
+      - ${_base_directory}/component/l2-announcement-policies.jsonnet
+      - ${_base_directory}/component/bgp-control-plane.jsonnet
+      - ${_base_directory}/component/ocp-manage-kube-proxy.jsonnet
     olm:
       dependencies:
         - type: https
@@ -22,12 +28,7 @@ parameters:
           input_type: jsonnet
           output_path: ${_instance}/olm/
 
-        - input_paths:
-            - ${_base_directory}/component/aggregated-clusterroles.jsonnet
-            - ${_base_directory}/component/egress-gateway-policies.jsonnet
-            - ${_base_directory}/component/l2-announcement-policies.jsonnet
-            - ${_base_directory}/component/bgp-control-plane.jsonnet
-            - ${_base_directory}/component/ocp-manage-kube-proxy.jsonnet
+        - input_paths: ${_kapitan:jsonnet_input_paths}
           input_type: jsonnet
           output_path: ${_instance}/
 
@@ -49,12 +50,7 @@ parameters:
             - ${_base_directory}/component/helm-namespace.jsonnet
           input_type: jsonnet
           output_path: ${_instance}/01_cilium_helmchart
-        - input_paths:
-            - ${_base_directory}/component/aggregated-clusterroles.jsonnet
-            - ${_base_directory}/component/egress-gateway-policies.jsonnet
-            - ${_base_directory}/component/l2-announcement-policies.jsonnet
-            - ${_base_directory}/component/bgp-control-plane.jsonnet
-            - ${_base_directory}/component/ocp-manage-kube-proxy.jsonnet
+        - input_paths: ${_kapitan:jsonnet_input_paths}
           input_type: jsonnet
           output_path: ${_instance}/
         - input_paths:
