@@ -1,0 +1,35 @@
+# Overwrite parameters here
+
+parameters:
+  facts:
+    distribution: openshift4
+
+  kapitan:
+    dependencies:
+      - type: https
+        source: https://raw.githubusercontent.com/projectsyn/component-patch-operator/v1.2.1/lib/patch-operator.libsonnet
+        output_path: vendor/lib/patch-operator.libsonnet
+
+  patch_operator:
+    patch_serviceaccount:
+      name: patch-sa
+    namespace: syn-patch-operator
+
+  cilium:
+    install_method: olm
+    cilium_helm_values:
+      clustermesh:
+        config:
+          enabled: true
+        clusters:
+          - name: c-other-cluster-1234
+            ips:
+              - 198.51.100.20
+            port: 2379
+        useAPIServer: true
+        apiserver:
+          service:
+            type: LoadBalancer
+            loadBalancerClass: io.cilium/l2-announcer
+            annotations:
+              lbipam.cilium.io/ips: 192.0.2.20

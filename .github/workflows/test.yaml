@@ -39,6 +39,7 @@ jobs:
           - bgp-control-plane
           - kubeproxyreplacement-strict
           - l2-announcement
+          - clustermesh
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
@@ -60,6 +61,7 @@ jobs:
           - bgp-control-plane
           - kubeproxyreplacement-strict
           - l2-announcement
+          - clustermesh
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
