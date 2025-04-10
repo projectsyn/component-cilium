@@ -1,0 +1,127 @@
+= CiliumClustermeshRemoteClusterNotReady
+
+include::partial$runbooks/contribution_note.adoc[]
+
+== icon:glasses[] Overview
+
+This alert fires if a remote cluster is not reachable from a node for 10 minutes or longer.
+This usually indicates one of the following two:
+
+. A local issue on the node prevents the Cilium agent to connect to the remote cluster or the cluster mesh API server
+. The remote cluster's cluster mesh API server is not available
+. There are network issues preventing cluster mesh connectivity
+
+TIP: Depending on the network configuration, there may be static routes on each node for the remote cluster's cluster mesh API server.
+
+NOTE: When using KVStoreMesh, the agents on the cluster connect to the *local* cache of the remote cluster mesh API server.
+
+== icon:bug[] Steps for debugging
+
+NOTE: The steps in this section assume that your current Kubernetes context points to the source cluster.
+
+TIP: This section assumes that you're running cluster mesh with the cluster mesh API server enabled.
+
+=== Prerequisites
+
+* `cilium` CLI, install from https://github.com/cilium/cilium-cli[icon:github[] cilium/cilium-cli]
+
+=== Identifying the root cause
+
+First, check the source cluster's overall cluster mesh status
+
+[source,bash]
+----
+cilium -n cilium clustermesh status --as=cluster-admin <1>
+----
+<1> `--as=cluster-admin` is required on VSHN Managed OpenShift, may need to be left out on other clusters.
+
+If the output indicates that all nodes are unable to connect to the remote cluster's clustermesh API, it's likely that the issue is either on the remote cluster, or in the network between the clusters.
+
+If the output indicates that only a few source nodes are affected, it's likely that the issue is in the Cilium agent or the routing configuration of the nodes.
+
+=== Investigating cluster mesh API
+
+The cluster mesh API runs in the `cilium` namespace as deployment `clustermesh-apiserver`.
+Check that the pod runs and check the logs for errors with
+
+[source,bash]
+----
+kubectl -n cilium get pods -l app.kubernetes.io/name=clustermesh-apiserver
+kubectl -n cilium logs deploy/clustermesh-apiserver --all-containers
+----
+
+=== Checking connectivity from a Cilium agent pod
+
+If the `cilium clustermesh status` output indicates that only a few nodes are affected, you can run a more detailed check from the nodes' agent pods.
+In the output of these command, you should see whether the agent can connect to the cluster mesh API and whether the clustermesh certificates are still valid.
+
+[source,bash]
+----
+NODE=<node name of affected node> <1>
+AGENT_POD=$(kubectl -n cilium get pods --field-selector=spec.nodeName=$NODE \
+  -l app.kubernetes.io/name=cilium-agent -oname)
+
+kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium status <2>
+kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium troubleshoot clustermesh <3>
+----
+<1> Set this to the name of an affected node's `Node` object
+<2> Show a summary of the Cilium agent status.
+You should see in the output of this command whether the agent can't reach one or more of the remote cluster's nodes.
+<3> This command will show connection details to the remote cluster's cluster mesh API server or the local cache in case you're using KVStoreMesh.
+
+TIP: `--as=cluster-admin` may need to be left out on some clusters.
+
+If the output of `cilium troubleshoot clustermesh` refers to the local cluster's cluster mesh API server, it's likely that you're using KVStoreMesh.
+In that case you can check the KVStoreMesh connection to the remote cluster mesh API server in the `clustermesh-apiserver` deployment:
+
+[source,bash]
+----
+kubectl -n cilium --as=cluster-admin exec -it deploy/clustermesh-apiserver -c kvstoremesh -- \
+   clustermesh-apiserver kvstoremesh-dbg status <1>
+
+kubectl exec -it -n cilium --as=cluster-admin deploy/clustermesh-apiserver -c kvstoremesh -- \
+  clustermesh-apiserver kvstoremesh-dbg troubleshoot <2>
+----
+<1> Show a connection summary of the KVStoreMesh
+<2> Show connection details of the KVStoreMesh
+
+You can also run `cilium-health status --probe` in the agent pod to actively probe the node to node connectivity:
+
+[source,bash]
+----
+kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium-health status --probe
+----
+
+=== Checking node routing tables and connectivity
+
+For setups which use static routes to make the nodes of the clusters participating in the cluster mesh reachable from each other, you can check the routing tables on the host and verify connectivity with `ping`.
+
+.OpenShift 4
+[source,bash]
+----
+NODE=<node name of affected node>
+REMOTE_NODE=<ip of a node in the remote cluster>
+oc -n syn-debug-nodes debug node/${NODE} --as=cluster-admin -- chroot /host ip r
+oc -n syn-debug-nodes debug node/${NODE} --as=cluster-admin -- chroot /host ping -c4 ${REMOTE_NODE}
+----
+
+.Other K8s
+[source,bash]
+----
+DEBUG_IMAGE=ghcr.io/digitalocean-packages/doks-debug:latest <1>
+NODE=<node name of affected node>
+REMOTE_NODE=<ip of a node in the remote cluster>
+kubectl debug node/${NODE} -it --image=${DEBUG_IMAGE} -- ip r
+kubectl debug node/${NODE} -it --image=${DEBUG_IMAGE} -- ping -c4 ${REMOTE_NODE} <2>
+----
+<1> We're using the DigitalOcean `doks-debug` image, which comes with a bunch of common tools installed.
+See https://github.com/digitalocean/doks-debug[icon:github[] digitalocean/doks-debug] for details.
+<2> This command hasn't been tested yet, it's possible that your cluster configuration will not allow `ping` in node debug containers.
+
+== icon:book[] Upstream documentation
+
+* https://docs.cilium.io/en/latest/network/clustermesh/intro/[Cilium OSS --  Cluster Mesh documetation]
+* https://docs.isovalent.com/configuration-guide/cluster-mesh/troubleshooting.html[Cilium OSS --  Cluster Mesh Troubleshooting]
+* https://docs.cilium.io/en/stable/operations/troubleshooting/#troubleshooting-clustermesh[Cilium OSS -- Troubleshooting Cluster Mesh]
+* https://docs.isovalent.com/configuration-guide/cluster-mesh/operating.html[Cilium Enterprise -- Operating Cluster Mesh]
+* https://docs.isovalent.com/configuration-guide/cluster-mesh/troubleshooting.html[Cilium Enterprise -- Troubleshooting Cluster Mesh]

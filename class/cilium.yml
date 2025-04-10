@@ -10,6 +10,7 @@ parameters:
       - ${_base_directory}/component/l2-announcement-policies.jsonnet
       - ${_base_directory}/component/bgp-control-plane.jsonnet
       - ${_base_directory}/component/ocp-manage-kube-proxy.jsonnet
+      - ${_base_directory}/component/alerts.jsonnet
     olm:
       dependencies:
         - type: https

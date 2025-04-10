@@ -6,3 +6,7 @@
 * xref:how-tos/upgrade-cilium-enterprise.adoc[Upgrade Cilium Enterprise]
 * OpenShift 4
 ** xref:how-tos/openshift4/upgrade-cilium-oss-to-cilium-enterprise.adoc[Upgrade Cilium OSS to Cilium Enterprise]
+
+.Runbooks
+
+* xref:runbooks/CiliumClustermeshRemoteClusterNotReady.adoc[]
