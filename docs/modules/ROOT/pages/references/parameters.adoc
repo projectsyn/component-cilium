@@ -712,6 +712,46 @@ Make sure to check the upstream documentation for the version of Cilium that you
 The LoadBalancer IP address management (LB IPAM) feature is under active development and sometimes has significant changes between Cilium minor versions.
 ====
 
+== `alerts`
+
+This section allows users to configure alerts for Cilium.
+The component expects that an externally-managed Prometheus stack is running on the target cluster.
+For OpenShift 4, the component makes use of the component libraries provided by https://github.com/appuio/component-openshift4-monitoring.git[component `openshift4-monitoring`].
+On other distributions, the component expects that a component library `prom.libsonnet` is available, for example via https://github.com/projectsyn/component-prometheus.git[component `prometheus`].
+
+=== `alerts.ignoreNames`
+
+[horizontal]
+type:: list
+default:: `[]`
+
+Alerts which shouldn't be deployed.
+The list supports removal of entries by prefixing them with `~`.
+
+=== `alerts.patches`
+
+[horizontal]
+type:: dict
+default:: `{}`
+
+Patches for alerts managed by the component.
+The component expects that keys in this object match the name of an alert managed through the component.
+The value of each entry is expected to be a valid partial Prometheus rule definition.
+
+=== `alerts.additionalRules`
+
+[horizontal]
+type:: dict
+default:: `{}`
+
+This parameter allows users to configure additional Prometheus recording and alerting rules.
+The component expects that keys of this object are prefixed with either `alert:` or `record:` and will use these prefixes to create alerting or recording rules.
+The component will take the suffix of the key as the alerting or recording rule name and will set field `alert` or `record` of the rule to the suffix.
+The value of each entry will be used as the base Prometheus rule in which the `alert` or `record` field will be injected.
+
+NOTE: Parameters `alerts.ignoreNames` and `alerts.patches` are also applied to alerts defined through this parameter.
+
+
 == Example
 
 [source,yaml]

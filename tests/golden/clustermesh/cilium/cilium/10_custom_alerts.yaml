@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-custom
+  name: cilium-custom
+spec:
+  groups:
+    - name: cilium-user.rules
+      rules:
+        - alert: FooTesting
+          annotations:
+            summary: footest
+          expr: vector(1)
+          labels:
+            syn: 'true'
+            syn_component: cilium
