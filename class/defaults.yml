@@ -94,6 +94,7 @@ parameters:
       enabled: false
       policies: {}
       generate_shadow_ranges_configmap: false
+      shadow_ranges_daemonset_node_selector: {}
       egress_ip_ranges: {}
 
     l2_announcements:

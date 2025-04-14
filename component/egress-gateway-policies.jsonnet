@@ -287,7 +287,7 @@ local egress_ip_shadow_ranges =
     {}
   );
 
-  local daemonsets = [
+  local make_daemonset(ds_configs, sel_hash) =
     kube.DaemonSet(
       'eip-shadow-ranges-%s' % std.substr(
         sel_hash, std.length(sel_hash) - 5, 5
@@ -318,7 +318,7 @@ local egress_ip_shadow_ranges =
                 },
               },
             },
-            nodeSelector: daemonset_configs[sel_hash],
+            nodeSelector: ds_configs[sel_hash],
             volumes_: {
               shadow_ranges: {
                 configMap: {
@@ -329,9 +329,23 @@ local egress_ip_shadow_ranges =
           },
         },
       },
-    }
-    for sel_hash in std.objectFields(daemonset_configs)
-  ];
+    };
+
+  local daemonsets =
+    if std.length(params.egress_gateway.shadow_ranges_daemonset_node_selector) == 0 then [
+      make_daemonset(daemonset_configs, sel_hash)
+      for sel_hash in std.objectFields(daemonset_configs)
+    ] else
+      local sel_hash =
+        std.md5(std.manifestJsonMinified(
+          params.egress_gateway.shadow_ranges_daemonset_node_selector
+        ));
+      [
+        make_daemonset({
+          [sel_hash]:
+            params.egress_gateway.shadow_ranges_daemonset_node_selector,
+        }, sel_hash),
+      ];
 
   [ configmap ] + daemonsets;
 
