@@ -336,6 +336,21 @@ Additionally, the component will deploy one or more DaemonSets (depending on the
 
 See also the documentation for https://hub.syn.tools/openshift4-nodes/references/parameters.html#_egressinterfaces[parameter `egressInterfaces` in openshift4-nodes].
 
+=== `egress_gateway.shadow_ranges_daemonset_node_selector`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter can be set when the DaemonSet that mounts the shadow ranges ConfigMap (see parameter `generate_shadow_ranges_configmap`) should run on a larger set of nodes than the ones indicated by each `egress_ip_ranges` entry's `node_selector`.
+
+The contents of this parameter are used as-is for the DaemonSet's `spec.template.spec.nodeSelector`.
+
+An example configuration where this parameter is useful is when only a subset of nodes in an OpenShift machine config pool are designated egress nodes with an associated shadow range.
+In this case, we must ensure that all nodes in the machine config pool can read the shadow ranges ConfigMap, but at the same time we must ensure that policies generated via `egress_ip_ranges.<group>.namespace_egress_ips` only select the nodes that have a shadow range assigned.
+
+NOTE: When setting this parameter, it's the user's responsibility to ensure that the provided DaemonSet node selector selects all nodes that are designated egress nodes.
+
 === `egress_gateway.egress_ip_ranges`
 
 [horizontal]
