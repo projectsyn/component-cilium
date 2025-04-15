@@ -12,11 +12,11 @@ spec:
         - alert: CiliumClustermeshRemoteClusterNotReady
           annotations:
             description: |
-              Remote cluster ${{ labels.target_cluster }} has been unreachable from
-              ${{ labels.source_node_name }} on cluster ${{ labels.source_cluster }} for the
+              Remote cluster {{ $labels.target_cluster }} has been unreachable from
+              {{ $labels.source_node_name }} on cluster {{ $labels.source_cluster }} for the
               last 10m.
-            message: Remote cluster ${{ labels.target_cluster }} not reachable from
-              ${{ labels.source_node_name }}
+            message: Remote cluster {{ $labels.target_cluster }} not reachable from
+              {{ $labels.source_node_name }}
             runbook_url: https://hub.syn.tools/cilium/runbooks/CiliumClustermeshRemoteClusterNotReady.html
           expr: cilium_clustermesh_remote_cluster_readiness_status == 0
           for: 10m

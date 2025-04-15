@@ -32,10 +32,10 @@ local clustermesh_group = {
       annotations: {
         runbook_url:
           'https://hub.syn.tools/cilium/runbooks/CiliumClustermeshRemoteClusterNotReady.html',
-        message: 'Remote cluster ${{ labels.target_cluster }} not reachable from ${{ labels.source_node_name }}',
+        message: 'Remote cluster {{ $labels.target_cluster }} not reachable from {{ $labels.source_node_name }}',
         description: |||
-          Remote cluster ${{ labels.target_cluster }} has been unreachable from
-          ${{ labels.source_node_name }} on cluster ${{ labels.source_cluster }} for the
+          Remote cluster {{ $labels.target_cluster }} has been unreachable from
+          {{ $labels.source_node_name }} on cluster {{ $labels.source_cluster }} for the
           last %s.
         ||| % this['for'],
       },
