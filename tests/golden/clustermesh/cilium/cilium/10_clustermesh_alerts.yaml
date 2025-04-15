@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-clustermesh
+  name: cilium-clustermesh
+spec:
+  groups:
+    - name: cilium-clustermesh.rules
+      rules:
+        - alert: CiliumClustermeshRemoteClusterNotReady
+          annotations:
+            description: |
+              Remote cluster ${{ labels.target_cluster }} has been unreachable from
+              ${{ labels.source_node_name }} on cluster ${{ labels.source_cluster }} for the
+              last 10m.
+            message: Remote cluster ${{ labels.target_cluster }} not reachable from
+              ${{ labels.source_node_name }}
+            runbook_url: https://hub.syn.tools/cilium/runbooks/CiliumClustermeshRemoteClusterNotReady.html
+          expr: cilium_clustermesh_remote_cluster_readiness_status == 0
+          for: 10m
+          labels:
+            severity: critical
+            syn: 'true'
+            syn_component: cilium

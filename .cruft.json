@@ -7,7 +7,7 @@
       "name": "Cilium",
       "slug": "cilium",
       "parameter_key": "cilium",
-      "test_cases": "defaults helm-opensource olm-opensource egress-gateway bgp-control-plane kubeproxyreplacement-strict l2-announcement",
+      "test_cases": "defaults helm-opensource olm-opensource egress-gateway bgp-control-plane kubeproxyreplacement-strict l2-announcement clustermesh",
       "add_lib": "n",
       "add_pp": "n",
       "add_golden": "y",
@@ -24,7 +24,8 @@
       "github_owner": "projectsyn",
       "github_name": "component-cilium",
       "github_url": "https://github.com/projectsyn/component-cilium",
-      "_template": "https://github.com/projectsyn/commodore-component-template.git"
+      "_template": "https://github.com/projectsyn/commodore-component-template.git",
+      "_commit": "98d16f99766e6c6d97322dbe42e058f0e2bf73d0"
     }
   },
   "directory": null
