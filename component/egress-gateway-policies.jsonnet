@@ -90,8 +90,8 @@ local NamespaceEgressPolicy =
       local start = ipval(range.start);
       local end = ipval(range.end);
       local ip = ipval(egress_ip);
-      if start >= end then
-        error 'Egress IP range for "%s" is empty: %s >= %s' % [
+      if start > end then
+        error 'Egress IP range for "%s" is empty: %s > %s' % [
           interface_prefix,
           range.start,
           range.end,
