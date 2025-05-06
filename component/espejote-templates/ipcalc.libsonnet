@@ -34,7 +34,27 @@ local parse_ip_range(prefix, rangespec) =
       end: range_parts[1],
     };
 
+local format_ipval(val) =
+  assert
+    val >= 0 && val < ipval('255.255.255.255')
+    : '%s not an IPv4 address in decimal' % val;
+
+  local iparr = std.reverse(std.foldl(
+    function(st, i)
+      local arr = st.arr;
+      local rem = st.rem;
+      {
+        arr: arr + [ rem % 256 ],
+        rem: rem / 256,
+      },
+    [ 0, 0, 0, 0 ],
+    { arr: [], rem: val }
+  ).arr);
+
+  std.join('.', std.map(function(v) '%d' % v, iparr));
+
 {
   ipval: ipval,
   parse_ip_range: parse_ip_range,
+  format_ipval: format_ipval,
 }

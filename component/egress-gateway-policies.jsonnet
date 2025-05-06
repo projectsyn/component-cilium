@@ -25,6 +25,7 @@ local egress_ip_policies = std.flattenArrays([
     egw.NamespaceEgressPolicy(
       interface_prefix,
       cfg.egress_range,
+      std.objectValues(std.get(cfg, 'shadow_ranges', [])),
       cfg.node_selector,
       ns_egress_ips[namespace],
       namespace,

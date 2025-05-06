@@ -37,6 +37,7 @@ local NamespaceEgressPolicy =
   function(
     interface_prefix,
     egress_range,
+    shadow_ranges,
     node_selector,
     egress_ip,
     namespace,
@@ -79,6 +80,16 @@ local NamespaceEgressPolicy =
             debug: 'start=%d, end=%d, ip=%d' % [ start, end, ip ],
           };
 
+    local compute_shadow_ip(shadow_range) =
+      local range = ipcalc.parse_ip_range('shadow', shadow_range);
+      local start = ipcalc.ipval(range.start);
+      ipcalc.format_ipval(start + ifindex.value);
+
+    local shadow_ips = [
+      compute_shadow_ip(r)
+      for r in shadow_ranges
+    ];
+
     policy_resource_fn(namespace) {
       metadata+: {
         annotations+: {
@@ -94,6 +105,8 @@ local NamespaceEgressPolicy =
           'cilium.syn.tools/egress-range': egress_range,
           'cilium.syn.tools/source-namespace': namespace,
           'cilium.syn.tools/debug-interface-index': ifindex.debug,
+          [if std.length(shadow_ips) > 0 then 'cilium.syn.tools/shadow-ips']:
+            std.manifestJsonMinified(shadow_ips),
         },
       },
       spec: {
