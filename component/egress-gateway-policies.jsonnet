@@ -2,168 +2,34 @@ local com = import 'lib/commodore.libjsonnet';
 local kap = import 'lib/kapitan.libjsonnet';
 local kube = import 'lib/kube.libjsonnet';
 
+local egw = import 'espejote-templates/egress-gateway.libsonnet';
+local ipcalc = import 'espejote-templates/ipcalc.libsonnet';
+
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
-local CiliumEgressGatewayPolicy(name) =
-  kube._Object('cilium.io/v2', 'CiliumEgressGatewayPolicy', name) {
-    metadata+: {
-      annotations+: {
-        'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true,Prune=false',
-      },
-    },
-  };
-
-local IsovalentEgressGatewayPolicy(name) =
-  kube._Object('isovalent.com/v1', 'IsovalentEgressGatewayPolicy', name) {
-    metadata+: {
-      annotations+: {
-        'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
-      },
-    },
-  };
-
 local EgressGatewayPolicy(name) =
   if params.release == 'enterprise' then
-    IsovalentEgressGatewayPolicy(name)
+    egw.IsovalentEgressGatewayPolicy(name)
   else
-    CiliumEgressGatewayPolicy(name);
+    egw.CiliumEgressGatewayPolicy(name);
 
 local policies = com.generateResources(
   params.egress_gateway.policies,
   EgressGatewayPolicy
 );
 
-// Convert an IPv4 address in A.B.C.D format that's already been split into an
-// array to decimal format according to the formula `A*256^3 + B*256^2 + C*256
-// + D`. The decimal format allows us to make range comparisons and compute
-// offsets into a range.
-// Parameter ip can either be the IP as a string, or already split into an
-// array holding each dotted part.
-local ipval(ip) =
-  local iparr =
-    if std.type(ip) == 'array' then
-      ip
-    else
-      std.split(ip, '.');
-  std.foldl(
-    function(v, p) v * 256 + p,
-    std.map(std.parseInt, iparr),
-    0
-  );
-
-// Extract start and end from the provided range, stripping any
-// whitespace. `prefix` is only used for the error message.
-local parse_ip_range(prefix, rangespec) =
-  local range_parts = std.map(
-    function(s) std.stripChars(s, ' '),
-    std.split(rangespec, '-')
-  );
-  if std.length(range_parts) != 2 then
-    error 'Expected IP range for "%s" in format "192.0.2.32-192.0.2.63",  got %s' % [
-      prefix,
-      rangespec,
-    ]
-  else
-    {
-      start: range_parts[0],
-      end: range_parts[1],
-    };
-
-
-// Per-namespace egress IPs according to the selected design choice in
-// https://kb.vshn.ch/oc4/explanations/decisions/cloudscale-cilium-egressip.html
-// Requires that the shadow IPs are assigned to suitable dummy interfaces on
-// the hosts matching the node selector and that SNAT rules are in place to
-// map the shadow ranges to the public range.
-local NamespaceEgressPolicy =
-  function(interface_prefix, egress_range, node_selector, egress_ip, namespace)
-    // Helper which computes the interface index of the egress IP.
-    // Assumes that the IPs in egress_range are assigned to dummy interfaces
-    // named
-    //
-    //   "<interface_prefix>_<i>"
-    //
-    // where i = 0..length(egress_range) - 1.
-    local ifindex =
-      local range = parse_ip_range(interface_prefix, egress_range);
-      local start = ipval(range.start);
-      local end = ipval(range.end);
-      local ip = ipval(egress_ip);
-      if start > end then
-        error 'Egress IP range for "%s" is empty: %s > %s' % [
-          interface_prefix,
-          range.start,
-          range.end,
-        ]
-      else if start > ip || end < ip then
-        error 'Egress IP for namespace "%s" (%s) outside of configured IP range (%s) for egress range "%s"' % [
-          namespace,
-          egress_ip,
-          egress_range,
-          interface_prefix,
-        ]
-      else
-        local idx = ip - start;
-        local name = '%s_%d' % [ interface_prefix, idx ];
-        if std.length(name) > 15 then
-          error 'Interface name is longer than 15 characters: %s' % [ name ]
-        else
-          {
-            value: idx,
-            ifname: '%s_%d' % [ interface_prefix, idx ],
-            debug: 'start=%d, end=%d, ip=%d' % [ start, end, ip ],
-          };
-
-    EgressGatewayPolicy(namespace) {
-      metadata+: {
-        annotations+: {
-          'cilium.syn.tools/description':
-            'Generated policy to assign egress IP %s in egress range "%s" (%s) to namespace %s.' % [
-              egress_ip,
-              interface_prefix,
-              egress_range,
-              namespace,
-            ],
-          'cilium.syn.tools/egress-ip': egress_ip,
-          'cilium.syn.tools/interface-prefix': interface_prefix,
-          'cilium.syn.tools/egress-range': egress_range,
-          'cilium.syn.tools/source-namespace': namespace,
-          'cilium.syn.tools/debug-interface-index': ifindex.debug,
-        },
-      },
-      spec: {
-        destinationCIDRs: [ '0.0.0.0/0' ],
-        egressGroups: [
-          {
-            nodeSelector: {
-              matchLabels: node_selector,
-            },
-            interface: ifindex.ifname,
-          },
-        ],
-        selectors: [
-          {
-            podSelector: {
-              matchLabels: {
-                'io.kubernetes.pod.namespace': namespace,
-              },
-            },
-          },
-        ],
-      },
-    };
-
 local egress_ip_policies = std.flattenArrays([
   local cfg = params.egress_gateway.egress_ip_ranges[interface_prefix];
   local ns_egress_ips = std.get(cfg, 'namespace_egress_ips', {});
   [
-    NamespaceEgressPolicy(
+    egw.NamespaceEgressPolicy(
       interface_prefix,
       cfg.egress_range,
       cfg.node_selector,
       ns_egress_ips[namespace],
       namespace,
+      EgressGatewayPolicy,
     )
     for namespace in std.objectFields(ns_egress_ips)
     if ns_egress_ips[namespace] != null
@@ -178,13 +44,13 @@ local egress_ip_shadow_ranges =
   // function raises an error if the provided range spans multiple /24.
   local extract_prefix(prefix, hostname, range) =
     // find <start_prefix>.0
-    local start0 = ipval(std.mapWithIndex(
+    local start0 = ipcalc.ipval(std.mapWithIndex(
       function(idx, elem)
         if idx < 3 then elem else '0',
       std.split(range.start, '.'),
     ));
     // find <end_prefix>.255
-    local end255 = ipval(std.mapWithIndex(
+    local end255 = ipcalc.ipval(std.mapWithIndex(
       function(idx, elem)
         if idx < 3 then elem else '255',
       std.split(range.end, '.'),
@@ -202,12 +68,12 @@ local egress_ip_shadow_ranges =
       std.join('.', std.split(range.start, '.')[0:3]);
 
   local check_length(hostname, egress_range, range) =
-    local public_range = parse_ip_range(
+    local public_range = ipcalc.parse_ip_range(
       egress_range.prefix,
       egress_range.config.egress_range
     );
-    local public_len = ipval(public_range.end) - ipval(public_range.start);
-    local shadow_len = ipval(range.end) - ipval(range.start);
+    local public_len = ipcalc.ipval(public_range.end) - ipcalc.ipval(public_range.start);
+    local shadow_len = ipcalc.ipval(range.end) - ipcalc.ipval(range.start);
 
     if public_len != shadow_len then
       error "Shadow IP range %s-%s for '%s' in '%s' doesn't match length of egress IP range %s" % [
@@ -233,7 +99,7 @@ local egress_ip_shadow_ranges =
           local range = check_length(
             hostname,
             egress_range,
-            parse_ip_range(
+            ipcalc.parse_ip_range(
               egress_range.prefix,
               egress_range.config.shadow_ranges[hostname]
             )
