@@ -2,6 +2,8 @@ local com = import 'lib/commodore.libjsonnet';
 local kap = import 'lib/kapitan.libjsonnet';
 local kube = import 'lib/kube.libjsonnet';
 
+local esp = import 'lib/espejote.libsonnet';
+
 local egw = import 'espejote-templates/egress-gateway.libsonnet';
 
 local inv = kap.inventory();
@@ -60,6 +62,63 @@ local validate(policies) = std.objectValues(std.foldl(
   {}
 ));
 
+local sa = kube.ServiceAccount('egress-ip-self-service');
+
+local jsonnetlib =
+  local config = {
+    egress_ranges: [
+      params.egress_gateway.egress_ip_ranges[prefix] {
+        if_prefix: prefix,
+      }
+      for prefix in std.objectFields(params.egress_gateway.egress_ip_ranges)
+      if params.egress_gateway.egress_ip_ranges[prefix] != null
+    ],
+  };
+  esp.jsonnetLibrary('egress-gateway', params._namespace) {
+    spec: {
+      data: {
+        'egress-gateway.libsonnet': importstr 'espejote-templates/egress-gateway.libsonnet',
+        'ipcalc.libsonnet': importstr 'espejote-templates/ipcalc.libsonnet',
+        'config.json': std.manifestJson(config),
+      },
+    },
+  };
+
+local namespaces_ref = {
+  apiVersion: 'v1',
+  kind: 'Namespace',
+};
+local jsonnetlib_ref = {
+  apiVersion: jsonnetlib.apiVersion,
+  kind: jsonnetlib.kind,
+  name: jsonnetlib.metadata.name,
+  namespace: jsonnetlib.metadata.namespace,
+};
+
+local mr = esp.managedResource('namespace-egress-ips', params._namespace) {
+  metadata+: {
+    annotations: {
+      'syn.tools/description': |||
+        TODO
+      |||,
+    },
+  },
+  spec: {
+    serviceAccountRef: { name: sa.metadata.name },
+    triggers: [
+      {
+        name: 'namespace',
+        watchResource: namespaces_ref,
+      },
+      {
+        name: 'config',
+        watchResource: jsonnetlib_ref,
+      },
+    ],
+    template: importstr 'espejote-templates/egress-gateway-self-service.jsonnet',
+  },
+};
+
 local shadow_ranges = import 'egress-gateway-shadow-ranges.libsonnet';
 
 {
@@ -71,4 +130,8 @@ local shadow_ranges = import 'egress-gateway-shadow-ranges.libsonnet';
       params.egress_gateway.generate_shadow_ranges_configmap &&
       std.length(shadow_ranges.manifests) > 0 then
     '30_egress_ip_shadow_ranges']: shadow_ranges.manifests,
+  [if params.egress_gateway.enabled &&
+      params.egress_gateway.self_service_namespace_ips then
+    '40_egress_ip_managed_resource']:
+    [ sa, jsonnetlib ] + esp.createContextRBAC(mr),
 }

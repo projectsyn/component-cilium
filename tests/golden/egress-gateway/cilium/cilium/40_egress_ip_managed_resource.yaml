@@ -1,0 +1,401 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations: {}
+  labels:
+    name: egress-ip-self-service
+  name: egress-ip-self-service
+---
+apiVersion: espejote.io/v1alpha1
+kind: JsonnetLibrary
+metadata:
+  labels:
+    app.kubernetes.io/name: egress-gateway
+  name: egress-gateway
+  namespace: cilium
+spec:
+  data:
+    config.json: |-
+      {
+          "egress_ranges": [
+              {
+                  "egress_range": "192.0.2.32 - 192.0.2.63",
+                  "if_prefix": "egress_a",
+                  "namespace_egress_ips": {
+                      "bar": "192.0.2.61",
+                      "baz": null,
+                      "foo": "192.0.2.32"
+                  },
+                  "node_selector": {
+                      "node-role.kubernetes.io/infra": ""
+                  },
+                  "shadow_ranges": {
+                      "infra-8344": "198.51.100.0 - 198.51.100.31",
+                      "infra-87c9": "198.51.100.32 - 198.51.100.63",
+                      "infra-eba2": "198.51.100.64 - 198.51.100.95"
+                  }
+              },
+              {
+                  "egress_range": "192.0.2.64 - 192.0.2.95",
+                  "if_prefix": "egress_c",
+                  "namespace_egress_ips": {
+                      "baz": "192.0.2.93"
+                  },
+                  "node_selector": {
+                      "node-role.kubernetes.io/infra": ""
+                  },
+                  "shadow_ranges": {
+                      "infra-8344": "198.51.100.96 - 198.51.100.127",
+                      "infra-87c9": "198.51.100.128 - 198.51.100.159",
+                      "infra-eba2": "198.51.100.160 - 198.51.100.191"
+                  }
+              },
+              {
+                  "egress_range": "192.0.2.96 - 192.0.2.127",
+                  "if_prefix": "egress_d",
+                  "namespace_egress_ips": {
+
+                  },
+                  "node_selector": {
+                      "node-role.kubernetes.io/infra": ""
+                  }
+              },
+              {
+                  "egress_range": "192.0.2.128 - 192.0.2.159",
+                  "if_prefix": "egress_e",
+                  "namespace_egress_ips": {
+
+                  },
+                  "node_selector": {
+                      "node-role.kubernetes.io/infra": ""
+                  },
+                  "shadow_ranges": null
+              }
+          ]
+      }
+    egress-gateway.libsonnet: |
+      local ipcalc = import 'ipcalc.libsonnet';
+
+      local CiliumEgressGatewayPolicy(name) = {
+        apiVersion: 'cilium.io/v2',
+        kind: 'CiliumEgressGatewayPolicy',
+        metadata+: {
+          name: name,
+          labels: {
+            name: name,
+          },
+          annotations: {
+            'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true,Prune=false',
+          },
+        },
+      };
+
+      local IsovalentEgressGatewayPolicy(name) = {
+        apiVersion: 'isovalent.com/v1',
+        kind: 'IsovalentEgressGatewayPolicy',
+        metadata+: {
+          name: name,
+          labels: {
+            name: name,
+          },
+          annotations: {
+            'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true,Prune=false',
+          },
+        },
+      };
+
+      // Per-namespace egress IPs according to the selected design choice in
+      // https://kb.vshn.ch/oc4/explanations/decisions/cloudscale-cilium-egressip.html
+      // Requires that the shadow IPs are assigned to suitable dummy interfaces on
+      // the hosts matching the node selector and that SNAT rules are in place to
+      // map the shadow ranges to the public range.
+      local NamespaceEgressPolicy =
+        function(
+          interface_prefix,
+          egress_range,
+          shadow_ranges,
+          node_selector,
+          egress_ip,
+          namespace,
+          policy_resource_fn,
+        )
+          // Helper which computes the interface index of the egress IP.
+          // Assumes that the IPs in egress_range are assigned to dummy interfaces
+          // named
+          //
+          //   "<interface_prefix>_<i>"
+          //
+          // where i = 0..length(egress_range) - 1.
+          local ifindex =
+            local range = ipcalc.parse_ip_range(interface_prefix, egress_range);
+            local start = ipcalc.ipval(range.start);
+            local end = ipcalc.ipval(range.end);
+            local ip = ipcalc.ipval(egress_ip);
+            if start > end then
+              error 'Egress IP range for "%s" is empty: %s > %s' % [
+                interface_prefix,
+                range.start,
+                range.end,
+              ]
+            else if start > ip || end < ip then
+              error 'Egress IP for namespace "%s" (%s) outside of configured IP range (%s) for egress range "%s"' % [
+                namespace,
+                egress_ip,
+                egress_range,
+                interface_prefix,
+              ]
+            else
+              local idx = ip - start;
+              local name = '%s_%d' % [ interface_prefix, idx ];
+              if std.length(name) > 15 then
+                error 'Interface name is longer than 15 characters: %s' % [ name ]
+              else
+                {
+                  value: idx,
+                  ifname: '%s_%d' % [ interface_prefix, idx ],
+                  debug: 'start=%d, end=%d, ip=%d' % [ start, end, ip ],
+                };
+
+          local compute_shadow_ip(shadow_range) =
+            local range = ipcalc.parse_ip_range('shadow', shadow_range);
+            local start = ipcalc.ipval(range.start);
+            ipcalc.format_ipval(start + ifindex.value);
+
+          local shadow_ips = [
+            compute_shadow_ip(r)
+            for r in shadow_ranges
+          ];
+
+          policy_resource_fn(namespace) {
+            metadata+: {
+              annotations+: {
+                'cilium.syn.tools/description':
+                  'Generated policy to assign egress IP %s in egress range "%s" (%s) to namespace %s.' % [
+                    egress_ip,
+                    interface_prefix,
+                    egress_range,
+                    namespace,
+                  ],
+                'cilium.syn.tools/egress-ip': egress_ip,
+                'cilium.syn.tools/interface-prefix': interface_prefix,
+                'cilium.syn.tools/egress-range': egress_range,
+                'cilium.syn.tools/source-namespace': namespace,
+                'cilium.syn.tools/debug-interface-index': ifindex.debug,
+                [if std.length(shadow_ips) > 0 then 'cilium.syn.tools/shadow-ips']:
+                  std.manifestJsonMinified(shadow_ips),
+              },
+            },
+            spec: {
+              destinationCIDRs: [ '0.0.0.0/0' ],
+              egressGroups: [
+                {
+                  nodeSelector: {
+                    matchLabels: node_selector,
+                  },
+                  interface: ifindex.ifname,
+                },
+              ],
+              selectors: [
+                {
+                  podSelector: {
+                    matchLabels: {
+                      'io.kubernetes.pod.namespace': namespace,
+                    },
+                  },
+                },
+              ],
+            },
+          };
+
+      {
+        CiliumEgressGatewayPolicy: CiliumEgressGatewayPolicy,
+        IsovalentEgressGatewayPolicy: IsovalentEgressGatewayPolicy,
+        NamespaceEgressPolicy: NamespaceEgressPolicy,
+      }
+    ipcalc.libsonnet: |
+      // Convert an IPv4 address in A.B.C.D format that's already been split into an
+      // array to decimal format according to the formula `A*256^3 + B*256^2 + C*256
+      // + D`. The decimal format allows us to make range comparisons and compute
+      // offsets into a range.
+      // Parameter ip can either be the IP as a string, or already split into an
+      // array holding each dotted part.
+      local ipval(ip) =
+        local iparr =
+          if std.type(ip) == 'array' then
+            ip
+          else
+            std.split(ip, '.');
+        std.foldl(
+          function(v, p) v * 256 + p,
+          std.map(std.parseInt, iparr),
+          0
+        );
+
+      // Extract start and end from the provided range, stripping any
+      // whitespace. `prefix` is only used for the error message.
+      local parse_ip_range(prefix, rangespec) =
+        local range_parts = std.map(
+          function(s) std.stripChars(s, ' '),
+          std.split(rangespec, '-')
+        );
+        if std.length(range_parts) != 2 then
+          error 'Expected IP range for "%s" in format "192.0.2.32-192.0.2.63",  got %s' % [
+            prefix,
+            rangespec,
+          ]
+        else
+          {
+            start: range_parts[0],
+            end: range_parts[1],
+          };
+
+      local format_ipval(val) =
+        assert
+          val >= 0 && val < ipval('255.255.255.255')
+          : '%s not an IPv4 address in decimal' % val;
+
+        local iparr = std.reverse(std.foldl(
+          function(st, i)
+            local arr = st.arr;
+            local rem = st.rem;
+            {
+              arr: arr + [ rem % 256 ],
+              rem: rem / 256,
+            },
+          [ 0, 0, 0, 0 ],
+          { arr: [], rem: val }
+        ).arr);
+
+        std.join('.', std.map(function(v) '%d' % v, iparr));
+
+      {
+        ipval: ipval,
+        parse_ip_range: parse_ip_range,
+        format_ipval: format_ipval,
+      }
+---
+apiVersion: espejote.io/v1alpha1
+kind: ManagedResource
+metadata:
+  annotations:
+    syn.tools/description: |
+      TODO
+  labels:
+    app.kubernetes.io/name: namespace-egress-ips
+  name: namespace-egress-ips
+  namespace: cilium
+spec:
+  context: []
+  serviceAccountRef:
+    name: egress-ip-self-service
+  template: |
+    local esp = import 'espejote.libsonnet';
+
+    local config = import 'egress-gateway/config.json';
+    local egw = import 'egress-gateway/egress-gateway.libsonnet';
+    local ipcalc = import 'egress-gateway/ipcalc.libsonnet';
+
+    local namespace = esp.triggerData();
+
+    // find_egress_range expects a list of egress range objects which contain the
+    // interface prefix in a field. This list is precomputed by the Commodore
+    // component and provided as `"config.json".egress_ranges`.
+    local find_egress_range(ranges, egress_ip) =
+      local eip = ipcalc.ipval(egress_ip);
+      local check_fn(rspec) =
+        local range = ipcalc.parse_ip_range(rspec.if_prefix, rspec.egress_range);
+        local start = ipcalc.ipval(range.start);
+        local end = ipcalc.ipval(range.end);
+        eip >= start && eip <= end;
+      local filtered = std.filter(check_fn, ranges);
+      // TODO(sg): do we have better facilities to emit errors in Espejote?
+      assert
+        std.length(filtered) == 1
+        : 'Expected 1 egress ip range containing %s, got %d'
+          % [ egress_ip, std.length(filtered) ];
+      filtered[0];
+
+    if namespace != null then
+      local ns_meta = namespace.resource.metadata;
+      local egress_ip = std.get(
+        std.get(ns_meta, 'annotations', {}),
+        'cilium.syn.tools/egress-ip'
+      );
+      if egress_ip != null then
+        local range = find_egress_range(config.egress_ranges, egress_ip);
+        egw.NamespaceEgressPolicy(
+          range.if_prefix,
+          range.egress_range,
+          std.objectValues(range.shadow_ranges),
+          range.node_selector,
+          egress_ip,
+          namespace.metadata.name,
+          egw.IsovalentEgressGatewayPolicy
+        )
+  triggers:
+    - name: namespace
+      watchResource:
+        apiVersion: v1
+        kind: Namespace
+    - name: config
+      watchResource:
+        apiVersion: espejote.io/v1alpha1
+        kind: JsonnetLibrary
+        name: egress-gateway
+        namespace: cilium
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: espejote:managedresource:cilium:namespace-egress-ips:triggers:namespace
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: espejote:managedresource:namespace-egress-ips:triggers:config
+  namespace: cilium
+rules:
+  - apiGroups:
+      - espejote.io
+    resources:
+      - jsonnetlibraries
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: espejote:managedresource:cilium:namespace-egress-ips:triggers:namespace
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: espejote:managedresource:cilium:namespace-egress-ips:triggers:namespace
+subjects:
+  - kind: ServiceAccount
+    name: egress-ip-self-service
+    namespace: cilium
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: espejote:managedresource:namespace-egress-ips:triggers:config
+  namespace: cilium
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: espejote:managedresource:namespace-egress-ips:triggers:config
+subjects:
+  - kind: ServiceAccount
+    name: egress-ip-self-service
+    namespace: cilium

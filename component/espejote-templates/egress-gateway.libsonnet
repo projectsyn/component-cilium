@@ -131,7 +131,6 @@ local NamespaceEgressPolicy =
       },
     };
 
-
 {
   CiliumEgressGatewayPolicy: CiliumEgressGatewayPolicy,
   IsovalentEgressGatewayPolicy: IsovalentEgressGatewayPolicy,

@@ -1,6 +1,11 @@
 # Overwrite parameters here
 
 parameters:
+  kapitan:
+    dependencies:
+      - type: https
+        source: https://raw.githubusercontent.com/projectsyn/component-espejote/v0.4.0/lib/espejote.libsonnet
+        output_path: vendor/lib/espejote.libsonnet
   cilium:
     egress_gateway:
       enabled: true
@@ -21,6 +26,7 @@ parameters:
         removed: null
 
       generate_shadow_ranges_configmap: true
+      self_service_namespace_ips: true
       egress_ip_ranges:
         egress_a:
           egress_range: '192.0.2.32 - 192.0.2.63'
