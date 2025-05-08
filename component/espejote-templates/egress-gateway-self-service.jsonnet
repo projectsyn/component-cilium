@@ -50,7 +50,7 @@ local reconcileNamespace(namespace) =
     std.get(ns_meta, 'annotations', {}),
     'cilium.syn.tools/egress-ip'
   );
-  if egress_ip != null then
+  if egress_ip != null then (
     local res = find_egress_range(config.egress_ranges, egress_ip);
     if res.range != null then
       local range = res.range;
@@ -83,7 +83,15 @@ local reconcileNamespace(namespace) =
         setAnnotations(namespace, {
           'cilium.syn.tools/egress-ip-status': res.errmsg,
         }),
-      ];
+      ]
+  ) else [
+    esp.markForDelete(
+      egw.IsovalentEgressGatewayPolicy(ns_meta.name)
+    ),
+    setAnnotations(namespace, {
+      'cilium.syn.tools/egress-ip-status': 'Egress IP removed successfully',
+    }),
+  ];
 
 if esp.triggerName() == 'namespace' then (
   local nsTrigger = esp.triggerData();
