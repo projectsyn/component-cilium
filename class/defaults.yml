@@ -94,8 +94,8 @@ parameters:
       enabled: false
       policies: {}
       generate_shadow_ranges_configmap: false
-      self_service_namespace_ips: false
       shadow_ranges_daemonset_node_selector: {}
+      self_service_namespace_ips: false
       egress_ip_ranges: {}
 
     l2_announcements:
