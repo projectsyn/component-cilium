@@ -15,12 +15,31 @@ local find_egress_range(ranges, egress_ip) =
     local end = ipcalc.ipval(range.end);
     eip >= start && eip <= end;
   local filtered = std.filter(check_fn, ranges);
-  // TODO(sg): do we have better facilities to emit errors in Espejote?
-  assert
-    std.length(filtered) == 1
-    : 'Expected 1 egress ip range containing %s, got %d'
-      % [ egress_ip, std.length(filtered) ];
-  filtered[0];
+  if std.length(filtered) == 1 then {
+    range: filtered[0],
+    errmsg: '',
+  } else {
+    range: null,
+    errmsg: if std.length(filtered) == 0 then
+      local eranges = std.join(', ', [ r.egress_range for r in ranges ]);
+      'No egress range found for %s, available ranges: %s'
+      % [ egress_ip, eranges ]
+    else
+      local eranges = std.join(
+        ', ', [ '%s (%s)' % [ r.if_prefix, r.egress_range ] for r in filtered ]
+      );
+      'Found multiple egress ranges which contain %s: %s. ' % [ egress_ip, eranges ] +
+      "Please contact your cluster's administrator to resolve this range overlap",
+  };
+
+local setAnnotations(obj, annotations) = {
+  apiVersion: obj.apiVersion,
+  kind: obj.kind,
+  metadata: {
+    name: obj.metadata.name,
+    annotations: annotations,
+  },
+};
 
 local reconcileNamespace(namespace) =
   assert
@@ -32,33 +51,46 @@ local reconcileNamespace(namespace) =
     'cilium.syn.tools/egress-ip'
   );
   if egress_ip != null then
-    local range = find_egress_range(config.egress_ranges, egress_ip);
-    egw.NamespaceEgressPolicy(
-      range.if_prefix,
-      range.egress_range,
-      std.objectValues(range.shadow_ranges),
-      range.node_selector,
-      egress_ip,
-      ns_meta.name,
-      egw.IsovalentEgressGatewayPolicy
-    ) {
-      metadata+: {
-        ownerReferences: [ {
-          controller: true,
-          apiVersion: namespace.apiVersion,
-          kind: namespace.kind,
-          name: ns_meta.name,
-          uid: ns_meta.uid,
-        } ],
-      },
-    };
+    local res = find_egress_range(config.egress_ranges, egress_ip);
+    if res.range != null then
+      local range = res.range;
+      [
+        egw.NamespaceEgressPolicy(
+          range.if_prefix,
+          range.egress_range,
+          std.objectValues(range.shadow_ranges),
+          range.node_selector,
+          egress_ip,
+          ns_meta.name,
+          egw.IsovalentEgressGatewayPolicy
+        ) {
+          metadata+: {
+            ownerReferences: [ {
+              controller: true,
+              apiVersion: namespace.apiVersion,
+              kind: namespace.kind,
+              name: ns_meta.name,
+              uid: ns_meta.uid,
+            } ],
+          },
+        },
+        setAnnotations(namespace, {
+          'cilium.syn.tools/egress-ip-status': 'Egress IP assigned successfully',
+        }),
+      ]
+    else
+      [
+        setAnnotations(namespace, {
+          'cilium.syn.tools/egress-ip-status': res.errmsg,
+        }),
+      ];
 
 if esp.triggerName() == 'namespace' then (
   local nsTrigger = esp.triggerData();
   if nsTrigger != null then reconcileNamespace(nsTrigger.resource)
 ) else
   local namespaces = esp.context().namespaces;
-  std.prune([
+  std.flattenArrays(std.prune([
     reconcileNamespace(ns)
     for ns in namespaces
-  ])
+  ]))

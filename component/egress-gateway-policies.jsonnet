@@ -93,7 +93,7 @@ local clusterrole = kube.ClusterRole('cilium:self-service-egress-ip') {
     {
       apiGroups: [ '' ],
       resources: [ 'namespaces' ],
-      verbs: [ 'get', 'list', 'watch' ],
+      verbs: [ 'get', 'list', 'watch', 'patch' ],
     },
     {
       apiGroups: [ 'espejote.io' ],
