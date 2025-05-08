@@ -126,6 +126,16 @@ local jsonnetlib_ref = {
   namespace: jsonnetlib.metadata.namespace,
 };
 
+local egress_policies_ref =
+  local ep = egw.IsovalentEgressGatewayPolicy('test');
+  {
+    apiVersion: ep.apiVersion,
+    kind: ep.kind,
+    labelSelector: {
+      matchLabels: egw.espejoteLabel,
+    },
+  };
+
 local mr = esp.managedResource('namespace-egress-ips', params._namespace) {
   metadata+: {
     annotations: {
@@ -140,6 +150,10 @@ local mr = esp.managedResource('namespace-egress-ips', params._namespace) {
       {
         name: 'namespaces',
         resource: namespaces_ref,
+      },
+      {
+        name: 'egress_policies',
+        resource: egress_policies_ref,
       },
     ],
     triggers: [

@@ -41,6 +41,11 @@ local setAnnotations(obj, annotations) = {
   },
 };
 
+local managed_policies_namespaces = [
+  p.metadata.name
+  for p in esp.context().egress_policies
+];
+
 local reconcileNamespace(namespace) =
   assert
     namespace != null && namespace.kind == 'Namespace'
@@ -65,6 +70,7 @@ local reconcileNamespace(namespace) =
           egw.IsovalentEgressGatewayPolicy
         ) {
           metadata+: {
+            labels+: egw.espejoteLabel,
             ownerReferences: [ {
               controller: true,
               apiVersion: namespace.apiVersion,
@@ -84,7 +90,7 @@ local reconcileNamespace(namespace) =
           'cilium.syn.tools/egress-ip-status': res.errmsg,
         }),
       ]
-  ) else [
+  ) else if std.member(managed_policies_namespaces, ns_meta.name) then [
     esp.markForDelete(
       egw.IsovalentEgressGatewayPolicy(ns_meta.name)
     ),

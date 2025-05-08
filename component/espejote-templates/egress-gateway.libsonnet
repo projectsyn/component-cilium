@@ -131,8 +131,13 @@ local NamespaceEgressPolicy =
       },
     };
 
+local espejoteLabel = {
+  'cilium.syn.tools/managed-by': 'espejote_cilium_namespace-egress-ips',
+};
+
 {
   CiliumEgressGatewayPolicy: CiliumEgressGatewayPolicy,
   IsovalentEgressGatewayPolicy: IsovalentEgressGatewayPolicy,
   NamespaceEgressPolicy: NamespaceEgressPolicy,
+  espejoteLabel: espejoteLabel,
 }

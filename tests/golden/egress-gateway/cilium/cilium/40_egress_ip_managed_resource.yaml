@@ -256,10 +256,15 @@ spec:
             },
           };
 
+      local espejoteLabel = {
+        'cilium.syn.tools/managed-by': 'espejote_cilium_namespace-egress-ips',
+      };
+
       {
         CiliumEgressGatewayPolicy: CiliumEgressGatewayPolicy,
         IsovalentEgressGatewayPolicy: IsovalentEgressGatewayPolicy,
         NamespaceEgressPolicy: NamespaceEgressPolicy,
+        espejoteLabel: espejoteLabel,
       }
     ipcalc.libsonnet: |
       // Convert an IPv4 address in A.B.C.D format that's already been split into an
@@ -339,6 +344,13 @@ spec:
       resource:
         apiVersion: v1
         kind: Namespace
+    - name: egress_policies
+      resource:
+        apiVersion: isovalent.com/v1
+        kind: IsovalentEgressGatewayPolicy
+        labelSelector:
+          matchLabels:
+            cilium.syn.tools/managed-by: espejote_cilium_namespace-egress-ips
   serviceAccountRef:
     name: egress-ip-self-service
   template: |
@@ -385,6 +397,11 @@ spec:
       },
     };
 
+    local managed_policies_namespaces = [
+      p.metadata.name
+      for p in esp.context().egress_policies
+    ];
+
     local reconcileNamespace(namespace) =
       assert
         namespace != null && namespace.kind == 'Namespace'
@@ -409,6 +426,7 @@ spec:
               egw.IsovalentEgressGatewayPolicy
             ) {
               metadata+: {
+                labels+: egw.espejoteLabel,
                 ownerReferences: [ {
                   controller: true,
                   apiVersion: namespace.apiVersion,
@@ -428,7 +446,7 @@ spec:
               'cilium.syn.tools/egress-ip-status': res.errmsg,
             }),
           ]
-      ) else [
+      ) else if std.member(managed_policies_namespaces, ns_meta.name) then [
         esp.markForDelete(
           egw.IsovalentEgressGatewayPolicy(ns_meta.name)
         ),
