@@ -333,6 +333,11 @@ metadata:
   name: namespace-egress-ips
   namespace: cilium
 spec:
+  context:
+    - name: namespaces
+      resource:
+        apiVersion: v1
+        kind: Namespace
   serviceAccountRef:
     name: egress-ip-self-service
   template: |
@@ -341,8 +346,6 @@ spec:
     local config = import 'egress-gateway/config.json';
     local egw = import 'egress-gateway/egress-gateway.libsonnet';
     local ipcalc = import 'egress-gateway/ipcalc.libsonnet';
-
-    local namespace = esp.triggerData();
 
     // find_egress_range expects a list of egress range objects which contain the
     // interface prefix in a field. This list is precomputed by the Commodore
@@ -362,8 +365,11 @@ spec:
           % [ egress_ip, std.length(filtered) ];
       filtered[0];
 
-    if namespace != null then
-      local ns_meta = namespace.resource.metadata;
+    local reconcileNamespace(namespace) =
+      assert
+        namespace != null && namespace.kind == 'Namespace'
+        : 'reconcileNamespace() expects to be called with a Namespace resource';
+      local ns_meta = namespace.metadata;
       local egress_ip = std.get(
         std.get(ns_meta, 'annotations', {}),
         'cilium.syn.tools/egress-ip'
@@ -376,14 +382,24 @@ spec:
           std.objectValues(range.shadow_ranges),
           range.node_selector,
           egress_ip,
-          namespace.metadata.name,
+          ns_meta.name,
           egw.IsovalentEgressGatewayPolicy
-        )
+        );
+
+    if esp.triggerName() == 'namespace' then
+      local nsTrigger = esp.triggerData();
+      assert nsTrigger != null : 'Expected namespace trigger to have trigger data';
+      reconcileNamespace(nsTrigger.resource)
+    else
+      local namespaces = esp.context().namespaces;
+      std.prune([
+        reconcileNamespace(ns)
+        for ns in namespaces
+      ])
   triggers:
     - name: namespace
-      watchResource:
-        apiVersion: v1
-        kind: Namespace
+      watchContextResource:
+        name: namespaces
     - name: config
       watchResource:
         apiVersion: espejote.io/v1alpha1

@@ -22,10 +22,11 @@ local find_egress_range(ranges, egress_ip) =
       % [ egress_ip, std.length(filtered) ];
   filtered[0];
 
-if esp.triggerName() == 'namespace' then
-  local namespace = esp.triggerData();
-  assert namespace != null : 'Expected namespace trigger to have trigger data';
-  local ns_meta = namespace.resource.metadata;
+local reconcileNamespace(namespace) =
+  assert
+    namespace != null && namespace.kind == 'Namespace'
+    : 'reconcileNamespace() expects to be called with a Namespace resource';
+  local ns_meta = namespace.metadata;
   local egress_ip = std.get(
     std.get(ns_meta, 'annotations', {}),
     'cilium.syn.tools/egress-ip'
@@ -40,4 +41,15 @@ if esp.triggerName() == 'namespace' then
       egress_ip,
       ns_meta.name,
       egw.IsovalentEgressGatewayPolicy
-    )
+    );
+
+if esp.triggerName() == 'namespace' then
+  local nsTrigger = esp.triggerData();
+  assert nsTrigger != null : 'Expected namespace trigger to have trigger data';
+  reconcileNamespace(nsTrigger.resource)
+else
+  local namespaces = esp.context().namespaces;
+  std.prune([
+    reconcileNamespace(ns)
+    for ns in namespaces
+  ])

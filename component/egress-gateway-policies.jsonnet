@@ -136,10 +136,18 @@ local mr = esp.managedResource('namespace-egress-ips', params._namespace) {
   },
   spec: {
     serviceAccountRef: { name: sa.metadata.name },
+    context: [
+      {
+        name: 'namespaces',
+        resource: namespaces_ref,
+      },
+    ],
     triggers: [
       {
         name: 'namespace',
-        watchResource: namespaces_ref,
+        watchContextResource: {
+          name: 'namespaces',
+        },
       },
       {
         name: 'config',
