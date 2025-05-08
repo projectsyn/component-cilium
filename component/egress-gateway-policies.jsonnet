@@ -62,7 +62,11 @@ local validate(policies) = std.objectValues(std.foldl(
   {}
 ));
 
-local sa = kube.ServiceAccount('egress-ip-self-service');
+local sa = kube.ServiceAccount('egress-ip-self-service') {
+  metadata+: {
+    namespace: params._namespace,
+  },
+};
 
 local jsonnetlib =
   local config = {
@@ -84,10 +88,37 @@ local jsonnetlib =
     },
   };
 
+local clusterrole = kube.ClusterRole('cilium:self-service-egress-ip') {
+  rules: [
+    {
+      apiGroups: [ '' ],
+      resources: [ 'namespaces' ],
+      verbs: [ 'get', 'list', 'watch' ],
+    },
+    {
+      apiGroups: [ 'espejote.io' ],
+      resources: [ 'jsonnetlibraries' ],
+      verbs: [ 'get', 'list', 'watch' ],
+    },
+    {
+      apiGroups: [ 'isovalent.com' ],
+      resources: [ 'isovalentegressgatewaypolicies' ],
+      verbs: [ '*' ],
+    },
+  ],
+};
+
+local clusterrolebinding =
+  kube.ClusterRoleBinding('cilium:self-service-egress-ip') {
+    subjects_: [ sa ],
+    roleRef_: clusterrole,
+  };
+
 local namespaces_ref = {
   apiVersion: 'v1',
   kind: 'Namespace',
 };
+
 local jsonnetlib_ref = {
   apiVersion: jsonnetlib.apiVersion,
   kind: jsonnetlib.kind,
@@ -133,5 +164,5 @@ local shadow_ranges = import 'egress-gateway-shadow-ranges.libsonnet';
   [if params.egress_gateway.enabled &&
       params.egress_gateway.self_service_namespace_ips then
     '40_egress_ip_managed_resource']:
-    [ sa, jsonnetlib ] + esp.createContextRBAC(mr),
+    [ sa, clusterrole, clusterrolebinding, jsonnetlib, mr ],
 }

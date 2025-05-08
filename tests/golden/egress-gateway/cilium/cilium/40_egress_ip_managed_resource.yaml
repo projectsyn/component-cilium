@@ -5,6 +5,54 @@ metadata:
   labels:
     name: egress-ip-self-service
   name: egress-ip-self-service
+  namespace: cilium
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-self-service-egress-ip
+  name: cilium:self-service-egress-ip
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - espejote.io
+    resources:
+      - jsonnetlibraries
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - isovalent.com
+    resources:
+      - isovalentegressgatewaypolicies
+    verbs:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-self-service-egress-ip
+  name: cilium:self-service-egress-ip
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cilium:self-service-egress-ip
+subjects:
+  - kind: ServiceAccount
+    name: egress-ip-self-service
+    namespace: cilium
 ---
 apiVersion: espejote.io/v1alpha1
 kind: JsonnetLibrary
@@ -285,7 +333,6 @@ metadata:
   name: namespace-egress-ips
   namespace: cilium
 spec:
-  context: []
   serviceAccountRef:
     name: egress-ip-self-service
   template: |
@@ -343,59 +390,3 @@ spec:
         kind: JsonnetLibrary
         name: egress-gateway
         namespace: cilium
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: espejote:managedresource:cilium:namespace-egress-ips:triggers:namespace
-rules:
-  - apiGroups:
-      - ''
-    resources:
-      - namespaces
-    verbs:
-      - get
-      - list
-      - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: espejote:managedresource:namespace-egress-ips:triggers:config
-  namespace: cilium
-rules:
-  - apiGroups:
-      - espejote.io
-    resources:
-      - jsonnetlibraries
-    verbs:
-      - get
-      - list
-      - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: espejote:managedresource:cilium:namespace-egress-ips:triggers:namespace
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: espejote:managedresource:cilium:namespace-egress-ips:triggers:namespace
-subjects:
-  - kind: ServiceAccount
-    name: egress-ip-self-service
-    namespace: cilium
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: espejote:managedresource:namespace-egress-ips:triggers:config
-  namespace: cilium
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: espejote:managedresource:namespace-egress-ips:triggers:config
-subjects:
-  - kind: ServiceAccount
-    name: egress-ip-self-service
-    namespace: cilium
