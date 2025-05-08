@@ -86,7 +86,36 @@ local mr = esp.managedResource('namespace-egress-ips', params._namespace) {
   metadata+: {
     annotations: {
       'syn.tools/description': |||
-        TODO
+        This managed resource enables users to configure egress IPs for their
+        namespaces by setting annotation `cilium.syn.tools/egress-ip` to an
+        egress IP that's within a configured egress range for the cluster.
+
+        Egress ranges are configured via Project Syn with component-cilium.
+        The managed resource uses the same configuration which the component
+        uses to configure the ranges to determine which range an egress IP
+        belongs. If users specify an egress IP that doesn't belong to any
+        range, or if overlapping ranges are configured, the managed resource
+        emits an error as an annotation on the namespace which requests the
+        egress IP.
+
+        If the egress IP can be mapped to a range uniquely, the managed
+        resource creates an IsovalenEgressGatewayPolicy which sets the desired
+        egress IP for all traffic originating in that namespace. The policy
+        uses the same logic as the Commodore component to map the egress IP to
+        a Linux interface name.
+
+        Users can change egress IPs for namespaces by editing the
+        `cilium.syn.tools/egress-ip` annotation.
+
+        Users can remove egress IPs from namespaces by removing the
+        `cilium.syn.tools/egress-ip` annotation (note that setting the
+        annotation to an empty string is an error). If the annotation doesn't
+        exist anymore, and there's an IsovalentEgressGatewayPolicy that's
+        managed by us, this policy is deleted.
+
+        To ensure that the egress IP config is cleaned up when a namespace is
+        deleted, the namespace requesting the IP is set as an owner reference
+        on the IsovalentEgressGatewayPolicy.
       |||,
     },
   },
