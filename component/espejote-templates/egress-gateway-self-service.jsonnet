@@ -43,11 +43,10 @@ local reconcileNamespace(namespace) =
       egw.IsovalentEgressGatewayPolicy
     );
 
-if esp.triggerName() == 'namespace' then
+if esp.triggerName() == 'namespace' then (
   local nsTrigger = esp.triggerData();
-  assert nsTrigger != null : 'Expected namespace trigger to have trigger data';
-  reconcileNamespace(nsTrigger.resource)
-else
+  if nsTrigger != null then reconcileNamespace(nsTrigger.resource)
+) else
   local namespaces = esp.context().namespaces;
   std.prune([
     reconcileNamespace(ns)
