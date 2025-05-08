@@ -41,7 +41,17 @@ local reconcileNamespace(namespace) =
       egress_ip,
       ns_meta.name,
       egw.IsovalentEgressGatewayPolicy
-    );
+    ) {
+      metadata+: {
+        ownerReferences: [ {
+          controller: true,
+          apiVersion: namespace.apiVersion,
+          kind: namespace.kind,
+          name: ns_meta.name,
+          uid: ns_meta.uid,
+        } ],
+      },
+    };
 
 if esp.triggerName() == 'namespace' then (
   local nsTrigger = esp.triggerData();
