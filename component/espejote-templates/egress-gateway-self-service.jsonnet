@@ -4,34 +4,8 @@ local config = import 'egress-gateway/config.json';
 local egw = import 'egress-gateway/egress-gateway.libsonnet';
 local ipcalc = import 'egress-gateway/ipcalc.libsonnet';
 
-// find_egress_range expects a list of egress range objects which contain the
-// interface prefix in a field. This list is precomputed by the Commodore
-// component and provided as `"config.json".egress_ranges`.
-local find_egress_range(ranges, egress_ip) =
-  local eip = ipcalc.ipval(egress_ip);
-  local check_fn(rspec) =
-    local range = ipcalc.parse_ip_range(rspec.if_prefix, rspec.egress_range);
-    local start = ipcalc.ipval(range.start);
-    local end = ipcalc.ipval(range.end);
-    eip >= start && eip <= end;
-  local filtered = std.filter(check_fn, ranges);
-  if std.length(filtered) == 1 then {
-    range: filtered[0],
-    errmsg: '',
-  } else {
-    range: null,
-    errmsg: if std.length(filtered) == 0 then
-      local eranges = std.join(', ', [ r.egress_range for r in ranges ]);
-      'No egress range found for %s, available ranges: %s'
-      % [ egress_ip, eranges ]
-    else
-      local eranges = std.join(
-        ', ', [ '%s (%s)' % [ r.if_prefix, r.egress_range ] for r in filtered ]
-      );
-      'Found multiple egress ranges which contain %s: %s. ' % [ egress_ip, eranges ] +
-      "Please contact your cluster's administrator to resolve this range overlap",
-  };
-
+// setAnnotations is a helper that generates a minimal partial manifest to
+// set/update annotations with server-side apply.
 local setAnnotations(obj, annotations) = {
   apiVersion: obj.apiVersion,
   kind: obj.kind,
@@ -41,6 +15,10 @@ local setAnnotations(obj, annotations) = {
   },
 };
 
+// Collect list of namespaces for which we currently manage egress policies
+// based on the `egress_policies` context (which only contains
+// `IsovalentEgressGatewayPolicy` resources which have the `egw.espejoteLabel`
+// set).
 local managed_policies_namespaces = [
   p.metadata.name
   for p in esp.context().egress_policies
@@ -50,14 +28,19 @@ local reconcileNamespace(namespace) =
   assert
     namespace != null && namespace.kind == 'Namespace'
     : 'reconcileNamespace() expects to be called with a Namespace resource';
+
   local ns_meta = namespace.metadata;
   local egress_ip = std.get(
     std.get(ns_meta, 'annotations', {}),
     'cilium.syn.tools/egress-ip'
   );
+
   if egress_ip != null then (
-    local res = find_egress_range(config.egress_ranges, egress_ip);
+    local res = egw.find_egress_range(config.egress_ranges, egress_ip);
     if res.range != null then
+      // when we have a range, generate a IsovalentEgressGatewayPolicy (with
+      // ownerReference pointing to the namespace, and labeled as managed by
+      // us) and update the namespace with an informational message.
       local range = res.range;
       [
         egw.NamespaceEgressPolicy(
@@ -85,12 +68,16 @@ local reconcileNamespace(namespace) =
         }),
       ]
     else
+      // when we didn't find a unique egress range for the requested IP, add
+      // the error message to the namespace.
       [
         setAnnotations(namespace, {
           'cilium.syn.tools/egress-ip-status': res.errmsg,
         }),
       ]
   ) else if std.member(managed_policies_namespaces, ns_meta.name) then [
+    // when the namespace doesn't have an egress-ip annotation, but we have a
+    // managed IsovalentEgressGatewayPolicy, delete it.
     esp.markForDelete(
       egw.IsovalentEgressGatewayPolicy(ns_meta.name)
     ),
@@ -100,9 +87,14 @@ local reconcileNamespace(namespace) =
   ];
 
 if esp.triggerName() == 'namespace' then (
+  // Handle single namespace update on namespace trigger
   local nsTrigger = esp.triggerData();
+  // nsTrigger can be null if we're called when the namespace is getting
+  // deleted.
   if nsTrigger != null then reconcileNamespace(nsTrigger.resource)
 ) else
+  // Reconcile all namespaces for jsonnetlibrary update or managedresource
+  // reconcile.
   local namespaces = esp.context().namespaces;
   std.flattenArrays(std.prune([
     reconcileNamespace(ns)

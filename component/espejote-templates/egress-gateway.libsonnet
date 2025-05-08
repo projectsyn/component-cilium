@@ -135,9 +135,42 @@ local espejoteLabel = {
   'cilium.syn.tools/managed-by': 'espejote_cilium_namespace-egress-ips',
 };
 
+// find_egress_range expects a list of egress range objects which contain the
+// interface prefix in a field. This list is precomputed by the Commodore
+// component and provided to the Espejote template as
+// `"config.json".egress_ranges`.
+// This function returns an object with field `range` containing the range of
+// the IP if unique or `null` if not unique or not found, and field `errmsg`
+// containing an error message if `range` is null.
+local find_egress_range(ranges, egress_ip) =
+  local eip = ipcalc.ipval(egress_ip);
+  local check_fn(rspec) =
+    local range = ipcalc.parse_ip_range(rspec.if_prefix, rspec.egress_range);
+    local start = ipcalc.ipval(range.start);
+    local end = ipcalc.ipval(range.end);
+    eip >= start && eip <= end;
+  local filtered = std.filter(check_fn, ranges);
+  if std.length(filtered) == 1 then {
+    range: filtered[0],
+    errmsg: '',
+  } else {
+    range: null,
+    errmsg: if std.length(filtered) == 0 then
+      local eranges = std.join(', ', [ r.egress_range for r in ranges ]);
+      'No egress range found for %s, available ranges: %s'
+      % [ egress_ip, eranges ]
+    else
+      local eranges = std.join(
+        ', ', [ '%s (%s)' % [ r.if_prefix, r.egress_range ] for r in filtered ]
+      );
+      'Found multiple egress ranges which contain %s: %s. ' % [ egress_ip, eranges ] +
+      "Please contact your cluster's administrator to resolve this range overlap",
+  };
+
 {
   CiliumEgressGatewayPolicy: CiliumEgressGatewayPolicy,
   IsovalentEgressGatewayPolicy: IsovalentEgressGatewayPolicy,
   NamespaceEgressPolicy: NamespaceEgressPolicy,
   espejoteLabel: espejoteLabel,
+  find_egress_range: find_egress_range,
 }
