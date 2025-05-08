@@ -86,12 +86,18 @@ local reconcileNamespace(namespace) =
     }),
   ];
 
+// check if the object is getting deleted by checking if it has
+// `metadata.deletionTimestamp`.
+local inDelete(obj) = std.get(obj.metadata, 'deletionTimestamp', '') != '';
+
 if esp.triggerName() == 'namespace' then (
   // Handle single namespace update on namespace trigger
   local nsTrigger = esp.triggerData();
   // nsTrigger can be null if we're called when the namespace is getting
-  // deleted.
-  if nsTrigger != null then reconcileNamespace(nsTrigger.resource)
+  // deleted. If it's not null, we still don't want to do anything when the
+  // namespace is getting deleted.
+  if nsTrigger != null && !inDelete(nsTrigger.resource) then
+    reconcileNamespace(nsTrigger.resource)
 ) else
   // Reconcile all namespaces for jsonnetlibrary update or managedresource
   // reconcile.
@@ -99,4 +105,5 @@ if esp.triggerName() == 'namespace' then (
   std.flattenArrays(std.prune([
     reconcileNamespace(ns)
     for ns in namespaces
+    if !inDelete(ns)
   ]))
