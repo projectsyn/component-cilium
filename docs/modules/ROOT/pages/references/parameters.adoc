@@ -364,6 +364,8 @@ The component expects that each value is an object with fields `egress_range`, `
 
 NOTE: Field `shadow_ranges` is optional, see the section on <<_shadow_ranges,shadow ranges>> for more details.
 
+NOTE: Field `namespace_egress_ips` is optional for use cases where only the shadow ranges mechanism is required.
+
 ==== Prerequisites
 
 The component expects that the key for each entry matches the prefix of the dummy interface names that are assigned the shadow IPs which map to the egress IP range defined in `egress_range`.
