@@ -156,16 +156,17 @@ local NamespaceEgressPolicy =
 
 local egress_ip_policies = std.flattenArrays([
   local cfg = params.egress_gateway.egress_ip_ranges[interface_prefix];
+  local ns_egress_ips = std.get(cfg, 'namespace_egress_ips', {});
   [
     NamespaceEgressPolicy(
       interface_prefix,
       cfg.egress_range,
       cfg.node_selector,
-      cfg.namespace_egress_ips[namespace],
-      namespace
+      ns_egress_ips[namespace],
+      namespace,
     )
-    for namespace in std.objectFields(cfg.namespace_egress_ips)
-    if cfg.namespace_egress_ips[namespace] != null
+    for namespace in std.objectFields(ns_egress_ips)
+    if ns_egress_ips[namespace] != null
   ]
   for interface_prefix in std.objectFields(params.egress_gateway.egress_ip_ranges)
   if params.egress_gateway.egress_ip_ranges[interface_prefix] != null
