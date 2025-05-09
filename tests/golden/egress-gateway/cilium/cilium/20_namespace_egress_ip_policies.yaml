@@ -9,6 +9,7 @@ metadata:
     cilium.syn.tools/egress-ip: 192.0.2.61
     cilium.syn.tools/egress-range: 192.0.2.32 - 192.0.2.63
     cilium.syn.tools/interface-prefix: egress_a
+    cilium.syn.tools/shadow-ips: '["198.51.100.29","198.51.100.61","198.51.100.93"]'
     cilium.syn.tools/source-namespace: bar
   labels:
     name: bar
@@ -37,6 +38,7 @@ metadata:
     cilium.syn.tools/egress-ip: 192.0.2.93
     cilium.syn.tools/egress-range: 192.0.2.64 - 192.0.2.95
     cilium.syn.tools/interface-prefix: egress_c
+    cilium.syn.tools/shadow-ips: '["198.51.100.125","198.51.100.157","198.51.100.189"]'
     cilium.syn.tools/source-namespace: baz
   labels:
     name: baz
@@ -65,6 +67,7 @@ metadata:
     cilium.syn.tools/egress-ip: 192.0.2.32
     cilium.syn.tools/egress-range: 192.0.2.32 - 192.0.2.63
     cilium.syn.tools/interface-prefix: egress_a
+    cilium.syn.tools/shadow-ips: '["198.51.100.0","198.51.100.32","198.51.100.64"]'
     cilium.syn.tools/source-namespace: foo
   labels:
     name: foo

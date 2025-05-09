@@ -1,0 +1,97 @@
+= Migrating from component-managed per-namespace egress IP to self service for namespace egress IPs
+
+== Starting situation
+
+* You have a cluster which uses the component's support for per-namespace egress IPs (parameter `egress_gateway.egress_ip_ranges.<range>.namespace_egress_ips`).
+* You want to switch the cluster to enable the customer to configure namespace egress IPs via namespace annotation.
+* https://github.com/vshn/espejote[Espejote] is installed on the cluster via https://github.com/projectsyn/component-espejote[component-espejote].
+* The cluster is already using component-cilium v1.13.0 or newer
++
+IMPORTANT: Make sure to update the cluster to component-cilium v1.13.0 or newer before applying the steps in this how-to to ensure that the egress policies aren't deleted during the migration.
+
+== Prerequisites
+
+* Cluster-admin access to the cluster
+* Local Commodore setup
+* `yq`
+
+== Steps
+
+. Switch to a temporary working directory
++
+[source,bash]
+----
+WDIR=$(mktemp -d)
+pushd $WDIR
+----
+
+. Compile the cluster which you want to update
++
+[source,bash]
+----
+CLUSTER_ID=c-cluster-id-1234 <1>
+commodore catalog compile ${CLUSTER_ID}
+----
+<1> The Project Syn ID of the cluster
+
+. Make sure you have access to the cluster
++
+[source,bash]
+----
+export KUBECONFIG=/path/to/cluster.kubeconfig
+kubectl cluster-info
+----
+
+. Update the cluster config to use the self service mechanism for namespace egress IPs
++
+[source,bash]
+----
+TENANT_ID=$(yq .parameters.cluster.tenant inventory/classes/params/cluster.yml)
+pushd inventory/classes/${TENANT_ID}
+
+yq -i ".parameters.cilium.egress_gateway.self_service_namespace_ips = true" ${CLUSTER_ID}.yml
+yq -i ".parameters.cilium.egress_gateway.egress_ip_ranges[] |= del(.namespace_egress_ips)" ${CLUSTER_ID}.yml
+
+git commit -am "Enable per-namespace self-service egress IPs on ${CLUSTER_ID}"
+git push
+
+popd
+----
+
+. Compile and push the cluster catalog
++
+[source,bash]
+----
+commodore catalog compile ${CLUSTER_ID} --push -i
+----
+
+. Add the `cilium.syn.tools/egress-ip` annotation to all namespaces which have a policy
++
+NOTE: This step assumes that the only `IsovalentEgressGatewayPolicy` resources on the cluster are per-namespace egress IP policies managed by the Commodore component.
++
+[source,bash]
+----
+kubectl get isovalentegressgatewaypolicy -l argocd.argoproj.io/instance=cilium -oyaml | \
+  yq '.items[] |
+    "kubectl annotate namespace \(.metadata.name) cilium.syn.tools/egress-ip="
+    + .metadata.annotations["cilium.syn.tools/egress-ip"]
+  ' | \
+  bash <1>
+----
+<1> If you want to verify the commands that are generated, remove the `| bash` for the first run.
+
+. Verify that the Espejote `ManagedResource` has been deployed
++
+[source,bash]
+----
+kubectl -n cilium get managedresource
+----
+
+. Remove the `argocd.argoproj.io/instance` label from the egress policies to bring the `cilium` ArgoCD app back in sync
++
+NOTE: This step assumes that the only `IsovalentEgressGatewayPolicy` resources on the cluster are per-namespace egress IP policies managed by the Commodore component.
++
+[source,bash]
+----
+kubectl label isovalentegressgatewaypolicy -l argocd.argoproj.io/instance=cilium argocd.argoproj.io/instance-
+----
