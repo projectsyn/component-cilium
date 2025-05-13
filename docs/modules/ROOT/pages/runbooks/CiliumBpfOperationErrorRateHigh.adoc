@@ -1,0 +1,37 @@
+= CiliumBpfOperationErrorRateHigh
+
+include::partial$runbooks/contribution_note.adoc[]
+
+== icon:glasses[] Overview
+
+This alert fires if the error rate for eBPF operations on a node for a map and operation is >= 50% for 10 minutes or longer.
+Depending on the map for which the alert fires this can have many different effects.
+
+=== Known maps
+
+include::partial$runbooks/known_ebpf_maps.adoc[]
+
+== icon:bug[] Steps for debugging
+
+=== Check Cilium agent status
+
+[source,bash]
+----
+NODE=<node name of affected node> <1>
+AGENT_POD=$(kubectl -n cilium get pods --field-selector=spec.nodeName=$NODE \
+  -l app.kubernetes.io/name=cilium-agent -oname)
+kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium status <2>
+kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium status --verbose <3>
+kubectl -n cilium logs $AGENT_POD --tail=50 <4>
+----
+<1> The node indicated in the alert
+<2> `--as=cluster-admin` is required on VSHN managed clusters
+<2> Show the agent status on the node
+<3> Show verbose agent status on the node.
+In this output, you may see details about eBPF sync jobs which have errors.
+<4> In some cases, you will find details on the failing eBPF operations in the agent logs.
+
+== icon:book[] Upstream documentation
+
+* https://docs.cilium.io/en/stable/network/ebpf/maps/[Cilium OSS -- eBPF Maps]
+* https://docs.cilium.io/en/stable/operations/troubleshooting/[Cilium OSS -- Troubleshooting]

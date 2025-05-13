@@ -9,5 +9,9 @@
 ** xref:how-tos/openshift4/upgrade-cilium-oss-to-cilium-enterprise.adoc[Upgrade Cilium OSS to Cilium Enterprise]
 
 .Runbooks
-
-* xref:runbooks/CiliumClustermeshRemoteClusterNotReady.adoc[]
+* Cluster mesh
+** xref:runbooks/CiliumClustermeshRemoteClusterNotReady.adoc[]
+* eBPF
+** xref:runbooks/CiliumBpfMapPressureHigh.adoc[]
+** xref:runbooks/CiliumBpfMapPressureExtremelyHigh.adoc[]
+** xref:runbooks/CiliumBpfOperationErrorRateHigh.adoc[]
