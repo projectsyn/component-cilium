@@ -1,0 +1,6 @@
+TIP: Please update this section if you encounter this alert for a map which isn't listed yet.
+
+`cilium_policy_*`::
+This is the eBPF map which contains endpoint policy configurations.
+Endpoint policy configurations are created from network policies in the cluster.
+If this map fills up completely or if there's a high error rate for operations on this map, this can severely impact traffic on the cluster, since endpoints for which the policy map cannot be configured may not work correctly.

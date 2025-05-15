@@ -1,0 +1,22 @@
+= CiliumBpfMapPressureExtremelyHigh
+
+include::partial$runbooks/contribution_note.adoc[]
+
+== icon:glasses[] Overview
+
+This alert fires if any BPF maps on a node are at >=90% utilization for 10 minutes or longer.
+Depending on the map for which the alert fires this can indicate many different things.
+See below for some cases that we've encountered so far.
+
+=== Known maps
+
+include::partial$runbooks/known_ebpf_maps.adoc[]
+
+== icon:bug[] Steps for debugging
+
+include::partial$runbooks/debug_ebpf_map_pressure.adoc[]
+
+== icon:book[] Upstream documentation
+
+* https://docs.cilium.io/en/stable/network/ebpf/maps/[Cilium OSS -- eBPF Maps]
+* https://docs.cilium.io/en/stable/operations/troubleshooting/[Cilium OSS -- Troubleshooting]
