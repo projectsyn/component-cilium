@@ -18,7 +18,7 @@ kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium-dbg policy se
 ----
 <1> The node indicated in the alert
 <2> `--as=cluster-admin` is required on VSHN managed clusters
-<2> List the Cilium policy selectors (including matched encpoint IDs) that need to be deployed on the node.
+<2> List the Cilium policy selectors (including matched endpoint IDs) that need to be deployed on the node.
 
 . Check output for any policies that match a large amount of endpoints and investigate if you can tune the associated network policy to reduce the amount of matched endpoints.
 
