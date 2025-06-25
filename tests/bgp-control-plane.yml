@@ -34,6 +34,52 @@ parameters:
                 neighbors:
                   - peerAddress: '192.0.2.100/32'
                     peerASN: 64513
+      cluster_configs:
+        lb-services:
+          nodeSelector:
+            matchLabels:
+              node-role.kubernetes.io/infra: ''
+          bgpInstances:
+            lbs:
+              localASN: 64512
+              peers:
+                peer1:
+                  peerAddress: 192.0.2.2
+                  peerASN: 64512
+                  peerConfigRef:
+                    name: lb-services
+                peer2:
+                  peerAddress: 192.0.2.3
+                  peerASN: 64512
+                  peerConfigRef:
+                    name: lb-services
+      peer_configs:
+        lb-services:
+          spec:
+            gracefulRestart:
+              enabled: true
+              restartTimeSeconds: 30
+          families:
+            unicast-v4:
+              afi: ipv4
+              safi: unicast
+              advertisements:
+                matchLabels:
+                  cilium.syn.tools/advertise: bgp
+      advertisements:
+        lb-services:
+          metadata:
+            labels:
+              cilium.syn.tools/advertise: bgp
+          advertisements:
+            lb-ips:
+              advertisementType: Service
+              service:
+                addresses:
+                  - LoadBalancerIP
+              selector:
+                matchLabels:
+                  syn.tools/load-balancer-class: cilium
       loadbalancer_ip_pools:
         lb-services:
           blocks:

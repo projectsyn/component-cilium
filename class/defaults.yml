@@ -106,6 +106,10 @@ parameters:
     bgp:
       enabled: false
       peerings: {}
+      cluster_configs: {}
+      peer_configs: {}
+      node_config_overrides: {}
+      advertisements: {}
       loadbalancer_ip_pools: {}
 
     alerts:
