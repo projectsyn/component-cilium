@@ -689,11 +689,20 @@ default:: `false`
 
 Whether to enable the BGP control plane feature in Cilium.
 
+See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/[upstream BGP control plane documentation] for details on the architecture and the individual custom resources mentioned in this section.
+
 === `bgp.peerings`
 
 [horizontal]
 type:: object
 default:: `{}`
+
+[NOTE]
+====
+This parameter is deprecated and will be removed in a future release.
+
+Please use the `cluster_configs`, `peer_configs`, `node_config_overrides` and `advertisements` parameters to configure the Cilium BGP control plane.
+====
 
 This parameter allows users to configure `CiliumBGPPeeringPolicy` resources.
 This resource is used to configure peers for the BGP control plane.
@@ -716,6 +725,237 @@ Make sure to check the upstream documentation for the version of Cilium that you
 The BGP control plane feature is relatively new and sometimes has significant changes between Cilium minor versions.
 ====
 
+=== `bgp.cluster_configs`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to configure `CiliumBGPClusterConfig` resources.
+
+The `CiliumBGPClusterConfig` resource defines the global BGP configuration and holds the list of peers.
+The resources references one or more `CiliumBGPPeerConfig` resources (see parameter `bgp.peer_configs`) which define the details of each peering connection.
+
+The component creates one `CiliumBGPClusterConfig` for each entry in this parameter.
+The key is used as `metadata.name` of the resulting object.
+
+The component supports fields `bgpInstances`, `nodeSelector`, `metadata` and `spec` in the parameter values.
+Fields `metadata` and `spec` are added to the resulting `CiliumBGPClusterConfig` as is.
+Field `nodeSelector` is used as the value for `spec.nodeSelector`.
+Field `bgpInstances` is expected to be an object and is transformed into entries for `spec.bgpInstances` of the custom resource.
+The keys of the `bgpInstances` field are used for field `name` of the entries for `spec.bgpInstances`.
+The field `peers` of each value of the `bgpInstances` field is expected to be an object and is transformed into a list.
+Again, the keys of field `peers` are used as values for `field` name for the resulting `peers` entries.
+Field `spec` is merged over the partial object generated from fields `nodeSelector` and `bgpInstances`.
+
+See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-cluster-configuration[upstream documentation] for all available configuration options.
+
+
+==== Example
+
+The following component parameters snippet is transformed into the `CiliumBGPClusterConfig` shown below.
+
+.component parameters
+[source,yaml]
+----
+bgp:
+  cluster_configs:
+    lb-services:
+      nodeSelector:
+        matchLabels:
+          node-role.kubernetes.io/infra: ''
+      bgpInstances:
+        lbs:
+          localASN: 64512
+          peers:
+            peer1:
+              peerAddress: 192.0.2.2
+              peerASN: 64512
+              peerConfigRef:
+                name: lb-services
+            peer2:
+              peerAddress: 192.0.2.3
+              peerASN: 64512
+              peerConfigRef:
+                name: lb-services
+----
+
+.CiliumBGPClusterConfig
+[source,yaml]
+----
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPClusterConfig
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    name: lb-services
+  name: lb-services
+spec:
+  bgpInstances:
+    - localASN: 64512
+      name: lbs
+      peers:
+        - name: peer1
+          peerASN: 64512
+          peerAddress: 192.0.2.2
+          peerConfigRef:
+            name: lb-services
+        - name: peer2
+          peerASN: 64512
+          peerAddress: 192.0.2.3
+          peerConfigRef:
+            name: lb-services
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/infra: ''
+----
+
+=== `bgp.peer_configs`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to configure `CiliumBGPPeerConfig` resources.
+
+The `CiliumBGPPeerConfig` resource defines a set of BGP peering connection details.
+
+The component creates one `CiliumBGPPeerConfig` for each entry in this parameter.
+The key is used as `metadata.name` of the resulting object.
+The component supports fields `families`, `metadata` and `spec` for each entry.
+Fields `metadata` and `spec` are added to the resulting `CiliumBGPPeerConfig` as is.
+Field `families` is expected to be an object and its values are used as is for field `spec.families`.
+Field `spec` is merged over the partial object created from field `families`.
+
+See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-peer-configuration[upstream documentation] for details.
+
+==== Example
+
+.component parameters
+[source,yaml]
+----
+bgp:
+  peer_configs:
+    lb-services:
+      spec:
+        gracefulRestart:
+          enabled: true
+          restartTimeSeconds: 30
+      families:
+        unicast-v4:
+          afi: ipv4
+          safi: unicast
+          advertisements:
+            matchLabels:
+              cilium.syn.tools/advertise: bgp
+----
+
+.CiliumBGPPeerConfig
+[source,yaml]
+----
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPPeerConfig
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    name: lb-services
+  name: lb-services
+spec:
+  families:
+    - advertisements:
+        matchLabels:
+          cilium.syn.tools/advertise: bgp
+      afi: ipv4
+      safi: unicast
+  gracefulRestart:
+    enabled: true
+    restartTimeSeconds: 30
+----
+
+=== `bgp.node_config_overrides`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to configure `CiliumBGPNodeConfigOverride` resources.
+
+The `CiliumBGPNodeConfigOverride` resource can be used to inject per-node customizations into the generated `CiliumBGPNodeConfig` resources.
+
+The component creates one `CiliumBGPNodeConfigOverride` for each entry in this parameter.
+The key is used as `metadata.name` of the resulting object.
+The component expects that each value in this parameter is a valid partial `CiliumBGPNodeConfigOverride` resource and doesn't apply any processing.
+
+See the https://docs.cilium.io/en/v1.16/network/bgp-control-plane/bgp-control-plane-v2/#bgp-configuration-override[upstream documentation] for details.
+
+NOTE: The resource name must match the Kubernetes node name of the node for which the configuration is intended.
+
+=== `bgp.advertisements`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to configure `CiliumBGPAdvertisement` resources.
+
+The component creates one `CiliumBGPAdvertisement` for each entry in this parameter.
+The key is used as `metadata.name` of the resulting object.
+
+The component supports fields `metadata` and `advertisements` for each entry of this parameter.
+Field `metadata` is added to the resulting resource as is.
+Field `advertisements` is expected to be an object, and the values of the object are used for field `spec.advertisements` in the resulting resource without further processing.
+
+See the https://docs.cilium.io/en/v1.16/network/bgp-control-plane/bgp-control-plane-v2/#bgp-advertisements[upstream documentation] for details.
+
+NOTE: The resource name must match the Kubernetes node name of the node for which the configuration is intended.
+
+==== Example
+
+.component parameters
+[source,yaml]
+----
+bgp:
+  advertisements:
+    lb-services:
+      metadata:
+        labels:
+          cilium.syn.tools/advertise: bgp
+      advertisements:
+        lb-ips:
+          advertisementType: Service
+          service:
+            addresses:
+              - LoadBalancerIP
+          selector:
+            matchLabels:
+              syn.tools/load-balancer-class: cilium
+----
+
+.CiliumBGPAdvertisement
+[source,yaml]
+----
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPAdvertisement
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    cilium.syn.tools/advertise: bgp
+    name: lb-services
+  name: lb-services
+spec:
+  advertisements:
+    - advertisementType: Service
+      selector:
+        matchLabels:
+          syn.tools/load-balancer-class: cilium
+      service:
+        addresses:
+          - LoadBalancerIP
+----
+
 === `bgp.loadbalancer_ip_pools`
 
 [horizontal]
@@ -725,7 +965,7 @@ default:: `{}`
 This parameter allows users to configure `CiliumLoadBalancerIPPool` resources.
 This resource is used to configure IP pools which Cilium can use to allocate IPs for services with `type=LoadBalancer`.
 
-The component expects the contents of this parametr to be key value pairs where the value is another object with field `blocks`, and optional fields `serviceSelector` and `spec`.
+The component expects the contents of this parameter to be key value pairs where the value is another object with field `blocks`, and optional fields `serviceSelector` and `spec`.
 The component generates a `CiliumLoadBalancerIPPool` for each entry in the parameter.
 The key of the entry is used as the name of the resulting resource.
 The values of fields `blocks` and `serviceSelector` are processed and used as the base values for fields `spec.blocks` (or `spec.cidrs` in Cilium <= 1.14) and `spec.serviceSelector`.
