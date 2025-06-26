@@ -108,6 +108,7 @@ parameters:
       peerings: {}
       cluster_configs: {}
       peer_configs: {}
+      auth_secrets: {}
       node_config_overrides: {}
       advertisements: {}
       loadbalancer_ip_pools: {}

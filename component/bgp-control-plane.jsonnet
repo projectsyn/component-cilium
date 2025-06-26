@@ -139,6 +139,19 @@ local bgpnodeconfigoverrides = com.generateResources(
   CiliumBGPNodeConfigOverride
 );
 
+local validate_auth_secret(name, config) =
+  local data = std.get(config, 'data', {});
+  local sdata = std.get(config, 'stringData', {});
+  assert
+    std.objectHas(data, 'password') || std.objectHas(sdata, 'password')
+    : "Cilium BGP auth secret `%s` doesn't have key `password`" % name;
+  config;
+
+local authsecrets = com.generateResources(
+  std.mapWithKey(validate_auth_secret, params.bgp.auth_secrets),
+  kube.Secret
+);
+
 local lb_ip_pools = util.ipPool(params.bgp.loadbalancer_ip_pools);
 
 {
@@ -152,6 +165,8 @@ local lb_ip_pools = util.ipPool(params.bgp.loadbalancer_ip_pools);
     '40_bgp_advertisements']: bgpadvertisements,
   [if params.bgp.enabled && std.length(bgpnodeconfigoverrides) > 0 then
     '40_bgp_node_config_overrides']: bgpnodeconfigoverrides,
+  [if params.bgp.enabled && std.length(authsecrets) > 0 then
+    '40_bgp_auth_secrets']: authsecrets,
   [if params.bgp.enabled && std.length(lb_ip_pools) > 0 then
     '40_loadbalancer_ip_pools']: lb_ip_pools,
 }

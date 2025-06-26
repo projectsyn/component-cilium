@@ -80,6 +80,13 @@ parameters:
               selector:
                 matchLabels:
                   syn.tools/load-balancer-class: cilium
+      auth_secrets:
+        test:
+          data:
+            password: foobar
+        test2:
+          stringData:
+            password: foobar
       loadbalancer_ip_pools:
         lb-services:
           blocks:

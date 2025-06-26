@@ -874,6 +874,21 @@ spec:
     restartTimeSeconds: 30
 ----
 
+=== `bgp.auth_secrets`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to configure `Secret` resources to use as BGP auth secrets.
+
+The component creates one `Secret` for each entry in this parameter.
+The key is used as `metadata.name` of the resulting object.
+The component expects that each value in this parameter is a valid partial `Secret` resource.
+The component validates that each secret has field `password`, which is required by the BGP control plane for auth secrets.
+
+See the https://docs.cilium.io/en/v1.16/network/bgp-control-plane/bgp-control-plane-v2/#md5-password[upstream documentation] for details.
+
 === `bgp.node_config_overrides`
 
 [horizontal]
