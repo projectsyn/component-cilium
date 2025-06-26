@@ -7,15 +7,6 @@ local util = import 'util.libsonnet';
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
-local CiliumBGPPeeringPolicy(name) =
-  kube._Object('cilium.io/v2alpha1', 'CiliumBGPPeeringPolicy', name) {
-    metadata+: {
-      annotations+: {
-        'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
-      },
-    },
-  };
-
 local CiliumBGPClusterConfig(name) =
   kube._Object('cilium.io/v2alpha1', 'CiliumBGPClusterConfig', name) {
     metadata+: {
@@ -55,34 +46,6 @@ local CiliumBGPNodeConfigOverride(name) =
     },
     spec: {},
   };
-
-local render_peering(name, peering) =
-  local render_vrouter(config) = config {
-    neighbors: std.objectValues(std.mapWithKey(
-      function(peerAddr, n) n {
-        peerAddress: peerAddr,
-      },
-      super.neighbors
-    )),
-  };
-  {
-    spec: {
-      nodeSelector: std.get(peering, 'nodeSelector', {}),
-      virtualRouters: std.map(
-        render_vrouter,
-        std.objectValues(peering.virtualRouters)
-      ),
-    } + com.makeMergeable(std.get(peering, 'spec', {})),
-  };
-
-local peerings = com.generateResources(
-  std.mapWithKey(render_peering, params.bgp.peerings),
-  std.trace(
-    'CiliumBGPPeeringPolicy is deprecated. ' +
-    'We recommend migrating to BGPv2, see https://hub.syn.tools/cilium/TODO',
-    CiliumBGPPeeringPolicy
-  )
-);
 
 local validate_auth_secret(name, config) =
   local data = std.get(config, 'data', {});
@@ -177,8 +140,6 @@ local bgpnodeconfigoverrides = com.generateResources(
 local lb_ip_pools = util.ipPool(params.bgp.loadbalancer_ip_pools);
 
 {
-  [if params.bgp.enabled && std.length(peerings) > 0 then
-    '40_bgp_peerings']: peerings,
   [if params.bgp.enabled && std.length(bgpclusterconfigs) > 0 then
     '40_bgp_cluster_configs']: bgpclusterconfigs,
   [if params.bgp.enabled && std.length(bgppeerconfigs) > 0 then

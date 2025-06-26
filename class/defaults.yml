@@ -105,7 +105,6 @@ parameters:
 
     bgp:
       enabled: false
-      peerings: {}
       cluster_configs: {}
       peer_configs: {}
       auth_secrets: {}

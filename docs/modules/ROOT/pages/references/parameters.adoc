@@ -691,40 +691,6 @@ Whether to enable the BGP control plane feature in Cilium.
 
 See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/[upstream BGP control plane documentation] for details on the architecture and the individual custom resources mentioned in this section.
 
-=== `bgp.peerings`
-
-[horizontal]
-type:: object
-default:: `{}`
-
-[NOTE]
-====
-This parameter is deprecated and will be removed in a future release.
-
-Please use the `cluster_configs`, `peer_configs`, `node_config_overrides` and `advertisements` parameters to configure the Cilium BGP control plane.
-====
-
-This parameter allows users to configure `CiliumBGPPeeringPolicy` resources.
-This resource is used to configure peers for the BGP control plane.
-
-The component expects the contents of this parameter to be key value pairs where the value is another object with field `virtualRouters` and optional fields `nodeSelector` and `spec`.
-The component generates a `CiliumBGPPeeringPolicy` for each entry in the parameter.
-The key of the entry is used as the name of the resulting resource.
-The values of fields `virtualRouters` and `nodeSelector` are processed and used as the base values for fields `spec.virtualRouters` and `spec.nodeSelector` in the resulting resource.
-The value of field `spec` is merged into `spec` of the resource.
-
-Field `virtualRouters` in the parameter entry value is expected to be an object.
-The key of each entry in this field is expected to be a peer address (in CIDR notation, such as `192.0.2.2/32`) and the value of each entry is expected to be a valid entry for `spec.virtualRouters`.
-The key is written into field `peerAddress` of the value to construct the final entry for `spec.virtualRouters`.
-
-See the https://docs.cilium.io/en/stable/network/bgp-control-plane/#ciliumbgppeeringpolicy-crd[upstream documentation] for the full set of supported fields.
-
-[NOTE]
-====
-Make sure to check the upstream documentation for the version of Cilium that you're running.
-The BGP control plane feature is relatively new and sometimes has significant changes between Cilium minor versions.
-====
-
 === `bgp.cluster_configs`
 
 [horizontal]
