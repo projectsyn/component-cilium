@@ -84,14 +84,60 @@ local peerings = com.generateResources(
   )
 );
 
+local validate_auth_secret(name, config) =
+  local data = std.get(config, 'data', {});
+  local sdata = std.get(config, 'stringData', {});
+  assert
+    std.objectHas(data, 'password') || std.objectHas(sdata, 'password')
+    : "Cilium BGP auth secret `%s` doesn't have key `password`" % name;
+  config;
+
+local authsecrets = com.generateResources(
+  std.mapWithKey(validate_auth_secret, params.bgp.auth_secrets),
+  kube.Secret
+);
+
+local render_peer_config(name, config) =
+  local auth_secret_names = [ o.metadata.name for o in authsecrets ];
+  local validate_peer_config(pconfig) =
+    local secretname = std.get(pconfig.spec, 'authSecretRef');
+    assert
+      secretname == null || std.member(auth_secret_names, secretname)
+      : "CiliumBGPPeerConfig `%s` references auth secret `%s` which doesn't exist"
+        % [ name, secretname ];
+    pconfig;
+  validate_peer_config({
+    metadata+: std.get(config, 'metadata', {}),
+    spec: {
+      families: std.objectValues(std.get(config, 'families', {})),
+    } + com.makeMergeable(std.get(config, 'spec', {})),
+  });
+
+local bgppeerconfigs = com.generateResources(
+  std.mapWithKey(render_peer_config, params.bgp.peer_configs),
+  CiliumBGPPeerConfig
+);
+
 local render_cluster_config(name, config) =
-  local render_instance(name, iconfig) = iconfig {
-    name: name,
-    peers: [
-      iconfig.peers[name] { name: name }
-      for name in std.objectFields(iconfig.peers)
-    ],
-  };
+  local peerConfigNames = [ o.metadata.name for o in bgppeerconfigs ];
+  local validate_peer_config(iname, pconfig) =
+    local pcfgname = std.get(pconfig, 'peerConfigRef', { name: '' }).name;
+    assert
+      std.member(peerConfigNames, pcfgname)
+      : 'Peer `%s` in BGP instance `%s` in CiliumBGPClusterConfig `%s` ' %
+        [ pconfig.name, iname, name ]
+        + "references CiliumBGPPeerConfig `%s` which doesn't exist" %
+          [ pcfgname ];
+    pconfig;
+  local render_instance(name, iconfig) =
+    local cfg = iconfig {
+      name: name,
+      peers: [
+        validate_peer_config(name, iconfig.peers[pname] { name: pname })
+        for pname in std.objectFields(iconfig.peers)
+      ],
+    };
+    cfg;
   {
     metadata+: std.get(config, 'metadata', {}),
     spec: {
@@ -108,18 +154,6 @@ local bgpclusterconfigs = com.generateResources(
   CiliumBGPClusterConfig
 );
 
-local render_peer_config(name, config) =
-  {
-    metadata+: std.get(config, 'metadata', {}),
-    spec: {
-      families: std.objectValues(std.get(config, 'families', {})),
-    } + com.makeMergeable(std.get(config, 'spec', {})),
-  };
-
-local bgppeerconfigs = com.generateResources(
-  std.mapWithKey(render_peer_config, params.bgp.peer_configs),
-  CiliumBGPPeerConfig
-);
 
 local render_advertisement(name, config) =
   {
@@ -139,18 +173,6 @@ local bgpnodeconfigoverrides = com.generateResources(
   CiliumBGPNodeConfigOverride
 );
 
-local validate_auth_secret(name, config) =
-  local data = std.get(config, 'data', {});
-  local sdata = std.get(config, 'stringData', {});
-  assert
-    std.objectHas(data, 'password') || std.objectHas(sdata, 'password')
-    : "Cilium BGP auth secret `%s` doesn't have key `password`" % name;
-  config;
-
-local authsecrets = com.generateResources(
-  std.mapWithKey(validate_auth_secret, params.bgp.auth_secrets),
-  kube.Secret
-);
 
 local lb_ip_pools = util.ipPool(params.bgp.loadbalancer_ip_pools);
 

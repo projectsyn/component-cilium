@@ -748,6 +748,8 @@ The field `peers` of each value of the `bgpInstances` field is expected to be an
 Again, the keys of field `peers` are used as values for `field` name for the resulting `peers` entries.
 Field `spec` is merged over the partial object generated from fields `nodeSelector` and `bgpInstances`.
 
+The component validates that `CiliumBGPClusterConfig` resources only reference `CiliumBGPPeerConfig` resources which are defined in parameter `bgp.peer_configs`.
+
 See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-cluster-configuration[upstream documentation] for all available configuration options.
 
 
@@ -827,6 +829,8 @@ The component supports fields `families`, `metadata` and `spec` for each entry.
 Fields `metadata` and `spec` are added to the resulting `CiliumBGPPeerConfig` as is.
 Field `families` is expected to be an object and its values are used as is for field `spec.families`.
 Field `spec` is merged over the partial object created from field `families`.
+
+The component validates that `CiliumBGPPeerConfig` resources only reference BGP auth secret `Secret` resources which are defined in parameter `bgp.auth_secrets`.
 
 See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-peer-configuration[upstream documentation] for details.
 
