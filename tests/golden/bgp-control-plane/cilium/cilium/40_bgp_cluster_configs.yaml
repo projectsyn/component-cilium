@@ -1,0 +1,26 @@
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPClusterConfig
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    name: lb-services
+  name: lb-services
+spec:
+  bgpInstances:
+    - localASN: 64512
+      name: lbs
+      peers:
+        - name: peer1
+          peerASN: 64512
+          peerAddress: 192.0.2.2
+          peerConfigRef:
+            name: lb-services
+        - name: peer2
+          peerASN: 64512
+          peerAddress: 192.0.2.3
+          peerConfigRef:
+            name: lb-services
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/infra: ''
