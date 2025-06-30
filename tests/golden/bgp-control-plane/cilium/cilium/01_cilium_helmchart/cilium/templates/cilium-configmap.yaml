@@ -3,7 +3,7 @@ data:
   agent-not-ready-taint-key: node.cilium.io/agent-not-ready
   arping-refresh-period: 30s
   auto-direct-node-routes: 'false'
-  bgp-secrets-namespace: kube-system
+  bgp-secrets-namespace: cilium
   bpf-events-drop-enabled: 'true'
   bpf-events-policy-verdict-enabled: 'true'
   bpf-events-trace-enabled: 'true'

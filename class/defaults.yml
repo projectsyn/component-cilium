@@ -21,7 +21,7 @@ parameters:
     cilium_helm_values:
       bgpControlPlane:
         enabled: ${cilium:bgp:enabled}
-        secretNamespace:
+        secretsNamespace:
           # Ensure that Cilium's BGP control plane is configured to look for
           # peering secrets in the same namespace where Cilium is installed.
           # Without this, it's not possible to enable the BGP control plane

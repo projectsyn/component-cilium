@@ -21,7 +21,7 @@ metadata:
   labels:
     app.kubernetes.io/part-of: cilium
   name: cilium-bgp-control-plane-secrets
-  namespace: kube-system
+  namespace: cilium
 rules:
   - apiGroups:
       - ''

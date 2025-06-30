@@ -6,7 +6,7 @@ metadata:
 spec:
   bgpControlPlane:
     enabled: false
-    secretNamespace:
+    secretsNamespace:
       name: cilium
   bpf:
     masquerade: true
