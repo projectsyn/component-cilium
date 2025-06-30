@@ -53,7 +53,11 @@ local validate_auth_secret(name, config) =
   assert
     std.objectHas(data, 'password') || std.objectHas(sdata, 'password')
     : "Cilium BGP auth secret `%s` doesn't have key `password`" % name;
-  config;
+  config {
+    metadata+: {
+      namespace: params.cilium_helm_values.bgpControlPlane.secretsNamespace.name,
+    },
+  };
 
 local authsecrets = com.generateResources(
   std.mapWithKey(validate_auth_secret, params.bgp.auth_secrets),
