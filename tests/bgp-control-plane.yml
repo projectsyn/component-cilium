@@ -30,6 +30,7 @@ parameters:
                   peerASN: 64512
                   peerConfigRef:
                     name: lb-services
+        test: null
       peer_configs:
         lb-services:
           spec:
@@ -43,6 +44,7 @@ parameters:
               advertisements:
                 matchLabels:
                   cilium.syn.tools/advertise: bgp
+        test: null
       advertisements:
         lb-services:
           metadata:
@@ -57,6 +59,7 @@ parameters:
               selector:
                 matchLabels:
                   syn.tools/load-balancer-class: cilium
+        test: null
       auth_secrets:
         test:
           data:
@@ -64,6 +67,7 @@ parameters:
         test2:
           stringData:
             password: foobar
+        foo: null
       loadbalancer_ip_pools:
         lb-services:
           blocks:
