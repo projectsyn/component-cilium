@@ -105,6 +105,7 @@ parameters:
 
     bgp:
       enabled: false
+      enterprise: false
       cluster_configs: {}
       peer_configs: {}
       auth_secrets: {}
