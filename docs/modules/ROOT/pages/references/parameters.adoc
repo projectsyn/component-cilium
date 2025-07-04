@@ -857,6 +857,11 @@ The key is used as `metadata.name` of the resulting object.
 The component expects that each value in this parameter is a valid partial `Secret` resource.
 The component validates that each secret has field `password`, which is required by the BGP control plane for auth secrets.
 
+By default, the component configures Cilium to look for BGP auth secrets in namespace `cilium`.
+The namespace can be changed by setting Helm value `bgpControlPlane.secretsNamespace.name`.
+
+The component sets `metadata.namespace` to the configured `bgpControlPlane.secretsNamspace.name` for secrets defined through this parameter.
+
 See the https://docs.cilium.io/en/v1.16/network/bgp-control-plane/bgp-control-plane-v2/#md5-password[upstream documentation] for details.
 
 === `bgp.node_config_overrides`
