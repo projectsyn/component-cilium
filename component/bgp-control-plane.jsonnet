@@ -48,16 +48,17 @@ local CiliumBGPNodeConfigOverride(name) =
   };
 
 local validate_auth_secret(name, config) =
-  local data = std.get(config, 'data', {});
-  local sdata = std.get(config, 'stringData', {});
-  assert
-    std.objectHas(data, 'password') || std.objectHas(sdata, 'password')
-    : "Cilium BGP auth secret `%s` doesn't have key `password`" % name;
-  config {
-    metadata+: {
-      namespace: params.cilium_helm_values.bgpControlPlane.secretsNamespace.name,
-    },
-  };
+  if config != null then
+    local data = std.get(config, 'data', {});
+    local sdata = std.get(config, 'stringData', {});
+    assert
+      std.objectHas(data, 'password') || std.objectHas(sdata, 'password')
+      : "Cilium BGP auth secret `%s` doesn't have key `password`" % name;
+    config {
+      metadata+: {
+        namespace: params.cilium_helm_values.bgpControlPlane.secretsNamespace.name,
+      },
+    };
 
 local authsecrets = com.generateResources(
   std.mapWithKey(validate_auth_secret, params.bgp.auth_secrets),
@@ -65,20 +66,21 @@ local authsecrets = com.generateResources(
 );
 
 local render_peer_config(name, config) =
-  local auth_secret_names = [ o.metadata.name for o in authsecrets ];
-  local validate_peer_config(pconfig) =
-    local secretname = std.get(pconfig.spec, 'authSecretRef');
-    assert
-      secretname == null || std.member(auth_secret_names, secretname)
-      : "CiliumBGPPeerConfig `%s` references auth secret `%s` which doesn't exist"
-        % [ name, secretname ];
-    pconfig;
-  validate_peer_config({
-    metadata+: std.get(config, 'metadata', {}),
-    spec: {
-      families: std.objectValues(std.get(config, 'families', {})),
-    } + com.makeMergeable(std.get(config, 'spec', {})),
-  });
+  if config != null then
+    local auth_secret_names = [ o.metadata.name for o in authsecrets ];
+    local validate_peer_config(pconfig) =
+      local secretname = std.get(pconfig.spec, 'authSecretRef');
+      assert
+        secretname == null || std.member(auth_secret_names, secretname)
+        : "CiliumBGPPeerConfig `%s` references auth secret `%s` which doesn't exist"
+          % [ name, secretname ];
+      pconfig;
+    validate_peer_config({
+      metadata+: std.get(config, 'metadata', {}),
+      spec: {
+        families: std.objectValues(std.get(config, 'families', {})),
+      } + com.makeMergeable(std.get(config, 'spec', {})),
+    });
 
 local bgppeerconfigs = com.generateResources(
   std.mapWithKey(render_peer_config, params.bgp.peer_configs),
@@ -86,35 +88,36 @@ local bgppeerconfigs = com.generateResources(
 );
 
 local render_cluster_config(name, config) =
-  local peerConfigNames = [ o.metadata.name for o in bgppeerconfigs ];
-  local validate_peer_config(iname, pconfig) =
-    local pcfgname = std.get(pconfig, 'peerConfigRef', { name: '' }).name;
-    assert
-      std.member(peerConfigNames, pcfgname)
-      : 'Peer `%s` in BGP instance `%s` in CiliumBGPClusterConfig `%s` ' %
-        [ pconfig.name, iname, name ]
-        + "references CiliumBGPPeerConfig `%s` which doesn't exist" %
-          [ pcfgname ];
-    pconfig;
-  local render_instance(name, iconfig) =
-    local cfg = iconfig {
-      name: name,
-      peers: [
-        validate_peer_config(name, iconfig.peers[pname] { name: pname })
-        for pname in std.objectFields(iconfig.peers)
-      ],
+  if config != null then
+    local peerConfigNames = [ o.metadata.name for o in bgppeerconfigs ];
+    local validate_peer_config(iname, pconfig) =
+      local pcfgname = std.get(pconfig, 'peerConfigRef', { name: '' }).name;
+      assert
+        std.member(peerConfigNames, pcfgname)
+        : 'Peer `%s` in BGP instance `%s` in CiliumBGPClusterConfig `%s` ' %
+          [ pconfig.name, iname, name ]
+          + "references CiliumBGPPeerConfig `%s` which doesn't exist" %
+            [ pcfgname ];
+      pconfig;
+    local render_instance(name, iconfig) =
+      local cfg = iconfig {
+        name: name,
+        peers: [
+          validate_peer_config(name, iconfig.peers[pname] { name: pname })
+          for pname in std.objectFields(iconfig.peers)
+        ],
+      };
+      cfg;
+    {
+      metadata+: std.get(config, 'metadata', {}),
+      spec: {
+        nodeSelector: std.get(config, 'nodeSelector', {}),
+        bgpInstances: std.objectValues(std.mapWithKey(
+          render_instance,
+          config.bgpInstances
+        )),
+      } + com.makeMergeable(std.get(config, 'spec', {})),
     };
-    cfg;
-  {
-    metadata+: std.get(config, 'metadata', {}),
-    spec: {
-      nodeSelector: std.get(config, 'nodeSelector', {}),
-      bgpInstances: std.objectValues(std.mapWithKey(
-        render_instance,
-        config.bgpInstances
-      )),
-    } + com.makeMergeable(std.get(config, 'spec', {})),
-  };
 
 local bgpclusterconfigs = com.generateResources(
   std.mapWithKey(render_cluster_config, params.bgp.cluster_configs),
@@ -123,12 +126,13 @@ local bgpclusterconfigs = com.generateResources(
 
 
 local render_advertisement(name, config) =
-  {
-    metadata+: std.get(config, 'metadata', {}),
-    spec: {
-      advertisements: std.objectValues(std.get(config, 'advertisements', {})),
-    },
-  };
+  if config != null then
+    {
+      metadata+: std.get(config, 'metadata', {}),
+      spec: {
+        advertisements: std.objectValues(std.get(config, 'advertisements', {})),
+      },
+    };
 
 local bgpadvertisements = com.generateResources(
   std.mapWithKey(render_advertisement, params.bgp.advertisements),
