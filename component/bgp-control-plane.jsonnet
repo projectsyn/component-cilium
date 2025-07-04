@@ -7,8 +7,18 @@ local util = import 'util.libsonnet';
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
+local crd_prefix = if params.bgp.enterprise then 'Isovalent' else 'Cilium';
+local apiVersion = if params.bgp.enterprise then (
+  if util.version.minor >= 17 then
+    'isovalent.com/v1'
+  else
+    'isovalent.com/v1alpha1'
+)
+else
+  'cilium.io/v2alpha1';
+
 local CiliumBGPClusterConfig(name) =
-  kube._Object('cilium.io/v2alpha1', 'CiliumBGPClusterConfig', name) {
+  kube._Object(apiVersion, '%sBGPClusterConfig' % crd_prefix, name) {
     metadata+: {
       annotations+: {
         'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
@@ -18,7 +28,7 @@ local CiliumBGPClusterConfig(name) =
   };
 
 local CiliumBGPPeerConfig(name) =
-  kube._Object('cilium.io/v2alpha1', 'CiliumBGPPeerConfig', name) {
+  kube._Object(apiVersion, '%sBGPPeerConfig' % crd_prefix, name) {
     metadata+: {
       annotations+: {
         'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
@@ -28,7 +38,7 @@ local CiliumBGPPeerConfig(name) =
   };
 
 local CiliumBGPAdvertisement(name) =
-  kube._Object('cilium.io/v2alpha1', 'CiliumBGPAdvertisement', name) {
+  kube._Object(apiVersion, '%sBGPAdvertisement' % crd_prefix, name) {
     metadata+: {
       annotations+: {
         'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
@@ -38,7 +48,7 @@ local CiliumBGPAdvertisement(name) =
   };
 
 local CiliumBGPNodeConfigOverride(name) =
-  kube._Object('cilium.io/v2alpha1', 'CiliumBGPNodeConfigOverride', name) {
+  kube._Object(apiVersion, '%sBGPNodeConfigOverride' % crd_prefix, name) {
     metadata+: {
       annotations+: {
         'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
@@ -72,8 +82,8 @@ local render_peer_config(name, config) =
       local secretname = std.get(pconfig.spec, 'authSecretRef');
       assert
         secretname == null || std.member(auth_secret_names, secretname)
-        : "CiliumBGPPeerConfig `%s` references auth secret `%s` which doesn't exist"
-          % [ name, secretname ];
+        : "%sBGPPeerConfig `%s` references auth secret `%s` which doesn't exist"
+          % [ crd_prefix, name, secretname ];
       pconfig;
     validate_peer_config({
       metadata+: std.get(config, 'metadata', {}),
@@ -94,10 +104,10 @@ local render_cluster_config(name, config) =
       local pcfgname = std.get(pconfig, 'peerConfigRef', { name: '' }).name;
       assert
         std.member(peerConfigNames, pcfgname)
-        : 'Peer `%s` in BGP instance `%s` in CiliumBGPClusterConfig `%s` ' %
-          [ pconfig.name, iname, name ]
-          + "references CiliumBGPPeerConfig `%s` which doesn't exist" %
-            [ pcfgname ];
+        : 'Peer `%s` in BGP instance `%s` in %sBGPClusterConfig `%s` ' %
+          [ pconfig.name, iname, crd_prefix, name ]
+          + "references %sBGPPeerConfig `%s` which doesn't exist" %
+            [ crd_prefix, pcfgname ];
       pconfig;
     local render_instance(name, iconfig) =
       local cfg = iconfig {
