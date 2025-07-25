@@ -1,13 +1,13 @@
 {
   "template": "https://github.com/projectsyn/commodore-component-template.git",
-  "commit": "98d16f99766e6c6d97322dbe42e058f0e2bf73d0",
+  "commit": "56dd2ee980f197ec2c8b3977c16458e43d0c6ef2",
   "checkout": "main",
   "context": {
     "cookiecutter": {
       "name": "Cilium",
       "slug": "cilium",
       "parameter_key": "cilium",
-      "test_cases": "defaults helm-opensource olm-opensource egress-gateway bgp-control-plane kubeproxyreplacement-strict l2-announcement clustermesh",
+      "test_cases": "defaults helm-opensource olm-opensource egress-gateway bgp-control-plane kubeproxyreplacement-strict l2-announcement clustermesh enterprise-bgp",
       "add_lib": "n",
       "add_pp": "n",
       "add_golden": "y",
@@ -25,7 +25,7 @@
       "github_name": "component-cilium",
       "github_url": "https://github.com/projectsyn/component-cilium",
       "_template": "https://github.com/projectsyn/commodore-component-template.git",
-      "_commit": "98d16f99766e6c6d97322dbe42e058f0e2bf73d0"
+      "_commit": "56dd2ee980f197ec2c8b3977c16458e43d0c6ef2"
     }
   },
   "directory": null
