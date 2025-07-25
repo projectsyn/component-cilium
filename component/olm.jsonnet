@@ -8,11 +8,22 @@ local params = inv.parameters.cilium;
 local helm = import 'render-helm-values.jsonnet';
 local util = import 'util.libsonnet';
 
+// NOTE(sg): We introduce hidden parameter `__mock_enterprise` which can be
+// set to `true` in test cases to test `params.release == enterprise` behavior
+// while downloading the opensource OLM tarball (see test case
+// `enterprise-bgp` for an example).
+// Notably, we must override this for most of the OLM processing, since we're
+// using the opensource OLM manifests for the mock enterprise test.
+local release = if std.get(params, '__mock_enterprise', false) then
+  'opensource'
+else
+  params.release;
+
 local olmDir =
   local prefix = '%s/olm/cilium/cilium-olm/' % inv.parameters._base_directory;
-  if params.release == 'opensource' then
+  if release == 'opensource' then
     prefix + 'olm-for-cilium-main/manifests/cilium.v%s/' % params.olm.full_version
-  else if params.release == 'enterprise' then
+  else if release == 'enterprise' then
     local path_variants = [
       // Known releases: 1.11.5, 1.12.6
       '',
@@ -39,7 +50,7 @@ local olmDir =
     else
       dir
   else
-    error "Unknown release '%s'" % [ params.release ];
+    error "Unknown release '%s'" % [ release ];
 
 local olmFiles = std.foldl(
   function(status, file)
@@ -98,7 +109,7 @@ local patchManifests = function(file, has_csv)
                   '--zap-log-level=%s' % params.olm.log_level,
                 ],
                 env+:
-                  if params.release == 'opensource' then
+                  if release == 'opensource' then
                     (
                       if hasK8sHost then
                         [
@@ -143,13 +154,16 @@ local patchManifests = function(file, has_csv)
         },
       } else {},
     };
+    // NOTE(sg): This is explicitly `params.relase` since we don't want the
+    // fall back to the opensource logic for the __mock_enterprise=true test
+    // cases.
     if params.release == 'enterprise' then {
       cilium+: patch,
     } else
       patch;
   if (
     file.contents.kind == 'CiliumConfig'
-    && file.contents.metadata.name == metadata_name_map[params.release].CiliumConfig
+    && file.contents.metadata.name == metadata_name_map[release].CiliumConfig
     && file.contents.metadata.namespace == 'cilium'
   ) then
     file {
@@ -158,7 +172,7 @@ local patchManifests = function(file, has_csv)
       },
     }
   else if (
-    params.release == 'enterprise'
+    release == 'enterprise'
     && file.contents.kind == 'ConfigMap'
     && file.contents.metadata.name == 'cilium-ee-olm-overrides'
     && file.contents.metadata.namespace == 'cilium'
@@ -175,7 +189,7 @@ local patchManifests = function(file, has_csv)
     }
   else if (
     file.contents.kind == 'Deployment'
-    && file.contents.metadata.name == metadata_name_map[params.release].Deployment
+    && file.contents.metadata.name == metadata_name_map[release].Deployment
     && file.contents.metadata.namespace == 'cilium'
   ) then
     file {
@@ -191,7 +205,7 @@ local patchManifests = function(file, has_csv)
           install+: {
             spec+: {
               deployments: [
-                if d.name == metadata_name_map[params.release].Deployment then
+                if d.name == metadata_name_map[release].Deployment then
                   d + deploymentPatch
                 else
                   d
@@ -216,7 +230,7 @@ local patchManifests = function(file, has_csv)
   else if (
     file.contents.kind == 'Role' &&
     file.contents.metadata.namespace == 'cilium' &&
-    file.contents.metadata.name == metadata_name_map[params.release].OlmRole
+    file.contents.metadata.name == metadata_name_map[release].OlmRole
   ) then
     file {
       contents+: {
@@ -255,7 +269,7 @@ local patchManifests = function(file, has_csv)
     }
   else if (
     file.contents.kind == 'ClusterRole' &&
-    file.contents.metadata.name == metadata_name_map[params.release].OlmClusterRole
+    file.contents.metadata.name == metadata_name_map[release].OlmClusterRole
   ) then
     file {
       contents+: {
@@ -304,7 +318,7 @@ local patchManifests = function(file, has_csv)
     file;
 
 local kubeSystemSecretRO = [
-  kube.Role(metadata_name_map[params.release].OlmRole) {
+  kube.Role(metadata_name_map[release].OlmRole) {
     metadata+: {
       namespace: 'kube-system',
     },
@@ -316,20 +330,20 @@ local kubeSystemSecretRO = [
       },
     ],
   },
-  kube.RoleBinding(metadata_name_map[params.release].OlmRole) {
+  kube.RoleBinding(metadata_name_map[release].OlmRole) {
     metadata+: {
       namespace: 'kube-system',
     },
     roleRef: {
       apiGroup: 'rbac.authorization.k8s.io',
       kind: 'Role',
-      name: metadata_name_map[params.release].OlmRole,
+      name: metadata_name_map[release].OlmRole,
     },
     subjects: [
       {
         kind: 'ServiceAccount',
         namespace: 'cilium',
-        name: metadata_name_map[params.release].OlmRole,
+        name: metadata_name_map[release].OlmRole,
       },
     ],
   },
