@@ -691,6 +691,28 @@ Whether to enable the BGP control plane feature in Cilium.
 
 See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/[upstream BGP control plane documentation] for details on the architecture and the individual custom resources mentioned in this section.
 
+=== `bgp.enterprise`
+
+[horizontal]
+type:: bool
+default:: `false`
+
+Whether to enable the enterprise BGP control plane feature in Cilium.
+This parameter has no effect if the component is used to deploy non-enterprise Cilium.
+
+When this parameter is set to `true`, the component will copy the contents of Helm value `bgpControlPlane` to Helm value `enterprise.bgpControlPlane`.
+Additionally, the component will override Helm value `bgpControlPlane.enabled` to `false`, since Cilium doesn't support having both control planes enabled simultaneously.
+This mechanism allows users to switch between the non-enterprise and enterprise BGP control plane without having to manually move Helm values.
+
+See the https://docs.isovalent.com/configuration-guide/networking/bgp/index.html[Enterprise documentation] for details on the enterprise BGP control plane.
+
+[NOTE]
+====
+The component will automatically deploy `IsovalentBGP*` resources instead of `CiliumBGP*` resources for the following parameters when the enterprise control plane is enabled.
+
+The `IsovalentBGP*` resources are structurally equivalent to the `CiliumBGP*` resources, but support the additional enterprise features, such as egress IP announcements.
+====
+
 === `bgp.cluster_configs`
 
 [horizontal]

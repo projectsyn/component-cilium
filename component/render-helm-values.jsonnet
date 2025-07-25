@@ -59,11 +59,33 @@ local forceBPFMasqueradeEgressGW = {
   },
 };
 
+local enterpriseBGPControlPlane =
+  if params.release != 'enterprise' then
+    std.trace('Cannot enable enterprise BGP control plane on opensource Cilium', {})
+  else if params.bgp.enterprise then
+    std.trace(
+      'User requested Enterprise BGP control plane: ' +
+      'Moving `bgpControlPlane` Helm values to `enterprise.bgpControlPlane` ' +
+      'and generating `IsovalentBGP*` resources.',
+      {
+        local bgp_values = super.bgpControlPlane,
+        bgpControlPlane: {
+          enabled: false,
+        },
+        enterprise+: {
+          bgpControlPlane+: bgp_values,
+        },
+      }
+    )
+  else
+    {};
+
 local cilium_values = std.prune(
   params.cilium_helm_values +
   replaceDeprecatedIPv4PodCIDR +
   renderPodCIDRList +
-  forceBPFMasqueradeEgressGW
+  forceBPFMasqueradeEgressGW +
+  enterpriseBGPControlPlane
 );
 
 local helm_values = {

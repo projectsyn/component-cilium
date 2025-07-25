@@ -1,0 +1,18 @@
+apiVersion: isovalent.com/v1alpha1
+kind: IsovalentBGPPeerConfig
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    name: lb-services
+  name: lb-services
+spec:
+  families:
+    - advertisements:
+        matchLabels:
+          cilium.syn.tools/advertise: bgp
+      afi: ipv4
+      safi: unicast
+  gracefulRestart:
+    enabled: true
+    restartTimeSeconds: 30

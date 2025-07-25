@@ -1,0 +1,53 @@
+parameters:
+  kapitan:
+    dependencies:
+      - type: https
+        source: https://raw.githubusercontent.com/appuio/component-openshift4-monitoring/v6.11.3/lib/openshift4-monitoring-prom.libsonnet
+        output_path: vendor/lib/prom.libsonnet
+      - type: https
+        source: https://raw.githubusercontent.com/appuio/component-openshift4-monitoring/v6.11.3/lib/openshift4-monitoring-alert-patching.libsonnet
+        output_path: vendor/lib/alert-patching.libsonnet
+
+  cilium:
+    install_method: olm
+    release: enterprise
+    __mock_enterprise: true
+    olm:
+      source:
+        enterprise: https://github.com/isovalent/olm-for-cilium/archive/main.tar.gz
+
+    bgp:
+      enabled: true
+      enterprise: true
+      cluster_configs:
+        lb-services:
+          nodeSelector:
+            matchLabels:
+              node-role.kubernetes.io/infra: ''
+          bgpInstances:
+            lbs:
+              localASN: 64512
+              peers:
+                peer1:
+                  peerAddress: 192.0.2.2
+                  peerASN: 64512
+                  peerConfigRef:
+                    name: lb-services
+                peer2:
+                  peerAddress: 192.0.2.3
+                  peerASN: 64512
+                  peerConfigRef:
+                    name: lb-services
+      peer_configs:
+        lb-services:
+          spec:
+            gracefulRestart:
+              enabled: true
+              restartTimeSeconds: 30
+          families:
+            unicast-v4:
+              afi: ipv4
+              safi: unicast
+              advertisements:
+                matchLabels:
+                  cilium.syn.tools/advertise: bgp
