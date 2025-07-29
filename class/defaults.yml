@@ -143,7 +143,7 @@ parameters:
         version: "1.16.4"
 
     images:
-      kubectl:
-        registry: docker.io
-        image: bitnami/kubectl
-        tag: '1.30.7@sha256:1249fc292e84a38575ee0cadc3e28dcd7ddf5a3a4e5da401b1a8599e8ac52a1b'
+      oc:
+        registry: quay.io
+        repository: appuio/oc
+        tag: v4.18

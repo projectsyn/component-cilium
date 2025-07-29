@@ -146,7 +146,7 @@ local egress_ip_shadow_ranges =
           spec+: {
             containers_: {
               sleep: kube.Container('sleep') {
-                image: '%(registry)s/%(image)s:%(tag)s' % params.images.kubectl,
+                image: '%(registry)s/%(repository)s:%(tag)s' % params.images.oc,
                 command: [ '/bin/sh', '-c', 'trap : TERM INT; sleep infinity & wait' ],
                 volumeMounts_: {
                   shadow_ranges: {
