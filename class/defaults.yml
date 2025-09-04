@@ -118,6 +118,8 @@ parameters:
       patches: {}
       additionalRules: {}
 
+    deploy_cert_manager_ca: false
+
     olm:
       source:
         opensource: https://github.com/isovalent/olm-for-cilium/archive/main.tar.gz

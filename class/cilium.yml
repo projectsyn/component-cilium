@@ -11,6 +11,7 @@ parameters:
       - ${_base_directory}/component/bgp-control-plane.jsonnet
       - ${_base_directory}/component/ocp-manage-kube-proxy.jsonnet
       - ${_base_directory}/component/alerts.jsonnet
+      - ${_base_directory}/component/cert-manager-ca.jsonnet
     olm:
       dependencies:
         - type: https
