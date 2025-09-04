@@ -77,7 +77,7 @@ data:
   health-check-icmp-failure-threshold: '3'
   http-retry-count: '3'
   http-stream-idle-timeout: '300'
-  hubble-disable-tls: 'true'
+  hubble-disable-tls: 'false'
   hubble-listen-address: :4244
   hubble-metrics: dns:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
     drop:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
@@ -86,6 +86,9 @@ data:
   hubble-metrics-server-enable-tls: 'false'
   hubble-network-policy-correlation-enabled: 'true'
   hubble-socket-path: /var/run/cilium/hubble.sock
+  hubble-tls-cert-file: /var/lib/cilium/tls/hubble/server.crt
+  hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
+  hubble-tls-key-file: /var/lib/cilium/tls/hubble/server.key
   identity-allocation-mode: crd
   identity-gc-interval: 15m0s
   identity-heartbeat-timeout: 30m0s
