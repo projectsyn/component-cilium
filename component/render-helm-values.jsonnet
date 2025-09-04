@@ -80,12 +80,34 @@ local enterpriseBGPControlPlane =
   else
     {};
 
+local certManagerCA =
+  if params.deploy_cert_manager_ca then
+    {
+      hubble+: {
+        tls+: {
+          enabled: true,
+          auto+: {
+            enabled: true,
+            method: 'certmanager',
+            certManagerIssuerRef: {
+              group: 'cert-manager.io',
+              kind: 'Issuer',
+              name: 'cilium-ca',
+            },
+          },
+        },
+      },
+    }
+  else
+    {};
+
 local cilium_values = std.prune(
   params.cilium_helm_values +
   replaceDeprecatedIPv4PodCIDR +
   renderPodCIDRList +
   forceBPFMasqueradeEgressGW +
-  enterpriseBGPControlPlane
+  enterpriseBGPControlPlane +
+  certManagerCA
 );
 
 local helm_values = {
