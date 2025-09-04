@@ -75,6 +75,9 @@ spec:
             - mountPath: /etc/hubble-relay
               name: config
               readOnly: true
+            - mountPath: /var/lib/hubble-relay/tls
+              name: tls
+              readOnly: true
       nodeSelector:
         kubernetes.io/os: linux
       priorityClassName: null
@@ -92,3 +95,16 @@ spec:
                 path: config.yaml
             name: hubble-relay-config
           name: config
+        - name: tls
+          projected:
+            defaultMode: 256
+            sources:
+              - secret:
+                  items:
+                    - key: tls.crt
+                      path: client.crt
+                    - key: tls.key
+                      path: client.key
+                    - key: ca.crt
+                      path: hubble-server-ca.crt
+                  name: hubble-relay-client-certs
