@@ -7,6 +7,9 @@ parameters:
       - type: https
         source: https://raw.githubusercontent.com/appuio/component-openshift4-monitoring/v6.11.3/lib/openshift4-monitoring-alert-patching.libsonnet
         output_path: vendor/lib/alert-patching.libsonnet
+      - type: https
+        source: https://raw.githubusercontent.com/projectsyn/component-cert-manager/v4.0.6/lib/cert-manager.libsonnet
+        output_path: vendor/lib/cert-manager.libsonnet
 
   cilium:
     install_method: olm
@@ -14,3 +17,4 @@ parameters:
     cilium_helm_values:
       k8sServiceHost: 172.30.0.1
       k8sServicePort: 443
+    deploy_cert_manager_ca: true

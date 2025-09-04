@@ -1,0 +1,39 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    name: self-signed
+  name: self-signed
+  namespace: cilium
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    name: cilium-ca
+  name: cilium-ca
+  namespace: cilium
+spec:
+  commonName: cilium-ca
+  isCA: true
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: self-signed
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  secretName: cilium-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    name: cilium-ca
+  name: cilium-ca
+  namespace: cilium
+spec:
+  ca:
+    secretName: cilium-ca

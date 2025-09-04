@@ -30,7 +30,14 @@ spec:
     relay:
       enabled: true
     tls:
-      enabled: false
+      auto:
+        certManagerIssuerRef:
+          group: cert-manager.io
+          kind: Issuer
+          name: cilium-ca
+        enabled: true
+        method: certmanager
+      enabled: true
   ipam:
     mode: cluster-pool
     operator:
