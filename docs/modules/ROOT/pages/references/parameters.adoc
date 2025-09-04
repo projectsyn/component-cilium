@@ -1284,6 +1284,18 @@ Entries are expected to have value `{}` or `null`.
 Entries with value `null` are skipped.
 Other entry values are treated as errors.
 
+== `deploy_cert_manager_ca`
+
+[horizontal]
+type:: boolean
+default:: `false`
+
+This parameter controls whether the component deploys cert-manager `Issuer` resources and a CA certificate.
+If enabled, the CA certificate is stored in secret `cilium-ca` in the Cilium namespace.
+The CA certificate is configured with a lifetime of 2 years.
+
+When the parameter is set to `true`, the component also deploys cert-manager resources to issue mTLS certificates for Hubble Relay and configures Hubble to use mTLS for connections between Hubble Relay and the Cilium agents.
+
 == Example
 
 [source,yaml]
