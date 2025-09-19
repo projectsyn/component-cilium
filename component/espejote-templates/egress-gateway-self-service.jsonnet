@@ -96,7 +96,7 @@ if esp.triggerName() == 'namespace' then (
   // nsTrigger can be null if we're called when the namespace is getting
   // deleted. If it's not null, we still don't want to do anything when the
   // namespace is getting deleted.
-  if nsTrigger != null && !inDelete(nsTrigger.resource) then
+  if nsTrigger != null && std.get(nsTrigger, 'resource') != null && !inDelete(nsTrigger.resource) then
     reconcileNamespace(nsTrigger.resource)
 ) else
   // Reconcile all namespaces for jsonnetlibrary update or managedresource
