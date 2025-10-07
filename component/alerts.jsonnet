@@ -9,7 +9,7 @@ local params = inv.parameters.cilium;
 local ignoreNames = com.renderArray(params.alerts.ignoreNames);
 
 local clustermesh_enabled =
-  std.get(params.cilium_helm_values, 'clustermesh', { config: { enabled: false } }).config.enabled;
+  std.get(params.cilium_helm_values.clustermesh, 'config', { enabled: false }).enabled;
 
 local alertpatching = if util.isOpenshift then
   import 'lib/alert-patching.libsonnet'

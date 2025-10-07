@@ -12,6 +12,9 @@ spec:
     masquerade: true
   clustermesh:
     apiserver:
+      metrics:
+        serviceMonitor:
+          enabled: true
       service:
         annotations:
           lbipam.cilium.io/ips: 192.0.2.20

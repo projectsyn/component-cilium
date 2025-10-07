@@ -81,6 +81,11 @@ parameters:
           limits:
             cpu: 100m
             memory: 250Mi
+      clustermesh:
+        apiserver:
+          metrics:
+            serviceMonitor:
+              enabled: true
 
     hubble_enterprise_helm_values:
       enabled: false
