@@ -40,6 +40,24 @@ local clustermesh_group = {
         ||| % this['for'],
       },
     },
+    {
+      local this = self,
+      alert: 'CiliumKVStoreMeshRemoteClusterNotReady',
+      expr: 'cilium_kvstoremesh_remote_cluster_readiness_status == 0',
+      'for': '10m',
+      labels: {
+        severity: 'critical',
+      },
+      annotations: {
+        runbook_url:
+          'https://hub.syn.tools/cilium/runbooks/CiliumKVStoreMeshRemoteClusterNotReady.html',
+        message: 'KVStore on remote cluster {{ $labels.target_cluster }} not reachable from {{ $labels.source_cluster }}',
+        description: |||
+          KVStore on remote cluster {{ $labels.target_cluster }} has been unreachable from
+          cluster {{ $labels.source_cluster }} for the last %s.
+        ||| % this['for'],
+      },
+    },
   ],
 };
 
