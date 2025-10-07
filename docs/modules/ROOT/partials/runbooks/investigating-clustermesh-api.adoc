@@ -1,0 +1,10 @@
+=== Investigating cluster mesh API
+
+The cluster mesh API runs in the `cilium` namespace as deployment `clustermesh-apiserver`.
+Check that the pod runs and check the logs for errors with
+
+[source,bash]
+----
+kubectl -n cilium get pods -l app.kubernetes.io/name=clustermesh-apiserver
+kubectl -n cilium logs deploy/clustermesh-apiserver --all-containers
+----
