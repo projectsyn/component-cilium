@@ -39,16 +39,7 @@ If the output indicates that all nodes are unable to connect to the remote clust
 
 If the output indicates that only a few source nodes are affected, it's likely that the issue is in the Cilium agent or the routing configuration of the nodes.
 
-=== Investigating cluster mesh API
-
-The cluster mesh API runs in the `cilium` namespace as deployment `clustermesh-apiserver`.
-Check that the pod runs and check the logs for errors with
-
-[source,bash]
-----
-kubectl -n cilium get pods -l app.kubernetes.io/name=clustermesh-apiserver
-kubectl -n cilium logs deploy/clustermesh-apiserver --all-containers
-----
+include::partial$runbooks/investigating-clustermesh-api.adoc[]
 
 === Checking connectivity from a Cilium agent pod
 
@@ -92,36 +83,6 @@ You can also run `cilium-health status --probe` in the agent pod to actively pro
 kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium-health status --probe
 ----
 
-=== Checking node routing tables and connectivity
+include::partial$runbooks/check-node-routing-tables.adoc[]
 
-For setups which use static routes to make the nodes of the clusters participating in the cluster mesh reachable from each other, you can check the routing tables on the host and verify connectivity with `ping`.
-
-.OpenShift 4
-[source,bash]
-----
-NODE=<node name of affected node>
-REMOTE_NODE=<ip of a node in the remote cluster>
-oc -n syn-debug-nodes debug node/${NODE} --as=cluster-admin -- chroot /host ip r
-oc -n syn-debug-nodes debug node/${NODE} --as=cluster-admin -- chroot /host ping -c4 ${REMOTE_NODE}
-----
-
-.Other K8s
-[source,bash]
-----
-DEBUG_IMAGE=ghcr.io/digitalocean-packages/doks-debug:latest <1>
-NODE=<node name of affected node>
-REMOTE_NODE=<ip of a node in the remote cluster>
-kubectl debug node/${NODE} -it --image=${DEBUG_IMAGE} -- ip r
-kubectl debug node/${NODE} -it --image=${DEBUG_IMAGE} -- ping -c4 ${REMOTE_NODE} <2>
-----
-<1> We're using the DigitalOcean `doks-debug` image, which comes with a bunch of common tools installed.
-See https://github.com/digitalocean/doks-debug[icon:github[] digitalocean/doks-debug] for details.
-<2> This command hasn't been tested yet, it's possible that your cluster configuration will not allow `ping` in node debug containers.
-
-== icon:book[] Upstream documentation
-
-* https://docs.cilium.io/en/latest/network/clustermesh/intro/[Cilium OSS --  Cluster Mesh documetation]
-* https://docs.isovalent.com/configuration-guide/cluster-mesh/troubleshooting.html[Cilium OSS --  Cluster Mesh Troubleshooting]
-* https://docs.cilium.io/en/stable/operations/troubleshooting/#troubleshooting-clustermesh[Cilium OSS -- Troubleshooting Cluster Mesh]
-* https://docs.isovalent.com/configuration-guide/cluster-mesh/operating.html[Cilium Enterprise -- Operating Cluster Mesh]
-* https://docs.isovalent.com/configuration-guide/cluster-mesh/troubleshooting.html[Cilium Enterprise -- Troubleshooting Cluster Mesh]
+include::partial$runbooks/clustermesh-upstream-docs.adoc[]

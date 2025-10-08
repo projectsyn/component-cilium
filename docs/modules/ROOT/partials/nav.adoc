@@ -11,6 +11,7 @@
 .Runbooks
 * Cluster mesh
 ** xref:runbooks/CiliumClustermeshRemoteClusterNotReady.adoc[]
+** xref:runbooks/CiliumKVStoreMeshRemoteClusterNotReady.adoc[]
 * eBPF
 ** xref:runbooks/CiliumBpfMapPressureHigh.adoc[]
 ** xref:runbooks/CiliumBpfMapPressureExtremelyHigh.adoc[]

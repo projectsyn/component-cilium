@@ -1,0 +1,7 @@
+== icon:book[] Upstream documentation
+
+* https://docs.cilium.io/en/latest/network/clustermesh/intro/[Cilium OSS --  Cluster Mesh documetation]
+* https://docs.isovalent.com/configuration-guide/cluster-mesh/troubleshooting.html[Cilium OSS --  Cluster Mesh Troubleshooting]
+* https://docs.cilium.io/en/stable/operations/troubleshooting/#troubleshooting-clustermesh[Cilium OSS -- Troubleshooting Cluster Mesh]
+* https://docs.isovalent.com/configuration-guide/cluster-mesh/operating.html[Cilium Enterprise -- Operating Cluster Mesh]
+* https://docs.isovalent.com/configuration-guide/cluster-mesh/troubleshooting.html[Cilium Enterprise -- Troubleshooting Cluster Mesh]

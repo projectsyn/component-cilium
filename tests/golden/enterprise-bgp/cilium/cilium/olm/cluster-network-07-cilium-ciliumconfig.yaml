@@ -9,6 +9,11 @@ spec:
       enabled: false
     bpf:
       masquerade: true
+    clustermesh:
+      apiserver:
+        metrics:
+          serviceMonitor:
+            enabled: true
     cni:
       binPath: /var/lib/cni/bin
       confPath: /var/run/multus/cni/net.d

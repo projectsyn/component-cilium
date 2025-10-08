@@ -24,3 +24,17 @@ spec:
             severity: critical
             syn: 'true'
             syn_component: cilium
+        - alert: CiliumKVStoreMeshRemoteClusterNotReady
+          annotations:
+            description: |
+              KVStore on remote cluster {{ $labels.target_cluster }} has been unreachable from
+              cluster {{ $labels.source_cluster }} for the last 10m.
+            message: KVStore on remote cluster {{ $labels.target_cluster }} not reachable
+              from {{ $labels.source_cluster }}
+            runbook_url: https://hub.syn.tools/cilium/runbooks/CiliumKVStoreMeshRemoteClusterNotReady.html
+          expr: cilium_kvstoremesh_remote_cluster_readiness_status == 0
+          for: 10m
+          labels:
+            severity: critical
+            syn: 'true'
+            syn_component: cilium

@@ -1,0 +1,25 @@
+=== Checking node routing tables and connectivity
+
+For setups which use static routes to make the nodes of the clusters participating in the cluster mesh reachable from each other, you can check the routing tables on the host and verify connectivity with `ping`.
+
+.OpenShift 4
+[source,bash]
+----
+NODE=<node name of affected node>
+REMOTE_NODE=<ip of a node in the remote cluster>
+oc -n syn-debug-nodes debug node/${NODE} --as=cluster-admin -- chroot /host ip r
+oc -n syn-debug-nodes debug node/${NODE} --as=cluster-admin -- chroot /host ping -c4 ${REMOTE_NODE}
+----
+
+.Other K8s
+[source,bash]
+----
+DEBUG_IMAGE=ghcr.io/digitalocean-packages/doks-debug:latest <1>
+NODE=<node name of affected node>
+REMOTE_NODE=<ip of a node in the remote cluster>
+kubectl debug node/${NODE} -it --image=${DEBUG_IMAGE} -- ip r
+kubectl debug node/${NODE} -it --image=${DEBUG_IMAGE} -- ping -c4 ${REMOTE_NODE} <2>
+----
+<1> We're using the DigitalOcean `doks-debug` image, which comes with a bunch of common tools installed.
+See https://github.com/digitalocean/doks-debug[icon:github[] digitalocean/doks-debug] for details.
+<2> This command hasn't been tested yet, it's possible that your cluster configuration will not allow `ping` in node debug containers.

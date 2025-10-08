@@ -1,0 +1,54 @@
+= CiliumKVStoreMeshRemoteClusterNotReady
+
+include::partial$runbooks/contribution_note.adoc[]
+
+== icon:glasses[] Overview
+
+This alert fires if a remote cluster's KVStore is not reachable from the local cluster for 10 minutes or longer.
+This usually indicates one of the following two:
+
+. There are network issues preventing cluster mesh connectivity
+. The remote cluster has misconfigured network policies which prevent access to its KVStore
+
+TIP: Depending on the network configuration, there may be static routes on each node for the remote cluster's cluster mesh API server.
+
+== icon:bug[] Steps for debugging
+
+NOTE: The steps in this section assume that your current Kubernetes context points to the source cluster.
+
+TIP: This section assumes that you're running cluster mesh with the cluster mesh API server enabled.
+
+=== Prerequisites
+
+* `cilium` CLI, install from https://github.com/cilium/cilium-cli[icon:github[] cilium/cilium-cli]
+
+=== Identifying the root cause
+
+First, check the source cluster's overall cluster mesh status
+
+[source,bash]
+----
+cilium -n cilium clustermesh status --as=cluster-admin <1>
+----
+<1> `--as=cluster-admin` is required on VSHN Managed OpenShift, may need to be left out on other clusters.
+
+include::partial$runbooks/investigating-clustermesh-api.adoc[]
+
+=== Checking KVStoreMesh status
+
+You can check the KVStoreMesh connection to the remote cluster mesh API server in the `clustermesh-apiserver` deployment:
+
+[source,bash]
+----
+kubectl -n cilium --as=cluster-admin exec -it deploy/clustermesh-apiserver -c kvstoremesh -- \
+   clustermesh-apiserver kvstoremesh-dbg status <1>
+
+kubectl exec -it -n cilium --as=cluster-admin deploy/clustermesh-apiserver -c kvstoremesh -- \
+  clustermesh-apiserver kvstoremesh-dbg troubleshoot <2>
+----
+<1> Show a connection summary of the KVStoreMesh
+<2> Show connection details of the KVStoreMesh
+
+include::partial$runbooks/check-node-routing-tables.adoc[]
+
+include::partial$runbooks/clustermesh-upstream-docs.adoc[]

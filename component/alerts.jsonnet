@@ -9,7 +9,7 @@ local params = inv.parameters.cilium;
 local ignoreNames = com.renderArray(params.alerts.ignoreNames);
 
 local clustermesh_enabled =
-  std.get(params.cilium_helm_values, 'clustermesh', { config: { enabled: false } }).config.enabled;
+  std.get(params.cilium_helm_values.clustermesh, 'config', { enabled: false }).enabled;
 
 local alertpatching = if util.isOpenshift then
   import 'lib/alert-patching.libsonnet'
@@ -37,6 +37,24 @@ local clustermesh_group = {
           Remote cluster {{ $labels.target_cluster }} has been unreachable from
           {{ $labels.source_node_name }} on cluster {{ $labels.source_cluster }} for the
           last %s.
+        ||| % this['for'],
+      },
+    },
+    {
+      local this = self,
+      alert: 'CiliumKVStoreMeshRemoteClusterNotReady',
+      expr: 'cilium_kvstoremesh_remote_cluster_readiness_status == 0',
+      'for': '10m',
+      labels: {
+        severity: 'critical',
+      },
+      annotations: {
+        runbook_url:
+          'https://hub.syn.tools/cilium/runbooks/CiliumKVStoreMeshRemoteClusterNotReady.html',
+        message: 'KVStore on remote cluster {{ $labels.target_cluster }} not reachable from {{ $labels.source_cluster }}',
+        description: |||
+          KVStore on remote cluster {{ $labels.target_cluster }} has been unreachable from
+          cluster {{ $labels.source_cluster }} for the last %s.
         ||| % this['for'],
       },
     },
