@@ -1033,6 +1033,34 @@ The value of each entry will be used as the base Prometheus rule in which the `a
 
 NOTE: Parameters `alerts.ignoreNames` and `alerts.patches` are also applied to alerts defined through this parameter.
 
+== `hubble_access`
+
+This section allows users to configure Hubble access.
+Currently the only Hubble access mode that can be configured through this section is port-forward RBAC.
+
+=== `hubble_access.port_forward_users`
+
+[horizontal]
+type:: dict
+default:: `{}`
+
+Each entry of this parameter is transformed into an entry in `subjects` of the Hubble port-forward `RoleBinding`.
+The component uses each key in this parameter as an user name for the resulting entry in `subjects`.
+Entries are expected to have value `{}` or `null`.
+Entries with value `null` are skipped.
+Other entry values are treated as errors.
+
+=== `hubble_access.port_forward_groups`
+
+[horizontal]
+type:: dict
+default:: `{}`
+
+Each entry of this parameter is transformed into an entry in `subjects` of the Hubble port-forward `RoleBinding`.
+The component uses each key in this parameter as a group name for the resulting entry in `subjects`.
+Entries are expected to have value `{}` or `null`.
+Entries with value `null` are skipped.
+Other entry values are treated as errors.
 
 == Example
 

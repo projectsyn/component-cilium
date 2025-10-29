@@ -1,0 +1,18 @@
+parameters:
+  kapitan:
+    dependencies:
+      - type: https
+        source: https://raw.githubusercontent.com/appuio/component-openshift4-monitoring/v6.11.3/lib/openshift4-monitoring-prom.libsonnet
+        output_path: vendor/lib/prom.libsonnet
+      - type: https
+        source: https://raw.githubusercontent.com/appuio/component-openshift4-monitoring/v6.11.3/lib/openshift4-monitoring-alert-patching.libsonnet
+        output_path: vendor/lib/alert-patching.libsonnet
+
+  cilium:
+    hubble_access:
+      port_forward_users:
+        solid.snake: {}
+        johnny.silverhand: null
+      port_forward_groups:
+        openshiftroot: {}
+        acmecorp: null
