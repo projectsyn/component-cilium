@@ -187,6 +187,7 @@ spec:
           namespace,
           policy_resource_fn,
           destination_cidrs=null,
+          bgp_policy_labels={},
         )
           // Helper which computes the interface index of the egress IP.
           // Assumes that the IPs in egress_range are assigned to dummy interfaces
@@ -243,11 +244,14 @@ spec:
               : 'Expected `destination_cidrs` to be an array, got %s' % std.type(destination_cidrs);
             destination_cidrs;
 
+          local bgp_egress_ip = std.length(bgp_policy_labels) > 0;
+
           policy_resource_fn(namespace) {
             metadata+: {
               annotations+: {
                 'cilium.syn.tools/description':
-                  'Generated policy to assign egress IP %s in egress range "%s" (%s) to namespace %s.' % [
+                  'Generated policy to assign %segress IP %s in egress range "%s" (%s) to namespace %s.' % [
+                    if bgp_egress_ip then 'BGP ' else '',
                     egress_ip,
                     interface_prefix,
                     egress_range,
@@ -257,18 +261,23 @@ spec:
                 'cilium.syn.tools/interface-prefix': interface_prefix,
                 'cilium.syn.tools/egress-range': egress_range,
                 'cilium.syn.tools/source-namespace': namespace,
-                'cilium.syn.tools/debug-interface-index': ifindex.debug,
+                [if !bgp_egress_ip then 'cilium.syn.tools/debug-interface-index']: ifindex.debug,
                 [if std.length(shadow_ips) > 0 then 'cilium.syn.tools/shadow-ips']:
                   std.manifestJsonMinified(shadow_ips),
               },
+              labels+: bgp_policy_labels,
             },
             spec: {
               destinationCIDRs: dest_cidrs,
+              [if bgp_egress_ip then 'egressCIDRs']: [ '%s/32' % egress_ip ],
               egressGroups: [
                 {
                   nodeSelector: {
                     matchLabels: node_selector,
                   },
+                } + if bgp_egress_ip then {
+                  maxGatewayNodes: 1,
+                } else {
                   interface: ifindex.ifname,
                 },
               ],
