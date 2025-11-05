@@ -57,6 +57,8 @@ parameters:
             infra-8344: 198.51.100.96 - 198.51.100.127
             infra-87c9: 198.51.100.128 - 198.51.100.159
             infra-eba2: 198.51.100.160 - 198.51.100.191
+          destination_cidrs:
+            - 203.0.113.0/24
         egress_d:
           egress_range: '192.0.2.96 - 192.0.2.127'
           node_selector:

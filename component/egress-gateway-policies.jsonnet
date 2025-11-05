@@ -30,6 +30,7 @@ local egress_ip_policies = std.flattenArrays([
       ns_egress_ips[namespace],
       namespace,
       EgressGatewayPolicy,
+      destination_cidrs=std.get(cfg, 'destination_cidrs', []),
     )
     for namespace in std.objectFields(ns_egress_ips)
     if ns_egress_ips[namespace] != null

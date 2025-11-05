@@ -45,7 +45,7 @@ metadata:
   name: baz
 spec:
   destinationCIDRs:
-    - 0.0.0.0/0
+    - 203.0.113.0/24
   egressGroups:
     - interface: egress_c_29
       nodeSelector:
