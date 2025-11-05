@@ -60,6 +60,7 @@ parameters:
             infra-eba2: 198.51.100.160 - 198.51.100.191
           destination_cidrs:
             - 203.0.113.0/24
+          bgp_policy_labels: {}
         egress_d:
           egress_range: '192.0.2.96 - 192.0.2.127'
           node_selector:
