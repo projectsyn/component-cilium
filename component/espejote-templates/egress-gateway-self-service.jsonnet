@@ -52,6 +52,7 @@ local reconcileNamespace(namespace) =
           ns_meta.name,
           egw.IsovalentEgressGatewayPolicy,
           destination_cidrs=std.get(range, 'destination_cidrs', []),
+          bgp_policy_labels=std.get(range, 'bgp_policy_labels', {}),
         ) {
           metadata+: {
             labels+: egw.espejoteLabel,
