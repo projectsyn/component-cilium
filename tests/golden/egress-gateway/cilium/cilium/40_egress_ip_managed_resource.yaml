@@ -68,6 +68,9 @@ spec:
       {
           "egress_ranges": [
               {
+                  "destination_cidrs": [
+
+                  ],
                   "egress_range": "192.0.2.32 - 192.0.2.63",
                   "if_prefix": "egress_a",
                   "namespace_egress_ips": {
