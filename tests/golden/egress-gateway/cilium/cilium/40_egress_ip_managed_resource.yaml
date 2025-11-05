@@ -127,6 +127,9 @@ spec:
                   "shadow_ranges": null
               },
               {
+                  "bgp_policy_labels": {
+                      "cilium.syn.tools/egress-ip": "bgp"
+                  },
                   "destination_cidrs": [
                       "203.0.113.0/25"
                   ],
