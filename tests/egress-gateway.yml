@@ -71,3 +71,12 @@ parameters:
             node-role.kubernetes.io/infra: ''
           namespace_egress_ips: {}
           shadow_ranges: null
+        egress_f:
+          egress_range: '192.0.2.160 - 192.0.2.191'
+          node_selector:
+            node-role.kubernetes.io/infra: ''
+          namespace_egress_ips:
+            qux: 192.0.2.160
+          destination_cidrs:
+            - 203.0.113.0/25
+            - ~203.0.113.128/25

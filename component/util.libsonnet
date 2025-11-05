@@ -62,6 +62,7 @@ local render_ip_pools(pools) = com.generateResources(
   CiliumLoadBalancerIPPool,
 );
 
+
 {
   isOpenshift: isOpenshift,
   version: version,

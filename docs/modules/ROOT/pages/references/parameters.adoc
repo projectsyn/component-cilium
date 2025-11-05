@@ -391,7 +391,8 @@ NOTE: Field `namespace_egress_ips` is optional for use cases where only the shad
 ====
 Field `destination_cidrs` is optional.
 
-When the field is provided, and not the empty list, the component uses the contents as `destinationCIDRs` for the resulting egress policy.
+When the field is provided, and not an empty list or object, the component uses the contents to populate `destinationCIDRs` for the resulting egress policy.
+To support reusing the same input list for different purposes, the component removes list entries which are prefixed with `~` before configuring the policy.
 
 When this field is omitted or empty, the component generates egress policies with `destinationCIDRs: ['0.0.0.0/0']`.
 Such policies assign the egress IP to all traffic originating in the namespace.

@@ -94,6 +94,9 @@ local NamespaceEgressPolicy =
     local dest_cidrs = if destination_cidrs == null || std.length(destination_cidrs) == 0 then
       [ '0.0.0.0/0' ]
     else
+      assert
+        std.isArray(destination_cidrs)
+        : 'Expected `destination_cidrs` to be an array, got %s' % std.type(destination_cidrs);
       destination_cidrs;
 
     policy_resource_fn(namespace) {

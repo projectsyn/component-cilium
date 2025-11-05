@@ -84,3 +84,31 @@ spec:
     - podSelector:
         matchLabels:
           io.kubernetes.pod.namespace: foo
+---
+apiVersion: cilium.io/v2
+kind: CiliumEgressGatewayPolicy
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,Prune=false
+    cilium.syn.tools/debug-interface-index: start=3221226144, end=3221226175, ip=3221226144
+    cilium.syn.tools/description: Generated policy to assign egress IP 192.0.2.160
+      in egress range "egress_f" (192.0.2.160 - 192.0.2.191) to namespace qux.
+    cilium.syn.tools/egress-ip: 192.0.2.160
+    cilium.syn.tools/egress-range: 192.0.2.160 - 192.0.2.191
+    cilium.syn.tools/interface-prefix: egress_f
+    cilium.syn.tools/source-namespace: qux
+  labels:
+    name: qux
+  name: qux
+spec:
+  destinationCIDRs:
+    - 203.0.113.0/25
+  egressGroups:
+    - interface: egress_f_0
+      nodeSelector:
+        matchLabels:
+          node-role.kubernetes.io/infra: ''
+  selectors:
+    - podSelector:
+        matchLabels:
+          io.kubernetes.pod.namespace: qux

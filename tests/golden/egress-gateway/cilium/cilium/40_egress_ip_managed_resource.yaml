@@ -125,6 +125,19 @@ spec:
                       "node-role.kubernetes.io/infra": ""
                   },
                   "shadow_ranges": null
+              },
+              {
+                  "destination_cidrs": [
+                      "203.0.113.0/25"
+                  ],
+                  "egress_range": "192.0.2.160 - 192.0.2.191",
+                  "if_prefix": "egress_f",
+                  "namespace_egress_ips": {
+                      "qux": "192.0.2.160"
+                  },
+                  "node_selector": {
+                      "node-role.kubernetes.io/infra": ""
+                  }
               }
           ]
       }
@@ -225,6 +238,9 @@ spec:
           local dest_cidrs = if destination_cidrs == null || std.length(destination_cidrs) == 0 then
             [ '0.0.0.0/0' ]
           else
+            assert
+              std.isArray(destination_cidrs)
+              : 'Expected `destination_cidrs` to be an array, got %s' % std.type(destination_cidrs);
             destination_cidrs;
 
           policy_resource_fn(namespace) {

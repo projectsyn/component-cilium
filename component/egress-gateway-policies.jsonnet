@@ -21,6 +21,7 @@ local policies = com.generateResources(
 local egress_ip_policies = std.flattenArrays([
   local cfg = params.egress_gateway.egress_ip_ranges[interface_prefix];
   local ns_egress_ips = std.get(cfg, 'namespace_egress_ips', {});
+  local dest_cidrs = com.renderArray(std.get(cfg, 'destination_cidrs', []));
   [
     egw.NamespaceEgressPolicy(
       interface_prefix,
@@ -30,7 +31,7 @@ local egress_ip_policies = std.flattenArrays([
       ns_egress_ips[namespace],
       namespace,
       EgressGatewayPolicy,
-      destination_cidrs=std.get(cfg, 'destination_cidrs', []),
+      destination_cidrs=dest_cidrs,
     )
     for namespace in std.objectFields(ns_egress_ips)
     if ns_egress_ips[namespace] != null
