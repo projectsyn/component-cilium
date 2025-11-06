@@ -7,7 +7,7 @@
       "name": "Cilium",
       "slug": "cilium",
       "parameter_key": "cilium",
-      "test_cases": "defaults helm-opensource olm-opensource egress-gateway bgp-control-plane kubeproxyreplacement-strict l2-announcement clustermesh enterprise-bgp hubble-access",
+      "test_cases": "defaults helm-opensource olm-opensource egress-gateway bgp-control-plane kubeproxyreplacement-strict l2-announcement clustermesh enterprise-bgp hubble-access lib-ipcalc",
       "add_lib": "n",
       "add_pp": "n",
       "add_golden": "y",
