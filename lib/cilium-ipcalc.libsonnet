@@ -42,7 +42,7 @@ local parse_ip_range(prefix, rangespec) =
 
 local format_ipval(val) =
   assert
-    val >= 0 && val < ipval('255.255.255.255')
+    val >= 0 && val <= ipval('255.255.255.255')
     : '%s not an IPv4 address in decimal' % val;
 
   local iparr = std.reverse(std.foldl(
