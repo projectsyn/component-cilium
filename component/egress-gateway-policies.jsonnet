@@ -21,15 +21,17 @@ local policies = com.generateResources(
 local egress_ip_policies = std.flattenArrays([
   local cfg = params.egress_gateway.egress_ip_ranges[interface_prefix];
   local ns_egress_ips = std.get(cfg, 'namespace_egress_ips', {});
+  local dest_cidrs = com.renderArray(std.get(cfg, 'destination_cidrs', []));
   [
     egw.NamespaceEgressPolicy(
       interface_prefix,
       cfg.egress_range,
-      std.objectValues(std.get(cfg, 'shadow_ranges', [])),
+      std.objectValues(std.get(cfg, 'shadow_ranges', {})),
       cfg.node_selector,
       ns_egress_ips[namespace],
       namespace,
       EgressGatewayPolicy,
+      destination_cidrs=dest_cidrs,
     )
     for namespace in std.objectFields(ns_egress_ips)
     if ns_egress_ips[namespace] != null

@@ -46,11 +46,12 @@ local reconcileNamespace(namespace) =
         egw.NamespaceEgressPolicy(
           range.if_prefix,
           range.egress_range,
-          std.objectValues(range.shadow_ranges),
+          std.objectValues(std.get(range, 'shadow_ranges', {})),
           range.node_selector,
           egress_ip,
           ns_meta.name,
-          egw.IsovalentEgressGatewayPolicy
+          egw.IsovalentEgressGatewayPolicy,
+          destination_cidrs=std.get(range, 'destination_cidrs', []),
         ) {
           metadata+: {
             labels+: egw.espejoteLabel,

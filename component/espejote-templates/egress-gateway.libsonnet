@@ -42,6 +42,7 @@ local NamespaceEgressPolicy =
     egress_ip,
     namespace,
     policy_resource_fn,
+    destination_cidrs=null,
   )
     // Helper which computes the interface index of the egress IP.
     // Assumes that the IPs in egress_range are assigned to dummy interfaces
@@ -90,6 +91,14 @@ local NamespaceEgressPolicy =
       for r in shadow_ranges
     ];
 
+    local dest_cidrs = if destination_cidrs == null || std.length(destination_cidrs) == 0 then
+      [ '0.0.0.0/0' ]
+    else
+      assert
+        std.isArray(destination_cidrs)
+        : 'Expected `destination_cidrs` to be an array, got %s' % std.type(destination_cidrs);
+      destination_cidrs;
+
     policy_resource_fn(namespace) {
       metadata+: {
         annotations+: {
@@ -110,7 +119,7 @@ local NamespaceEgressPolicy =
         },
       },
       spec: {
-        destinationCIDRs: [ '0.0.0.0/0' ],
+        destinationCIDRs: dest_cidrs,
         egressGroups: [
           {
             nodeSelector: {

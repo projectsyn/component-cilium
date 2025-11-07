@@ -68,6 +68,9 @@ spec:
       {
           "egress_ranges": [
               {
+                  "destination_cidrs": [
+
+                  ],
                   "egress_range": "192.0.2.32 - 192.0.2.63",
                   "if_prefix": "egress_a",
                   "namespace_egress_ips": {
@@ -85,6 +88,9 @@ spec:
                   }
               },
               {
+                  "destination_cidrs": [
+                      "203.0.113.0/24"
+                  ],
                   "egress_range": "192.0.2.64 - 192.0.2.95",
                   "if_prefix": "egress_c",
                   "namespace_egress_ips": {
@@ -119,6 +125,19 @@ spec:
                       "node-role.kubernetes.io/infra": ""
                   },
                   "shadow_ranges": null
+              },
+              {
+                  "destination_cidrs": [
+                      "203.0.113.0/25"
+                  ],
+                  "egress_range": "192.0.2.160 - 192.0.2.191",
+                  "if_prefix": "egress_f",
+                  "namespace_egress_ips": {
+                      "qux": "192.0.2.160"
+                  },
+                  "node_selector": {
+                      "node-role.kubernetes.io/infra": ""
+                  }
               }
           ]
       }
@@ -167,6 +186,7 @@ spec:
           egress_ip,
           namespace,
           policy_resource_fn,
+          destination_cidrs=null,
         )
           // Helper which computes the interface index of the egress IP.
           // Assumes that the IPs in egress_range are assigned to dummy interfaces
@@ -215,6 +235,14 @@ spec:
             for r in shadow_ranges
           ];
 
+          local dest_cidrs = if destination_cidrs == null || std.length(destination_cidrs) == 0 then
+            [ '0.0.0.0/0' ]
+          else
+            assert
+              std.isArray(destination_cidrs)
+              : 'Expected `destination_cidrs` to be an array, got %s' % std.type(destination_cidrs);
+            destination_cidrs;
+
           policy_resource_fn(namespace) {
             metadata+: {
               annotations+: {
@@ -235,7 +263,7 @@ spec:
               },
             },
             spec: {
-              destinationCIDRs: [ '0.0.0.0/0' ],
+              destinationCIDRs: dest_cidrs,
               egressGroups: [
                 {
                   nodeSelector: {
@@ -464,11 +492,12 @@ spec:
             egw.NamespaceEgressPolicy(
               range.if_prefix,
               range.egress_range,
-              std.objectValues(range.shadow_ranges),
+              std.objectValues(std.get(range, 'shadow_ranges', {})),
               range.node_selector,
               egress_ip,
               ns_meta.name,
-              egw.IsovalentEgressGatewayPolicy
+              egw.IsovalentEgressGatewayPolicy,
+              destination_cidrs=std.get(range, 'destination_cidrs', []),
             ) {
               metadata+: {
                 labels+: egw.espejoteLabel,

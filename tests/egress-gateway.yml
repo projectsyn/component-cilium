@@ -46,6 +46,7 @@ parameters:
             infra-8344: 198.51.100.0 - 198.51.100.31
             infra-87c9: 198.51.100.32 - 198.51.100.63
             infra-eba2: 198.51.100.64 - 198.51.100.95
+          destination_cidrs: []
         egress_b: null
         egress_c:
           egress_range: '192.0.2.64 - 192.0.2.95'
@@ -57,6 +58,8 @@ parameters:
             infra-8344: 198.51.100.96 - 198.51.100.127
             infra-87c9: 198.51.100.128 - 198.51.100.159
             infra-eba2: 198.51.100.160 - 198.51.100.191
+          destination_cidrs:
+            - 203.0.113.0/24
         egress_d:
           egress_range: '192.0.2.96 - 192.0.2.127'
           node_selector:
@@ -68,3 +71,12 @@ parameters:
             node-role.kubernetes.io/infra: ''
           namespace_egress_ips: {}
           shadow_ranges: null
+        egress_f:
+          egress_range: '192.0.2.160 - 192.0.2.191'
+          node_selector:
+            node-role.kubernetes.io/infra: ''
+          namespace_egress_ips:
+            qux: 192.0.2.160
+          destination_cidrs:
+            - 203.0.113.0/25
+            - ~203.0.113.128/25

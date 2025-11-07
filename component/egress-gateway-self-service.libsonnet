@@ -1,3 +1,4 @@
+local com = import 'lib/commodore.libjsonnet';
 local kap = import 'lib/kapitan.libjsonnet';
 local kube = import 'lib/kube.libjsonnet';
 
@@ -14,10 +15,18 @@ local sa = kube.ServiceAccount('egress-ip-self-service') {
   },
 };
 
+local render_destination_cidrs(cfg) =
+  if std.objectHas(cfg, 'destination_cidrs') then
+    cfg {
+      destination_cidrs: com.renderArray(super.destination_cidrs),
+    }
+  else
+    cfg;
+
 local jsonnetlib =
   local config = {
     egress_ranges: [
-      params.egress_gateway.egress_ip_ranges[prefix] {
+      render_destination_cidrs(params.egress_gateway.egress_ip_ranges[prefix]) {
         if_prefix: prefix,
       }
       for prefix in std.objectFields(params.egress_gateway.egress_ip_ranges)
