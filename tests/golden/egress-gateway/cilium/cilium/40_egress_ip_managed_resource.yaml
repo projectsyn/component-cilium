@@ -355,11 +355,18 @@ spec:
             ip
           else
             std.split(ip, '.');
-        std.foldl(
-          function(v, p) v * 256 + p,
-          std.map(std.parseInt, iparr),
-          0
-        );
+        local iparr_int = std.map(std.parseInt, iparr);
+
+        if std.any(std.map(function(v) v > 255, iparr_int)) then
+          error 'Error parsing IPv4 address: %s is not a valid address' % [
+            ip,
+          ]
+        else
+          std.foldl(
+            function(v, p) v * 256 + p,
+            iparr_int,
+            0
+          );
 
       // Extract start and end from the provided range, stripping any
       // whitespace. `prefix` is only used for the error message.
