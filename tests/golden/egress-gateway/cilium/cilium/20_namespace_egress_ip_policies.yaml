@@ -91,9 +91,9 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,Prune=false
     cilium.syn.tools/description: Generated policy to assign BGP egress IP 192.0.2.160
-      in egress range "egress_f" (192.0.2.160 - 192.0.2.191) to namespace qux.
+      in egress range "egress_f" (192.0.2.160 - 192.0.2.190) to namespace qux.
     cilium.syn.tools/egress-ip: 192.0.2.160
-    cilium.syn.tools/egress-range: 192.0.2.160 - 192.0.2.191
+    cilium.syn.tools/egress-range: 192.0.2.160 - 192.0.2.190
     cilium.syn.tools/interface-prefix: egress_f
     cilium.syn.tools/source-namespace: qux
   labels:

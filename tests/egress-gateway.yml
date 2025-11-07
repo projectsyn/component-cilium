@@ -35,7 +35,7 @@ parameters:
       self_service_namespace_ips: true
       egress_ip_ranges:
         egress_a:
-          egress_range: '192.0.2.32 - 192.0.2.63'
+          egress_range: 192.0.2.32 - 192.0.2.63
           node_selector:
             node-role.kubernetes.io/infra: ''
           namespace_egress_ips:
@@ -49,7 +49,7 @@ parameters:
           destination_cidrs: []
         egress_b: null
         egress_c:
-          egress_range: '192.0.2.64 - 192.0.2.95'
+          egress_cidr: 192.0.2.64/27
           node_selector:
             node-role.kubernetes.io/infra: ''
           namespace_egress_ips:
@@ -73,7 +73,8 @@ parameters:
           namespace_egress_ips: {}
           shadow_ranges: null
         egress_f:
-          egress_range: '192.0.2.160 - 192.0.2.191'
+          egress_cidr: 192.0.2.160/27
+          skip_last: true
           node_selector:
             node-role.kubernetes.io/infra: ''
           namespace_egress_ips:

@@ -42,10 +42,11 @@ local reconcileNamespace(namespace) =
       // ownerReference pointing to the namespace, and labeled as managed by
       // us) and update the namespace with an informational message.
       local range = res.range;
+      local egress_range = egw.read_egress_range(range.if_prefix, range);
       [
         egw.NamespaceEgressPolicy(
           range.if_prefix,
-          range.egress_range,
+          '%(start)s - %(end)s' % egress_range,
           std.objectValues(std.get(range, 'shadow_ranges', {})),
           range.node_selector,
           egress_ip,
