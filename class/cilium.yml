@@ -16,7 +16,7 @@ parameters:
       dependencies:
         - type: https
           source: ${cilium:olm:source:${cilium:release}}
-          output_path: ${_base_directory}/olm/cilium/cilium-olm/
+          output_path: ${_base_directory}/olm/cilium/cilium-olm/cilium.v${cilium:olm:full_version}
           unpack: true
 
       compile:

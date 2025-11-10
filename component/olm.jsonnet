@@ -24,13 +24,16 @@ local olmDir =
   if release == 'opensource' then
     prefix + 'olm-for-cilium-main/manifests/cilium.v%s/' % params.olm.full_version
   else if release == 'enterprise' then
+    // The component now generates this directory itself when unpacking the
+    // tarball, since Cilium 1.17 (CLife) doesn't have a directory in the
+    // tarball anymore.
+    local manifests_dir = 'cilium.v%s/' % params.olm.full_version;
     local path_variants = [
-      // Known releases: 1.11.5, 1.12.6
+      // Cilium 1.17 (CLife) doesn't have a directory in the tarball anymore
       '',
-      // Known releases: 1.11.17
-      'tmp/cilium-ee-olm/manifests/',
-      // Known releases: 1.13.2
-      'cilium-ee-olm/manifests/',
+      // Cilium <= 1.16 has a directory matching `manifests_dir` in the
+      // tarball.
+      manifests_dir,
     ];
     local manifests_dir = 'cilium.v%s/' % params.olm.full_version;
     local dir = std.foldl(
@@ -82,7 +85,12 @@ local metadata_name_map = {
     OlmRole: 'cilium-olm',
     OlmClusterRole: 'cilium-cilium-olm',
   },
-  enterprise: {
+  enterprise: if util.version.minor >= 17 then {
+    CiliumConfig: 'ciliumconfig',
+    Deployment: 'clife-controller-manager',
+    OlmRole: 'cilium-ee-olm',
+    OlmClusterRole: 'clife-manager-role',
+  } else {
     CiliumConfig: 'cilium-enterprise',
     Deployment: 'cilium-ee-olm',
     OlmRole: 'cilium-ee-olm',
@@ -98,7 +106,7 @@ local patchManifests = function(file, has_csv)
       template+: {
         spec+: {
           containers: [
-            if c.name == 'operator' then
+            if c.name == 'operator' || c.name == 'manager' then
               c {
                 resources+: params.olm.resources,
                 command: [
@@ -109,7 +117,7 @@ local patchManifests = function(file, has_csv)
                   '--zap-log-level=%s' % params.olm.log_level,
                 ],
                 env+:
-                  if release == 'opensource' then
+                  if c.name == 'manager' || release == 'opensource' then
                     (
                       if hasK8sHost then
                         [
@@ -164,7 +172,8 @@ local patchManifests = function(file, has_csv)
   if (
     file.contents.kind == 'CiliumConfig'
     && file.contents.metadata.name == metadata_name_map[release].CiliumConfig
-    && file.contents.metadata.namespace == 'cilium'
+    // CiliumConfig is cluster-scoped for Cilium >= 1.17
+    && std.get(file.contents.metadata, 'namespace', 'cilium') == 'cilium'
   ) then
     file {
       contents+: {
@@ -228,6 +237,7 @@ local patchManifests = function(file, has_csv)
   ) then
     null
   else if (
+    util.version.minor <= 16 &&
     file.contents.kind == 'Role' &&
     file.contents.metadata.namespace == 'cilium' &&
     file.contents.metadata.name == metadata_name_map[release].OlmRole
@@ -268,6 +278,7 @@ local patchManifests = function(file, has_csv)
       },
     }
   else if (
+    util.version.minor <= 16 &&
     file.contents.kind == 'ClusterRole' &&
     file.contents.metadata.name == metadata_name_map[release].OlmClusterRole
   ) then
