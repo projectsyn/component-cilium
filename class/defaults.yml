@@ -33,9 +33,6 @@ parameters:
         confPath: /var/run/multus/cni/net.d
       endpointRoutes:
         enabled: true
-      # Make <=1.15 behavior (embedded envoy) explicit
-      envoy:
-        enabled: false
       hubble:
         metrics:
           enabled:
