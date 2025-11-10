@@ -187,7 +187,9 @@ local patchManifests = function(file, has_csv)
     // NOTE(sg): This is explicitly `params.relase` since we don't want the
     // fall back to the opensource logic for the __mock_enterprise=true test
     // cases.
-    if params.release == 'enterprise' then {
+    // NOTE(sg): CLife (1.17+) doesn't nest the Cilium Helm values in
+    // top-level key `spec.cilium` anymore.
+    if util.version.minor <= 16 && params.release == 'enterprise' then {
       cilium+: patch,
     } else
       patch;
