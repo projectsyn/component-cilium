@@ -23,7 +23,9 @@ else
 local olmDir =
   local prefix = '%s/olm/cilium/cilium-olm/' % inv.parameters._base_directory;
   if release == 'opensource' then
-    prefix + 'olm-for-cilium-main/manifests/cilium.v%s/' % params.olm.full_version
+    prefix +
+    'cilium.v%s/olm-for-cilium-main/manifests/cilium.v%s/' %
+    [ params.olm.full_version, params.olm.full_version ]
   else if release == 'enterprise' then
     // The component now generates this directory itself when unpacking the
     // tarball, since Cilium 1.17 (CLife) doesn't have a directory in the
@@ -406,6 +408,8 @@ std.foldl(
     std.map(function(obj) patchManifests(obj, olmFiles.has_csv), olmFiles.files),
   ),
   {
+    [if util.version.minor >= 17 then '97_migrate_to_clife']:
+      import 'olm-migrate-operator.libsonnet',
     [if util.version.minor <= 14 then '98_fixup_bgp_controlpane_rbac']: kubeSystemSecretRO,
     '99_cleanup': (import 'cleanup.libsonnet'),
   }
