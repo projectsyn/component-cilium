@@ -82,12 +82,30 @@ local enterpriseBGPControlPlane =
   else
     {};
 
+local takeLastHubbleMetricPerOption =
+  {
+    hubble+: {
+      metrics+: {
+        enabled: std.objectValues(std.foldl(
+          function(ms, e)
+            local opt = std.splitLimit(e, '|', 1)[0];
+            ms {
+              [opt]: e,
+            },
+          super.enabled,
+          {}
+        )),
+      },
+    },
+  };
+
 local cilium_values = std.prune(
   params.cilium_helm_values +
   replaceDeprecatedIPv4PodCIDR +
   renderPodCIDRList +
   forceBPFMasqueradeEgressGW +
-  enterpriseBGPControlPlane
+  enterpriseBGPControlPlane +
+  takeLastHubbleMetricPerOption
 );
 
 local cilium_enterprise = {
