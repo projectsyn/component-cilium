@@ -350,6 +350,20 @@ local patchManifests = function(file, has_csv)
         ] else [],
       },
     }
+  else if (
+    util.version.minor >= 17 &&
+    file.contents.kind == 'Namespace' &&
+    file.contents.metadata.name == 'cilium'
+  ) then
+    file {
+      contents+: {
+        metadata+: {
+          annotations+: {
+            'openshift.io/node-selector': '',
+          },
+        },
+      },
+    }
   else
     file;
 
