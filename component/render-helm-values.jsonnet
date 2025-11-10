@@ -3,6 +3,8 @@ local kap = import 'lib/kapitan.libjsonnet';
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
+local util = import 'util.libsonnet';
+
 local replaceDeprecatedIPv4PodCIDR = {
   ipam+: {
     operator+:
@@ -88,24 +90,29 @@ local cilium_values = std.prune(
   enterpriseBGPControlPlane
 );
 
+local cilium_enterprise = {
+  enterprise: {
+    egressGatewayHA: {
+      // Enable HA egress gateway on Cilium EE by default when the regular
+      // egress gateway is enabled.
+      // we do this before the user-provided values, so users can still
+      // enable the HA egress gateway without enabling the regular egress
+      // gateway.
+      enabled: cilium_values.egressGateway.enabled,
+    },
+  },
+} + com.makeMergeable(cilium_values);
+
+
 local helm_values = {
   opensource: cilium_values,
-  enterprise: {
-    cilium: {
-      enterprise: {
-        egressGatewayHA: {
-          // Enable HA egress gateway on Cilium EE by default when the regular
-          // egress gateway is enabled.
-          // we do this before the user-provided values, so users can still
-          // enable the HA egress gateway without enabling the regular egress
-          // gateway.
-          enabled: cilium_values.egressGateway.enabled,
-        },
-      },
-    } + com.makeMergeable(cilium_values),
-    'hubble-enterprise': std.prune(params.hubble_enterprise_helm_values),
-    'hubble-ui': std.prune(params.hubble_ui_helm_values),
-  },
+  enterprise:
+    if util.version.minor <= 16 then {
+      cilium: cilium_enterprise,
+      'hubble-enterprise': std.prune(params.hubble_enterprise_helm_values),
+      'hubble-ui': std.prune(params.hubble_ui_helm_values),
+    } else
+      cilium_enterprise,
 };
 
 local legacy_values =

@@ -165,7 +165,7 @@ local patchManifests = function(file, has_csv)
     // NOTE(sg): This is explicitly `params.relase` since we don't want the
     // fall back to the opensource logic for the __mock_enterprise=true test
     // cases.
-    if params.release == 'enterprise' then {
+    if util.version.minor <= 16 && params.release == 'enterprise' then {
       cilium+: patch,
     } else
       patch;
