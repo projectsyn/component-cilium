@@ -60,7 +60,7 @@ local forceBPFMasqueradeEgressGW = {
 };
 
 local enterpriseBGPControlPlane =
-  if params.release != 'enterprise' then
+  if params.bgp.enterprise && params.release != 'enterprise' then
     std.trace('Cannot enable enterprise BGP control plane on opensource Cilium', {})
   else if params.bgp.enterprise then
     std.trace(
