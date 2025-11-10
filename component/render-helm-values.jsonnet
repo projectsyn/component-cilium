@@ -99,8 +99,15 @@ local takeLastHubbleMetricPerOption =
     },
   };
 
+local envoyDefault = {
+  envoy: {
+    enabled: util.version.minor > 16,
+  },
+};
+
 local cilium_values = std.prune(
-  params.cilium_helm_values +
+  envoyDefault +
+  com.makeMergeable(params.cilium_helm_values) +
   replaceDeprecatedIPv4PodCIDR +
   renderPodCIDRList +
   forceBPFMasqueradeEgressGW +
