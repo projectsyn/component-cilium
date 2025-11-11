@@ -381,7 +381,7 @@ default:: `{}`
 This parameter allows users to configure `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resources which assign a single egress IP to a namespace according to the design selected in https://kb.vshn.ch/oc4/explanations/decisions/cloudscale-cilium-egressip.html[Floating egress IPs with Cilium on cloudscale].
 
 Each entry in the parameter is intended to describe a group of dummy interfaces that can be used in `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resources.
-The component expects that each value is an object with fields `egress_range`, `node_selector`, `namespace_egress_ips`, `shadow_ranges`, and `destination_cidrs`.
+The component expects that each value is an object with fields `egress_range`, `node_selector`, `namespace_egress_ips`, `shadow_ranges`, `destination_cidrs`, and `bgp_policy_labels`.
 
 NOTE: Field `shadow_ranges` is optional, see the section on <<_shadow_ranges,shadow ranges>> for more details.
 
@@ -396,6 +396,16 @@ To support reusing the same input list for different purposes, the component rem
 
 When this field is omitted or empty, the component generates egress policies with `destinationCIDRs: ['0.0.0.0/0']`.
 Such policies assign the egress IP to all traffic originating in the namespace.
+====
+
+[NOTE]
+====
+Field `bgp_policy_labels` is optional.
+
+When the field is provided, and not an empty object, the component adds the contents as entries in `metadata.labels` of the resulting policies.
+In this case, the component also configures the egress policies directly with the egress IP and `maxGatewayNodes: 1` in the `spec.egressGroups` entry.
+
+If the field is omitted or empty, the component configures the egress group with the interface name and doesn't set `maxGatewayNodes`.
 ====
 
 ==== Prerequisites
