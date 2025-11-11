@@ -381,7 +381,7 @@ default:: `{}`
 This parameter allows users to configure `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resources which assign a single egress IP to a namespace according to the design selected in https://kb.vshn.ch/oc4/explanations/decisions/cloudscale-cilium-egressip.html[Floating egress IPs with Cilium on cloudscale].
 
 Each entry in the parameter is intended to describe a group of dummy interfaces that can be used in `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resources.
-The component expects that each value is an object with fields `egress_cidr`, `egress_range`, `node_selector`, `namespace_egress_ips`, `shadow_ranges`, `destination_cidrs`, and `bgp_policy_labels`.
+The component expects that each value is an object with fields `egress_cidr`, `egress_range`, `node_selector`, `namespace_egress_ips`, `shadow_ranges`, `destination_cidrs`, `bgp_policy_labels`, and `policy_labels`.
 Fields `egress_cidr` and `egress_range` are mutually exclusive.
 The component raises an error for entries which set neither or both.
 
@@ -426,6 +426,14 @@ In this case, the component configures the egress policies with https://docs.iso
 Please note that policies which use EGW IPAM will ignore static routes on the active gateway node (as of Cilium 1.16.16 and Cilium 1.17.9).
 
 If the field is omitted or empty, the component configures the egress group with the interface name and doesn't set `maxGatewayNodes`.
+====
+
+[NOTE]
+====
+Field `policy_labels` is optional.
+
+The component adds all labels in `policy_labels` as labels on the generated egress policies.
+If you specify labels in this parameter and in `bgp_policy_labels` and you specify the same label key in both fields, the label value provided in `bgp_policy_labels` will win.
 ====
 
 ==== Prerequisites

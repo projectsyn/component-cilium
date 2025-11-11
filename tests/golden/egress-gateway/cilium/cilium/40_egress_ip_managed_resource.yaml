@@ -81,6 +81,9 @@ spec:
                   "node_selector": {
                       "node-role.kubernetes.io/infra": ""
                   },
+                  "policy_labels": {
+                      "cilium.syn.tools/test": "additional-policy-label"
+                  },
                   "shadow_ranges": {
                       "infra-8344": "198.51.100.0 - 198.51.100.31",
                       "infra-87c9": "198.51.100.32 - 198.51.100.63",
@@ -195,6 +198,7 @@ spec:
           policy_resource_fn,
           destination_cidrs=null,
           bgp_policy_labels={},
+          policy_labels={},
         )
           // Helper which computes the interface index of the egress IP.
           // Assumes that the IPs in egress_range are assigned to dummy interfaces
@@ -273,7 +277,7 @@ spec:
                 [if std.length(shadow_ips) > 0 then 'cilium.syn.tools/shadow-ips']:
                   std.manifestJsonMinified(shadow_ips),
               },
-              labels+: bgp_policy_labels,
+              labels+: policy_labels + bgp_policy_labels,
             },
             spec: {
               destinationCIDRs: dest_cidrs,
@@ -635,6 +639,7 @@ spec:
               egw.IsovalentEgressGatewayPolicy,
               destination_cidrs=std.get(range, 'destination_cidrs', []),
               bgp_policy_labels=std.get(range, 'bgp_policy_labels', {}),
+              policy_labels=std.get(range, 'policy_labels', {}),
             ) {
               metadata+: {
                 labels+: egw.espejoteLabel,

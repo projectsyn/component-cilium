@@ -47,6 +47,8 @@ parameters:
             infra-87c9: 198.51.100.32 - 198.51.100.63
             infra-eba2: 198.51.100.64 - 198.51.100.95
           destination_cidrs: []
+          policy_labels:
+            cilium.syn.tools/test: additional-policy-label
         egress_b: null
         egress_c:
           egress_cidr: 192.0.2.64/27
