@@ -1,0 +1,81 @@
+# Overwrite parameters here
+
+parameters:
+  kapitan:
+    ~compile:
+      - input_paths:
+          - ${_base_directory}/tests/ipcalc-tests.jsonnet
+        input_type: jsonnet
+        output_path: ${_instance}/
+
+  test_cases:
+    parse_cidr:
+      '192.0.2.0/24':
+        network_address: 192.0.2.0
+        broadcast_address: 192.0.2.255
+        host_min: 192.0.2.1
+        host_max: 192.0.2.254
+        count: 255
+        prefix_length: 24
+        netmask: 255.255.255.0
+      '192.0.2.32/27':
+        network_address: 192.0.2.32
+        broadcast_address: 192.0.2.63
+        host_min: 192.0.2.33
+        host_max: 192.0.2.62
+        count: 31
+        prefix_length: 27
+        netmask: 255.255.255.224
+      '192.0.2.40/32':
+        network_address: 192.0.2.40
+        broadcast_address: 192.0.2.40
+        count: 0
+        prefix_length: 32
+      '10.100.0.0/17':
+        network_address: 10.100.0.0
+        broadcast_address: 10.100.127.255
+        host_min: 10.100.0.1
+        host_max: 10.100.127.254
+        count: 32767
+        prefix_length: 17
+        netmask: 255.255.128.0
+      '0.0.0.0/0':
+        network_address: 0.0.0.0
+        broadcast_address: 255.255.255.255
+        host_min: 0.0.0.1
+        host_max: 255.255.255.254
+        count: 4294967295
+        prefix_length: 0
+        netmask: 0.0.0.0
+      '10.0.0.0/8':
+        network_address: 10.0.0.0
+        broadcast_address: 10.255.255.255
+        host_min: 10.0.0.1
+        host_max: 10.255.255.254
+        count: 16777215
+        prefix_length: 8
+        netmask: 255.0.0.0
+      '10.0.0.0/9':
+        network_address: 10.0.0.0
+        broadcast_address: 10.127.255.255
+        host_min: 10.0.0.1
+        host_max: 10.127.255.254
+        count: 8388607
+        prefix_length: 9
+        netmask: 255.128.0.0
+      '224.0.0.0/4':
+        network_address: 224.0.0.0
+        broadcast_address: 239.255.255.255
+        host_min: 224.0.0.1
+        host_max: 239.255.255.254
+        count: 268435455
+        prefix_length: 4
+        netmask: 240.0.0.0
+      '192.0.2.4/29':
+        network_address: 192.0.2.0
+        broadcast_address: 192.0.2.7
+        host_min: 192.0.2.1
+        host_max: 192.0.2.6
+        count: 7
+        prefix_length: 29
+        netmask: 255.255.255.248
