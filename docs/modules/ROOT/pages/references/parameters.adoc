@@ -408,12 +408,22 @@ When this field is omitted or empty, the component generates egress policies wit
 Such policies assign the egress IP to all traffic originating in the namespace.
 ====
 
+[IMPORTANT]
+====
+Support for configuring BGP egress IPs through `egress_ip_ranges` is currently experimental.
+
+Policies which configure BGP egress IPs have an additional annotation `cilium.syn.tools/experimental-policy=true`.
+====
+
 [NOTE]
 ====
 Field `bgp_policy_labels` is optional.
+The component's support for configuring BGP egress IPs through `egress_ip_ranges` is currently experimental.
 
 When the field is provided, and not an empty object, the component adds the contents as entries in `metadata.labels` of the resulting policies.
-In this case, the component also configures the egress policies directly with the egress IP and `maxGatewayNodes: 1` in the `spec.egressGroups` entry.
+In this case, the component configures the egress policies with https://docs.isovalent.com/v1.16/configuration-guide/networking/egress-gateway/introduction.html#requirements-for-egress-ip-and-ipam-feature[Cilium's Egress Gateawy IPAM] and `maxGatewayNodes: 1` in the `spec.egressGroups` entry.
+
+Please note that policies which use EGW IPAM will ignore static routes on the active gateway node (as of Cilium 1.16.16 and Cilium 1.17.9).
 
 If the field is omitted or empty, the component configures the egress group with the interface name and doesn't set `maxGatewayNodes`.
 ====
