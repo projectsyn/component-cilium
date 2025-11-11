@@ -402,8 +402,8 @@ Such policies assign the egress IP to all traffic originating in the namespace.
 ====
 Field `bgp_policy_labels` is optional.
 
-When the field is provide, and not an empty object, the component adds the contents as entries in `metadata.labels` of the resulting policies.
-In this case, the component also configures the egress policies directly with the egress IP and `mmaxGatewayNodes: 1` in the `spec.egressGroups` entry.
+When the field is provided, and not an empty object, the component adds the contents as entries in `metadata.labels` of the resulting policies.
+In this case, the component also configures the egress policies directly with the egress IP and `maxGatewayNodes: 1` in the `spec.egressGroups` entry.
 
 If the field is omitted or empty, the component configures the egress group with the interface name and doesn't set `maxGatewayNodes`.
 ====
