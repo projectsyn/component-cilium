@@ -98,6 +98,7 @@ spec:
                       "203.0.113.0/24"
                   ],
                   "egress_cidr": "192.0.2.64/27",
+                  "generate_shadow_ranges_configmap": false,
                   "if_prefix": "egress_c",
                   "namespace_egress_ips": {
                       "baz": "192.0.2.93"
