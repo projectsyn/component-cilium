@@ -37,7 +37,7 @@ spec:
             - serve
           command:
             - hubble-relay
-          image: quay.io/cilium/hubble-relay:v1.16.4@sha256:fb2c7d127a1c809f6ba23c05973f3dd00f6b6a48e4aee2da95db925a4f0351d2
+          image: quay.io/cilium/hubble-relay:v1.18.4@sha256:6d350cb1c84b847adb152173debef1f774126c69de21a5921a1e6a23b8779723
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 12
@@ -55,12 +55,15 @@ spec:
               port: 4222
             timeoutSeconds: 3
           securityContext:
+            allowPrivilegeEscalation: false
             capabilities:
               drop:
                 - ALL
             runAsGroup: 65532
             runAsNonRoot: true
             runAsUser: 65532
+            seccompProfile:
+              type: RuntimeDefault
           startupProbe:
             failureThreshold: 20
             grpc:
@@ -78,6 +81,8 @@ spec:
       restartPolicy: Always
       securityContext:
         fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: hubble-relay
       terminationGracePeriodSeconds: 1
       volumes:
