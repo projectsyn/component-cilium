@@ -38,10 +38,7 @@ local egress_ip_shadow_ranges =
       std.join('.', std.split(range.start, '.')[0:3]);
 
   local check_length(hostname, egress_range, range) =
-    local public_range = ipcalc.parse_ip_range(
-      egress_range.prefix,
-      egress_range.config.egress_range
-    );
+    local public_range = egw.read_egress_range(egress_range.prefix, egress_range.config);
     local public_len = ipcalc.ipval(public_range.end) - ipcalc.ipval(public_range.start);
     local shadow_len = ipcalc.ipval(range.end) - ipcalc.ipval(range.start);
 
@@ -51,7 +48,7 @@ local egress_ip_shadow_ranges =
         range.end,
         hostname,
         egress_range.prefix,
-        egress_range.config.egress_range,
+        public_range,
       ]
     else
       range;

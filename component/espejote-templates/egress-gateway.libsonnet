@@ -153,6 +153,42 @@ local espejoteLabel = {
   'cilium.syn.tools/managed-by': 'espejote_cilium_namespace-egress-ips',
 };
 
+// read_egress_range extracts the egress range from the passed config object,
+// either from field `egress_range` or from field `egress_cidr`.
+// When reading from field `egress_cidr` the function also respects fields
+// `skip_first` and `skip_last` when generating the resulting range object.
+local read_egress_range(prefix, config) =
+  local ekey = std.setDiff(
+    std.set([ 'egress_range', 'egress_cidr' ]),
+    std.set(std.objectFields(config))
+  );
+  if std.length(ekey) != 1 then
+    error
+      'egress_ip_ranges` entries are expected to have exactly one of ' +
+      '`egress_range` and `egress_cidr`. entry "%s" has %s.' % [
+        prefix,
+        if std.length(ekey) == 2 then 'neither'
+        else if std.length(ekey) == 0 then 'both'
+        else 'a weird configuration',
+      ]
+  else
+    if std.objectHas(config, 'egress_range') then
+      local erange = ipcalc.parse_ip_range(prefix, config.egress_range);
+      erange
+    else
+      local ecidr = ipcalc.parse_cidr(prefix, config.egress_cidr);
+      {
+        start: if std.get(config, 'skip_first', false) then
+          ecidr.host_min
+        else
+          ecidr.network_address,
+        end: if std.get(config, 'skip_last', false) then
+          ecidr.host_max
+        else
+          ecidr.broadcast_address,
+      };
+
+
 // find_egress_range expects a list of egress range objects which contain the
 // interface prefix in a field. This list is precomputed by the Commodore
 // component and provided to the Espejote template as
@@ -163,7 +199,7 @@ local espejoteLabel = {
 local find_egress_range(ranges, egress_ip) =
   local eip = ipcalc.ipval(egress_ip);
   local check_fn(rspec) =
-    local range = ipcalc.parse_ip_range(rspec.if_prefix, rspec.egress_range);
+    local range = read_egress_range(rspec.if_prefix, rspec);
     local start = ipcalc.ipval(range.start);
     local end = ipcalc.ipval(range.end);
     eip >= start && eip <= end;
@@ -172,14 +208,17 @@ local find_egress_range(ranges, egress_ip) =
     range: filtered[0],
     errmsg: '',
   } else {
+    local read_erange_str(r) =
+      local er = read_egress_range(r.if_prefix, r);
+      '%(start)s - %(end)s' % er,
     range: null,
     errmsg: if std.length(filtered) == 0 then
-      local eranges = std.join(', ', [ r.egress_range for r in ranges ]);
+      local eranges = std.join(', ', [ read_erange_str(r) for r in ranges ]);
       'No egress range found for %s, available ranges: %s'
       % [ egress_ip, eranges ]
     else
       local eranges = std.join(
-        ', ', [ '%s (%s)' % [ r.if_prefix, r.egress_range ] for r in filtered ]
+        ', ', [ '%s (%s)' % [ r.if_prefix, read_erange_str(r) ] for r in filtered ]
       );
       'Found multiple egress ranges which contain %s: %s. ' % [ egress_ip, eranges ] +
       "Please contact your cluster's administrator to resolve this range overlap",
@@ -191,4 +230,5 @@ local find_egress_range(ranges, egress_ip) =
   NamespaceEgressPolicy: NamespaceEgressPolicy,
   espejoteLabel: espejoteLabel,
   find_egress_range: find_egress_range,
+  read_egress_range: read_egress_range,
 }
