@@ -3,9 +3,13 @@ local kap = import 'lib/kapitan.libjsonnet';
 local kube = import 'lib/kube.libjsonnet';
 
 local egw = import 'espejote-templates/egress-gateway.libsonnet';
+local ipcalc = import 'lib/cilium-ipcalc.libsonnet';
+local nm = import 'lib/openshift-nmstate.libsonnet';
 
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
+
+local has_nmstate = std.member(inv.applications, 'openshift-nmstate');
 
 local EgressGatewayPolicy(name) =
   if params.release == 'enterprise' then
@@ -23,8 +27,22 @@ local egress_ip_policies = std.flattenArrays([
   local egress_range = egw.read_egress_range(interface_prefix, cfg);
   local ns_egress_ips = std.get(cfg, 'namespace_egress_ips', {});
   local dest_cidrs = com.renderArray(std.get(cfg, 'destination_cidrs', []));
-  [
-    egw.NamespaceEgressPolicy(
+  local shadow_ranges = std.get(cfg, 'shadow_ranges', {});
+  local auto_egress_interfaces =
+    local requested = std.get(cfg, 'auto_egress_interfaces', false);
+    local has_shadow_ranges = std.length(shadow_ranges) > 0;
+    if requested && !has_nmstate then
+      error
+        'User requested auto egress interfaces for "%s", ' % interface_prefix +
+        "but nmstate isn't present on the cluster."
+    else if requested && !has_shadow_ranges then
+      error
+        'User requested auto egress interfaces for "%s", ' % interface_prefix +
+        'but no shadow ranges are configured.'
+    else
+      requested && has_nmstate && has_shadow_ranges;
+  std.flattenArrays([
+    local ep = egw.NamespaceEgressPolicy(
       interface_prefix,
       '%(start)s - %(end)s' % egress_range,
       std.objectValues(std.get(cfg, 'shadow_ranges', {})),
@@ -35,10 +53,20 @@ local egress_ip_policies = std.flattenArrays([
       destination_cidrs=dest_cidrs,
       bgp_policy_labels=std.get(cfg, 'bgp_policy_labels', {}),
       policy_labels=std.get(cfg, 'policy_labels', {}),
-    )
+    );
+    [ ep ] +
+    if auto_egress_interfaces then
+      egw.EgressInterfaceNNCPs(
+        nm.NodeNetworkConfigurationPolicy,
+        ep,
+        interface_prefix,
+        egress_range,
+        shadow_ranges
+      )
+    else []
     for namespace in std.objectFields(ns_egress_ips)
     if ns_egress_ips[namespace] != null
-  ]
+  ])
   for interface_prefix in std.objectFields(params.egress_gateway.egress_ip_ranges)
   if params.egress_gateway.egress_ip_ranges[interface_prefix] != null
 ]);
@@ -49,18 +77,23 @@ local egress_ip_policies = std.flattenArrays([
 // of this object.
 local validate(policies) = std.objectValues(std.foldl(
   function(seen, p)
-    local ns =
-      p.spec.selectors[0].podSelector.matchLabels['io.kubernetes.pod.namespace'];
-    if std.objectHas(seen, ns) then
-      error 'duplicated source namespace "%s" for policies in egress ranges "%s" and "%s"' % [
-        ns,
-        seen[ns].metadata.annotations['cilium.syn.tools/interface-prefix'],
-        p.metadata.annotations['cilium.syn.tools/interface-prefix'],
-      ]
-    else
+    if p.kind != EgressGatewayPolicy('dummy').kind then
       seen {
-        [ns]: p,
-      },
+        ['%s-%s' % [ p.kind, p.metadata.name ]]: p,
+      }
+    else
+      local ns =
+        p.spec.selectors[0].podSelector.matchLabels['io.kubernetes.pod.namespace'];
+      if std.objectHas(seen, ns) then
+        error 'duplicated source namespace "%s" for policies in egress ranges "%s" and "%s"' % [
+          ns,
+          seen[ns].metadata.annotations['cilium.syn.tools/interface-prefix'],
+          p.metadata.annotations['cilium.syn.tools/interface-prefix'],
+        ]
+      else
+        seen {
+          [ns]: p,
+        },
   policies,
   {}
 ));

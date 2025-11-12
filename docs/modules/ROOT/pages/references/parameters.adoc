@@ -381,7 +381,7 @@ default:: `{}`
 This parameter allows users to configure `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resources which assign a single egress IP to a namespace according to the design selected in https://kb.vshn.ch/oc4/explanations/decisions/cloudscale-cilium-egressip.html[Floating egress IPs with Cilium on cloudscale].
 
 Each entry in the parameter is intended to describe a group of dummy interfaces that can be used in `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resources.
-The component expects that each value is an object with fields `egress_cidr`, `egress_range`, `node_selector`, `namespace_egress_ips`, `shadow_ranges`, `destination_cidrs`, `bgp_policy_labels`, and `policy_labels`.
+The component expects that each value is an object with fields `egress_cidr`, `egress_range`, `node_selector`, `namespace_egress_ips`, `shadow_ranges`, `destination_cidrs`, `bgp_policy_labels`, `policy_labels`, and `egress_auto_interfaces`.
 Fields `egress_cidr` and `egress_range` are mutually exclusive.
 The component raises an error for entries which set neither or both.
 
@@ -434,6 +434,15 @@ Field `policy_labels` is optional.
 
 The component adds all labels in `policy_labels` as labels on the generated egress policies.
 If you specify labels in this parameter and in `bgp_policy_labels` and you specify the same label key in both fields, the label value provided in `bgp_policy_labels` will win.
+====
+
+[NOTE]
+====
+Field `egress_auto_interfaces` is optional.
+
+Setting the field to `true` raises an error for egress IP ranges which don't have any shadow ranges configured or if the `openshift-nmstate` component isn't present on the target cluster.
+
+Otherwise, the component will generate a `NodeNetworkConfigurationPolicy` to create an egress interface with the correct shadow IP on each node for which a shadow range is configured.
 ====
 
 ==== Prerequisites
