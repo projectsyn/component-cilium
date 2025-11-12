@@ -1,8 +1,8 @@
 apiVersion: v1
 data:
-  infra-8344: '{"egress_a":{"base":"198.51.100","from":"0","to":"31"},"egress_c":{"base":"198.51.100","from":"96","to":"127"}}'
-  infra-87c9: '{"egress_a":{"base":"198.51.100","from":"32","to":"63"},"egress_c":{"base":"198.51.100","from":"128","to":"159"}}'
-  infra-eba2: '{"egress_a":{"base":"198.51.100","from":"64","to":"95"},"egress_c":{"base":"198.51.100","from":"160","to":"191"}}'
+  infra-8344: '{"egress_a":{"base":"198.51.100","from":"0","to":"31"}}'
+  infra-87c9: '{"egress_a":{"base":"198.51.100","from":"32","to":"63"}}'
+  infra-eba2: '{"egress_a":{"base":"198.51.100","from":"64","to":"95"}}'
 kind: ConfigMap
 metadata:
   annotations: {}
