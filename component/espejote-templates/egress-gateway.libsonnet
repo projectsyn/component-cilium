@@ -44,6 +44,7 @@ local NamespaceEgressPolicy =
     policy_resource_fn,
     destination_cidrs=null,
     bgp_policy_labels={},
+    policy_labels={},
   )
     // Helper which computes the interface index of the egress IP.
     // Assumes that the IPs in egress_range are assigned to dummy interfaces
@@ -122,7 +123,7 @@ local NamespaceEgressPolicy =
           [if std.length(shadow_ips) > 0 then 'cilium.syn.tools/shadow-ips']:
             std.manifestJsonMinified(shadow_ips),
         },
-        labels+: bgp_policy_labels,
+        labels+: policy_labels + bgp_policy_labels,
       },
       spec: {
         destinationCIDRs: dest_cidrs,
