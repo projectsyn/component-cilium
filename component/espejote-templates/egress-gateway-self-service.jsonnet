@@ -43,7 +43,12 @@ local reconcileNamespace(namespace) =
       // us) and update the namespace with an informational message.
       local range = res.range;
       local egress_range = egw.read_egress_range(range.if_prefix, range);
-      [
+      if std.get(range, 'auto_egress_interfaces', false) then [
+        setAnnotations(namespace, {
+          'cilium.syn.tools/egress-ip-status':
+            "Allocating egress IP from range with `auto_egress_interfaces=true` isn't supported",
+        }),
+      ] else [
         egw.NamespaceEgressPolicy(
           range.if_prefix,
           '%(start)s - %(end)s' % egress_range,

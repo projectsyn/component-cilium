@@ -1,3 +1,84 @@
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: '-10'
+    cilium.syn.tools/description: Generated policy to configure egress interface "egress_c_29"
+      for shadow range "198.51.100.96 - 198.51.100.127" associated with egress range
+      "egress_c" (192.0.2.64 - 192.0.2.95) on node "infra-8344".
+  labels:
+    cilium.syn.tools/egress-policy: baz
+    name: egress-interface-baz-infra-8344
+  name: egress-interface-baz-infra-8344
+spec:
+  desiredState:
+    interfaces:
+      - ipv4:
+          address:
+            - ip: 198.51.100.125
+              prefix-length: 32
+          dhcp: false
+          enabled: true
+        name: egress_c_29
+        type: dummy
+  nodeSelector:
+    kubernetes.io/hostname: infra-8344
+---
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: '-10'
+    cilium.syn.tools/description: Generated policy to configure egress interface "egress_c_29"
+      for shadow range "198.51.100.128 - 198.51.100.159" associated with egress range
+      "egress_c" (192.0.2.64 - 192.0.2.95) on node "infra-87c9".
+  labels:
+    cilium.syn.tools/egress-policy: baz
+    name: egress-interface-baz-infra-87c9
+  name: egress-interface-baz-infra-87c9
+spec:
+  desiredState:
+    interfaces:
+      - ipv4:
+          address:
+            - ip: 198.51.100.157
+              prefix-length: 32
+          dhcp: false
+          enabled: true
+        name: egress_c_29
+        type: dummy
+  nodeSelector:
+    kubernetes.io/hostname: infra-87c9
+---
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: '-10'
+    cilium.syn.tools/description: Generated policy to configure egress interface "egress_c_29"
+      for shadow range "198.51.100.160 - 198.51.100.191" associated with egress range
+      "egress_c" (192.0.2.64 - 192.0.2.95) on node "infra-eba2".
+  labels:
+    cilium.syn.tools/egress-policy: baz
+    name: egress-interface-baz-infra-eba2
+  name: egress-interface-baz-infra-eba2
+spec:
+  desiredState:
+    interfaces:
+      - ipv4:
+          address:
+            - ip: 198.51.100.189
+              prefix-length: 32
+          dhcp: false
+          enabled: true
+        name: egress_c_29
+        type: dummy
+  nodeSelector:
+    kubernetes.io/hostname: infra-eba2
+---
 apiVersion: cilium.io/v2
 kind: CiliumEgressGatewayPolicy
 metadata:

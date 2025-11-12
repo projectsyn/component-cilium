@@ -151,6 +151,70 @@ local NamespaceEgressPolicy =
       },
     };
 
+local EgressInterfaceNNCPs(NNCP, ep, interface_prefix, egress_range, shadow_ranges) = [
+  local shadow_ip =
+    local ifindex =
+      local debuginfo = std.foldl(
+        function(i, e)
+          local parts = std.splitLimit(e, '=', 1);
+          i { [parts[0]]: std.parseInt(parts[1]) },
+        std.split(
+          ep.metadata.annotations['cilium.syn.tools/debug-interface-index'],
+          ', '
+        ),
+        {}
+      );
+      debuginfo.ip - debuginfo.start;
+    local sr = ipcalc.parse_ip_range('shadow range for "%s" in "%s"' % [
+      node,
+      interface_prefix,
+    ], shadow_ranges[node]);
+    ipcalc.format_ipval(ipcalc.ipval(sr.start) + ifindex);
+  NNCP('egress-interface-%s-%s' % [
+    ep.metadata.name,
+    node,
+  ]) {
+    metadata+: {
+      annotations+: {
+        'argocd.argoproj.io/sync-wave': '-10',
+        'cilium.syn.tools/description':
+          'Generated policy to configure egress interface "%s" for shadow range "%s" associated with egress range "%s" (%s) on node "%s".' % [
+            ep.spec.egressGroups[0].interface,
+            shadow_ranges[node],
+            interface_prefix,
+            '%(start)s - %(end)s' % egress_range,
+            node,
+          ],
+      },
+      labels+: {
+        'cilium.syn.tools/egress-policy': ep.metadata.name,
+      },
+    },
+    spec: {
+      nodeSelector: {
+        'kubernetes.io/hostname': node,
+      },
+      desiredState: {
+        interfaces: [
+          {
+            name: '%s' % ep.spec.egressGroups[0].interface,
+            type: 'dummy',
+            ipv4: {
+              address: [ {
+                ip: shadow_ip,
+                'prefix-length': 32,
+              } ],
+              dhcp: false,
+              enabled: true,
+            },
+          },
+        ],
+      },
+    },
+  }
+  for node in std.objectFields(shadow_ranges)
+];
+
 local espejoteLabel = {
   'cilium.syn.tools/managed-by': 'espejote_cilium_namespace-egress-ips',
 };
@@ -230,6 +294,7 @@ local find_egress_range(ranges, egress_ip) =
   CiliumEgressGatewayPolicy: CiliumEgressGatewayPolicy,
   IsovalentEgressGatewayPolicy: IsovalentEgressGatewayPolicy,
   NamespaceEgressPolicy: NamespaceEgressPolicy,
+  EgressInterfaceNNCPs: EgressInterfaceNNCPs,
   espejoteLabel: espejoteLabel,
   find_egress_range: find_egress_range,
   read_egress_range: read_egress_range,
