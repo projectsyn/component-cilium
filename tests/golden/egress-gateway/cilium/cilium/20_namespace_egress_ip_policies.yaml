@@ -94,6 +94,7 @@ metadata:
       in egress range "egress_f" (192.0.2.160 - 192.0.2.190) to namespace qux.
     cilium.syn.tools/egress-ip: 192.0.2.160
     cilium.syn.tools/egress-range: 192.0.2.160 - 192.0.2.190
+    cilium.syn.tools/experimental-policy: 'true'
     cilium.syn.tools/interface-prefix: egress_f
     cilium.syn.tools/source-namespace: qux
   labels:

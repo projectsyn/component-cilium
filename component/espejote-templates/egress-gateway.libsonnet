@@ -113,6 +113,7 @@ local NamespaceEgressPolicy =
               egress_range,
               namespace,
             ],
+          [if bgp_egress_ip then 'cilium.syn.tools/experimental-policy']: 'true',
           'cilium.syn.tools/egress-ip': egress_ip,
           'cilium.syn.tools/interface-prefix': interface_prefix,
           'cilium.syn.tools/egress-range': egress_range,
