@@ -103,6 +103,11 @@ local metadata_name_map = {
 local patchManifests = function(file, has_csv)
   local hasK8sHost = std.objectHas(helm.cilium_values, 'k8sServiceHost');
   local hasK8sPort = std.objectHas(helm.cilium_values, 'k8sServicePort');
+  local imageOverride = std.get(
+    std.get(params, '__testing_olm_image', {}),
+    params.olm.full_version,
+    ''
+  );
   local deploymentPatch = {
     spec+: {
       template+: {
@@ -118,6 +123,8 @@ local patchManifests = function(file, has_csv)
                 ] + [
                   '--zap-log-level=%s' % params.olm.log_level,
                 ],
+                [if imageOverride != '' then 'image']: imageOverride,
+                [if imageOverride != '' then 'imagePullPolicy']: 'Never',
                 env+:
                   if c.name == 'manager' || release == 'opensource' then
                     (
