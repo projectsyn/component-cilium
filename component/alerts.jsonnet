@@ -181,11 +181,12 @@ local additional_alerts = prom.PrometheusRule('cilium-custom') {
   },
 };
 
-{
+if !std.member([ 'k3d', 'kind' ], inv.parameters.facts.distribution) then {
   [if clustermesh_enabled && std.length(clustermesh_group.rules) > 0 then
     '10_clustermesh_alerts']: clustermesh_alerts,
   [if std.length(ebpf_alerts.spec.groups[0].rules) > 0 then
     '10_ebpf_alerts']: ebpf_alerts,
   [if std.length(additional_group.rules) > 0 then
     '10_custom_alerts']: additional_alerts,
+} else {
 }
