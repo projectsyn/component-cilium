@@ -92,6 +92,11 @@ local egress_ip_shadow_ranges =
       if params.egress_gateway.egress_ip_ranges[interface_prefix] != null
          && std.objectHas(params.egress_gateway.egress_ip_ranges[interface_prefix], 'shadow_ranges')
          && params.egress_gateway.egress_ip_ranges[interface_prefix].shadow_ranges != null
+         && std.get(
+           params.egress_gateway.egress_ip_ranges[interface_prefix],
+           'generate_shadow_ranges_configmap',
+           true
+         )
     ],
     {}
   );
@@ -116,7 +121,11 @@ local egress_ip_shadow_ranges =
       local sel_hash = std.md5(std.manifestJsonMinified(sel));
       { [sel_hash]+: sel }
       for interface_prefix in std.objectFields(params.egress_gateway.egress_ip_ranges)
-      if params.egress_gateway.egress_ip_ranges[interface_prefix] != null
+      if params.egress_gateway.egress_ip_ranges[interface_prefix] != null && std.get(
+        params.egress_gateway.egress_ip_ranges[interface_prefix],
+        'generate_shadow_ranges_configmap',
+        true
+      )
     ],
     {}
   );

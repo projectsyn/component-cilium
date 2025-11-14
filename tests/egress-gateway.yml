@@ -1,4 +1,6 @@
 # Overwrite parameters here
+applications:
+  - openshift-nmstate
 
 parameters:
   kapitan:
@@ -12,6 +14,9 @@ parameters:
       - type: https
         source: https://raw.githubusercontent.com/appuio/component-openshift4-monitoring/v6.11.3/lib/openshift4-monitoring-alert-patching.libsonnet
         output_path: vendor/lib/alert-patching.libsonnet
+      - type: https
+        source: https://raw.githubusercontent.com/appuio/component-openshift-nmstate/refs/heads/feat/component-lib/lib/openshift-nmstate.libsonnet
+        output_path: vendor/lib/openshift-nmstate.libsonnet
   cilium:
     egress_gateway:
       enabled: true
@@ -47,6 +52,8 @@ parameters:
             infra-87c9: 198.51.100.32 - 198.51.100.63
             infra-eba2: 198.51.100.64 - 198.51.100.95
           destination_cidrs: []
+          policy_labels:
+            cilium.syn.tools/test: additional-policy-label
         egress_b: null
         egress_c:
           egress_cidr: 192.0.2.64/27
@@ -54,6 +61,8 @@ parameters:
             node-role.kubernetes.io/infra: ''
           namespace_egress_ips:
             baz: 192.0.2.93
+          generate_shadow_ranges_configmap: false
+          auto_egress_interfaces: true
           shadow_ranges:
             infra-8344: 198.51.100.96 - 198.51.100.127
             infra-87c9: 198.51.100.128 - 198.51.100.159

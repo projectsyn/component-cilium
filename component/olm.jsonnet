@@ -22,15 +22,20 @@ else
 local olmDir =
   local prefix = '%s/olm/cilium/cilium-olm/' % inv.parameters._base_directory;
   if release == 'opensource' then
-    prefix + 'olm-for-cilium-main/manifests/cilium.v%s/' % params.olm.full_version
+    prefix +
+    'cilium.v%s/olm-for-cilium-main/manifests/cilium.v%s/' %
+    [ params.olm.full_version, params.olm.full_version ]
   else if release == 'enterprise' then
+    // The component now generates this directory itself when unpacking the
+    // tarball, since Cilium 1.17 (CLife) doesn't have a directory in the
+    // tarball anymore.
+    local manifests_dir = 'cilium.v%s/' % params.olm.full_version;
     local path_variants = [
-      // Known releases: 1.11.5, 1.12.6
+      // Cilium 1.17 (CLife) doesn't have a directory in the tarball anymore
       '',
-      // Known releases: 1.11.17
-      'tmp/cilium-ee-olm/manifests/',
-      // Known releases: 1.13.2
-      'cilium-ee-olm/manifests/',
+      // Cilium <= 1.16 has a directory matching `manifests_dir` in the
+      // tarball.
+      manifests_dir,
     ];
     local manifests_dir = 'cilium.v%s/' % params.olm.full_version;
     local dir = std.foldl(
@@ -82,7 +87,12 @@ local metadata_name_map = {
     OlmRole: 'cilium-olm',
     OlmClusterRole: 'cilium-cilium-olm',
   },
-  enterprise: {
+  enterprise: if util.version.minor >= 17 then {
+    CiliumConfig: 'ciliumconfig',
+    Deployment: 'clife-controller-manager',
+    OlmRole: 'cilium-ee-olm',
+    OlmClusterRole: 'clife-manager-role',
+  } else {
     CiliumConfig: 'cilium-enterprise',
     Deployment: 'cilium-ee-olm',
     OlmRole: 'cilium-ee-olm',
@@ -93,12 +103,17 @@ local metadata_name_map = {
 local patchManifests = function(file, has_csv)
   local hasK8sHost = std.objectHas(helm.cilium_values, 'k8sServiceHost');
   local hasK8sPort = std.objectHas(helm.cilium_values, 'k8sServicePort');
+  local imageOverride = std.get(
+    std.get(params, '__testing_olm_image', {}),
+    params.olm.full_version,
+    ''
+  );
   local deploymentPatch = {
     spec+: {
       template+: {
         spec+: {
           containers: [
-            if c.name == 'operator' then
+            if c.name == 'operator' || c.name == 'manager' then
               c {
                 resources+: params.olm.resources,
                 command: [
@@ -108,8 +123,10 @@ local patchManifests = function(file, has_csv)
                 ] + [
                   '--zap-log-level=%s' % params.olm.log_level,
                 ],
+                [if imageOverride != '' then 'image']: imageOverride,
+                [if imageOverride != '' then 'imagePullPolicy']: 'Never',
                 env+:
-                  if release == 'opensource' then
+                  if c.name == 'manager' || release == 'opensource' then
                     (
                       if hasK8sHost then
                         [
@@ -157,14 +174,15 @@ local patchManifests = function(file, has_csv)
     // NOTE(sg): This is explicitly `params.relase` since we don't want the
     // fall back to the opensource logic for the __mock_enterprise=true test
     // cases.
-    if params.release == 'enterprise' then {
+    if util.version.minor <= 16 && params.release == 'enterprise' then {
       cilium+: patch,
     } else
       patch;
   if (
     file.contents.kind == 'CiliumConfig'
     && file.contents.metadata.name == metadata_name_map[release].CiliumConfig
-    && file.contents.metadata.namespace == 'cilium'
+    // CiliumConfig is cluster-scoped for Cilium >= 1.17
+    && std.get(file.contents.metadata, 'namespace', 'cilium') == 'cilium'
   ) then
     file {
       contents+: {
@@ -228,6 +246,7 @@ local patchManifests = function(file, has_csv)
   ) then
     null
   else if (
+    util.version.minor <= 16 &&
     file.contents.kind == 'Role' &&
     file.contents.metadata.namespace == 'cilium' &&
     file.contents.metadata.name == metadata_name_map[release].OlmRole
@@ -268,6 +287,7 @@ local patchManifests = function(file, has_csv)
       },
     }
   else if (
+    util.version.minor <= 16 &&
     file.contents.kind == 'ClusterRole' &&
     file.contents.metadata.name == metadata_name_map[release].OlmClusterRole
   ) then
@@ -314,6 +334,20 @@ local patchManifests = function(file, has_csv)
         ] else [],
       },
     }
+  else if (
+    util.version.minor >= 17 &&
+    file.contents.kind == 'Namespace' &&
+    file.contents.metadata.name == 'cilium'
+  ) then
+    file {
+      contents+: {
+        metadata+: {
+          annotations+: {
+            'openshift.io/node-selector': '',
+          },
+        },
+      },
+    }
   else
     file;
 
@@ -356,6 +390,8 @@ std.foldl(
     std.map(function(obj) patchManifests(obj, olmFiles.has_csv), olmFiles.files),
   ),
   {
+    [if util.version.minor >= 17 then '97_migrate_to_clife']:
+      import 'olm-migrate-operator.libsonnet',
     [if util.version.minor <= 14 then '98_fixup_bgp_controlpane_rbac']: kubeSystemSecretRO,
     '99_cleanup': (import 'cleanup.libsonnet'),
   }
