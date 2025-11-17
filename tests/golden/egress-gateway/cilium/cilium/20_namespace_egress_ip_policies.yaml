@@ -12,6 +12,7 @@ metadata:
     cilium.syn.tools/shadow-ips: '["198.51.100.29","198.51.100.61","198.51.100.93"]'
     cilium.syn.tools/source-namespace: bar
   labels:
+    cilium.syn.tools/test: additional-policy-label
     name: bar
   name: bar
 spec:
@@ -70,6 +71,7 @@ metadata:
     cilium.syn.tools/shadow-ips: '["198.51.100.0","198.51.100.32","198.51.100.64"]'
     cilium.syn.tools/source-namespace: foo
   labels:
+    cilium.syn.tools/test: additional-policy-label
     name: foo
   name: foo
 spec:
