@@ -56,6 +56,7 @@ parameters:
             node-role.kubernetes.io/infra: ''
           namespace_egress_ips:
             baz: 192.0.2.93
+          generate_shadow_ranges_configmap: false
           shadow_ranges:
             infra-8344: 198.51.100.96 - 198.51.100.127
             infra-87c9: 198.51.100.128 - 198.51.100.159
