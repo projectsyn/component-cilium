@@ -401,6 +401,8 @@ local kubeSystemSecretRO = [
   },
 ];
 
+local migrate_to_clife = params.olm.migrate_to_clife;
+
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
   std.filter(
@@ -408,7 +410,7 @@ std.foldl(
     std.map(function(obj) patchManifests(obj, olmFiles.has_csv), olmFiles.files),
   ),
   {
-    [if util.version.minor >= 17 then '97_migrate_to_clife']:
+    [if util.version.minor >= 17 && migrate_to_clife then '97_migrate_to_clife']:
       import 'olm-migrate-operator.libsonnet',
     [if util.version.minor <= 14 then '98_fixup_bgp_controlpane_rbac']: kubeSystemSecretRO,
     '99_cleanup': (import 'cleanup.libsonnet'),

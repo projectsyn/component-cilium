@@ -134,6 +134,7 @@ parameters:
       version: "1.15"
       patchlevel: "1"
       full_version: ${cilium:olm:version}.${cilium:olm:patchlevel}
+      migrate_to_clife: true
       resources:
         requests:
           cpu: 100m
