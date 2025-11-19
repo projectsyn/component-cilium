@@ -34,7 +34,7 @@ local version = parse_version(
       'cilium-enterprise';
     params.charts[chart].version
   else
-    params.olm.full_version
+    std.get(params.olm, '__test_full_version', params.olm.full_version)
 );
 
 // CiliumLoadBalancerIPPool
