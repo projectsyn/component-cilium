@@ -58,6 +58,27 @@ local olmDir =
   else
     error "Unknown release '%s'" % [ release ];
 
+local patchDeploymentContainerName =
+  // for the mock enterprise OLM test for 1.17 and newer, we patch the OLM
+  // deployment to use container name `manager` so the OLM enterprise
+  // deployment patching logic applies.
+  if mock_enterprise && util.version.minor >= 17 then
+    {
+      spec+: {
+        template+: {
+          spec+: {
+            containers: [
+              super.containers[0] {
+                name: 'manager',
+              },
+            ],
+          },
+        },
+      },
+    }
+  else
+    {};
+
 local olmFiles = std.foldl(
   function(status, file)
     status {
@@ -71,13 +92,15 @@ local olmFiles = std.foldl(
       !std.startsWith(name, '.'),
     function(name) {
       filename: name,
-      contents: std.parseJson(kap.yaml_load(olmDir + name)),
+      contents:
+        local c = std.parseJson(kap.yaml_load(olmDir + name));
+        if c.kind == 'Deployment' then c + patchDeploymentContainerName else c,
     },
     kap.dir_files_list(olmDir)
   ),
   {
     files:
-      if mock_enterprise then [
+      if mock_enterprise && util.version.minor <= 16 then [
         {
           filename: 'cluster-network-06-cilium-00002-cilium-ee-olm-overrides-configmap.yaml',
           contents: {
@@ -263,7 +286,17 @@ local patchManifests = function(file, has_csv)
   ) then
     null
   else if (
-    // OLM role doesn't exist for CLife OLM operator (1.17+)
+    // OLM role doesn't exist for CLife OLM operator (1.17+) -> drop the
+    // opensource OLM role file for the olm-enterprise tests
+    mock_enterprise &&
+    util.version.minor >= 17 &&
+    file.contents.kind == 'Role' &&
+    file.contents.metadata.namespace == 'cilium' &&
+    file.contents.metadata.name == metadata_name_map.opensource.OlmRole
+  ) then
+    null
+  else if (
+    // OLM role needs to be patched for Cilium <= 1.16
     util.version.minor <= 16 &&
     file.contents.kind == 'Role' &&
     file.contents.metadata.namespace == 'cilium' &&
