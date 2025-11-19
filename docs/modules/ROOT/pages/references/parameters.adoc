@@ -31,11 +31,13 @@ The Cilium OLM is a thin wrapper around Helm, because of this the Helm values ar
 | |Helm |OLM
 |Opensource
 |✅
-|✅
+|⛔️
 |Enterprise
 |✅
 |✅
 |===
+
+NOTE: The component doesn't support the opensource OLM installation anymore, since the newest available opensource OLM tarball is for Cilium 1.15.1.
 
 == `release`
 
