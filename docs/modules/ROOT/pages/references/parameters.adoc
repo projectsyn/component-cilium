@@ -2,6 +2,13 @@
 
 = Parameters
 
+[IMPORTANT]
+====
+Component version v3.x supports installing and managing Cilium v1.16 and newer.
+
+See component version v2.x for older Cilium versions.
+====
+
 The parent key for all of the following parameters is `cilium`.
 
 [NOTE]
