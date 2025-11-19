@@ -28,9 +28,9 @@ First, check the source cluster's overall cluster mesh status
 
 [source,bash]
 ----
-cilium -n cilium clustermesh status --as=cluster-admin <1>
+cilium -n cilium clustermesh status --as=system:admin <1>
 ----
-<1> `--as=cluster-admin` is required on VSHN Managed OpenShift, may need to be left out on other clusters.
+<1> `--as=system:admin` is required on VSHN Managed OpenShift, may need to be left out on other clusters.
 
 include::partial$runbooks/investigating-clustermesh-api.adoc[]
 
@@ -40,10 +40,10 @@ You can check the KVStoreMesh connection to the remote cluster mesh API server i
 
 [source,bash]
 ----
-kubectl -n cilium --as=cluster-admin exec -it deploy/clustermesh-apiserver -c kvstoremesh -- \
+kubectl -n cilium --as=system:admin exec -it deploy/clustermesh-apiserver -c kvstoremesh -- \
    clustermesh-apiserver kvstoremesh-dbg status <1>
 
-kubectl exec -it -n cilium --as=cluster-admin deploy/clustermesh-apiserver -c kvstoremesh -- \
+kubectl exec -it -n cilium --as=system:admin deploy/clustermesh-apiserver -c kvstoremesh -- \
   clustermesh-apiserver kvstoremesh-dbg troubleshoot <2>
 ----
 <1> Show a connection summary of the KVStoreMesh

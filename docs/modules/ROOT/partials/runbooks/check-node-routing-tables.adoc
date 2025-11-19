@@ -7,8 +7,8 @@ For setups which use static routes to make the nodes of the clusters participati
 ----
 NODE=<node name of affected node>
 REMOTE_NODE=<ip of a node in the remote cluster>
-oc -n syn-debug-nodes debug node/${NODE} --as=cluster-admin -- chroot /host ip r
-oc -n syn-debug-nodes debug node/${NODE} --as=cluster-admin -- chroot /host ping -c4 ${REMOTE_NODE}
+oc -n syn-debug-nodes debug node/${NODE} --as=system:admin -- chroot /host ip r
+oc -n syn-debug-nodes debug node/${NODE} --as=system:admin -- chroot /host ping -c4 ${REMOTE_NODE}
 ----
 
 .Other K8s

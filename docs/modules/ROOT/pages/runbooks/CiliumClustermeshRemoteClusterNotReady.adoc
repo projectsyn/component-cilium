@@ -31,9 +31,9 @@ First, check the source cluster's overall cluster mesh status
 
 [source,bash]
 ----
-cilium -n cilium clustermesh status --as=cluster-admin <1>
+cilium -n cilium clustermesh status --as=system:admin <1>
 ----
-<1> `--as=cluster-admin` is required on VSHN Managed OpenShift, may need to be left out on other clusters.
+<1> `--as=system:admin` is required on VSHN Managed OpenShift, may need to be left out on other clusters.
 
 If the output indicates that all nodes are unable to connect to the remote cluster's clustermesh API, it's likely that the issue is either on the remote cluster, or in the network between the clusters.
 
@@ -52,25 +52,25 @@ NODE=<node name of affected node> <1>
 AGENT_POD=$(kubectl -n cilium get pods --field-selector=spec.nodeName=$NODE \
   -l app.kubernetes.io/name=cilium-agent -oname)
 
-kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium status <2>
-kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium troubleshoot clustermesh <3>
+kubectl -n cilium exec -it $AGENT_POD --as=system:admin -- cilium status <2>
+kubectl -n cilium exec -it $AGENT_POD --as=system:admin -- cilium troubleshoot clustermesh <3>
 ----
 <1> Set this to the name of an affected node's `Node` object
 <2> Show a summary of the Cilium agent status.
 You should see in the output of this command whether the agent can't reach one or more of the remote cluster's nodes.
 <3> This command will show connection details to the remote cluster's cluster mesh API server or the local cache in case you're using KVStoreMesh.
 
-TIP: `--as=cluster-admin` may need to be left out on some clusters.
+TIP: `--as=system:admin` may need to be left out on some clusters.
 
 If the output of `cilium troubleshoot clustermesh` refers to the local cluster's cluster mesh API server, it's likely that you're using KVStoreMesh.
 In that case you can check the KVStoreMesh connection to the remote cluster mesh API server in the `clustermesh-apiserver` deployment:
 
 [source,bash]
 ----
-kubectl -n cilium --as=cluster-admin exec -it deploy/clustermesh-apiserver -c kvstoremesh -- \
+kubectl -n cilium --as=system:admin exec -it deploy/clustermesh-apiserver -c kvstoremesh -- \
    clustermesh-apiserver kvstoremesh-dbg status <1>
 
-kubectl exec -it -n cilium --as=cluster-admin deploy/clustermesh-apiserver -c kvstoremesh -- \
+kubectl exec -it -n cilium --as=system:admin deploy/clustermesh-apiserver -c kvstoremesh -- \
   clustermesh-apiserver kvstoremesh-dbg troubleshoot <2>
 ----
 <1> Show a connection summary of the KVStoreMesh
@@ -80,7 +80,7 @@ You can also run `cilium-health status --probe` in the agent pod to actively pro
 
 [source,bash]
 ----
-kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium-health status --probe
+kubectl -n cilium exec -it $AGENT_POD --as=system:admin -- cilium-health status --probe
 ----
 
 include::partial$runbooks/check-node-routing-tables.adoc[]

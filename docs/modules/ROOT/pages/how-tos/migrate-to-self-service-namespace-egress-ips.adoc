@@ -73,7 +73,7 @@ NOTE: This step assumes that the only `IsovalentEgressGatewayPolicy` resources o
 ----
 kubectl get isovalentegressgatewaypolicy -l argocd.argoproj.io/instance=cilium -oyaml | \
   yq '.items[] |
-    "kubectl --as=cluster-admin annotate namespace \(.metadata.name) cilium.syn.tools/egress-ip="
+    "kubectl --as=system:admin annotate namespace \(.metadata.name) cilium.syn.tools/egress-ip="
     + .metadata.annotations["cilium.syn.tools/egress-ip"]
   ' | \
   bash <1>
@@ -93,5 +93,5 @@ NOTE: This step assumes that the only `IsovalentEgressGatewayPolicy` resources o
 +
 [source,bash]
 ----
-kubectl --as=cluster-admin label isovalentegressgatewaypolicy -l argocd.argoproj.io/instance=cilium argocd.argoproj.io/instance-
+kubectl --as=system:admin label isovalentegressgatewaypolicy -l argocd.argoproj.io/instance=cilium argocd.argoproj.io/instance-
 ----
