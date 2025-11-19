@@ -20,12 +20,12 @@ include::partial$runbooks/known_ebpf_maps.adoc[]
 NODE=<node name of affected node> <1>
 AGENT_POD=$(kubectl -n cilium get pods --field-selector=spec.nodeName=$NODE \
   -l app.kubernetes.io/name=cilium-agent -oname)
-kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium status <2>
-kubectl -n cilium exec -it $AGENT_POD --as=cluster-admin -- cilium status --verbose <3>
+kubectl -n cilium exec -it $AGENT_POD --as=system:admin -- cilium status <2>
+kubectl -n cilium exec -it $AGENT_POD --as=system:admin -- cilium status --verbose <3>
 kubectl -n cilium logs $AGENT_POD --tail=50 <4>
 ----
 <1> The node indicated in the alert
-<2> `--as=cluster-admin` is required on VSHN managed clusters
+<2> `--as=system:admin` is required on VSHN managed clusters
 <2> Show the agent status on the node
 <3> Show verbose agent status on the node.
 In this output, you may see details about eBPF sync jobs which have errors.
