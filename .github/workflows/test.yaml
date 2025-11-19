@@ -34,7 +34,6 @@ jobs:
         instance:
           - defaults
           - helm-opensource
-          - olm-opensource
           - egress-gateway
           - bgp-control-plane
           - kubeproxyreplacement-strict
@@ -60,7 +59,6 @@ jobs:
         instance:
           - defaults
           - helm-opensource
-          - olm-opensource
           - egress-gateway
           - bgp-control-plane
           - kubeproxyreplacement-strict
