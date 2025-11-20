@@ -21,6 +21,6 @@ spec:
       - cilium
   selector:
     matchLabels:
-      k8s-app: cilium
+      app.kubernetes.io/name: cilium-agent
   targetLabels:
     - k8s-app
