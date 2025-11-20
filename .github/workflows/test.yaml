@@ -43,6 +43,7 @@ jobs:
           - enterprise-bgp
           - hubble-access
           - lib-ipcalc
+          - olm-enterprise
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
@@ -68,6 +69,7 @@ jobs:
           - enterprise-bgp
           - hubble-access
           - lib-ipcalc
+          - olm-enterprise
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}

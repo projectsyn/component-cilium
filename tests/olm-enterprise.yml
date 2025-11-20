@@ -1,0 +1,26 @@
+parameters:
+  kapitan:
+    dependencies:
+      - type: https
+        source: https://raw.githubusercontent.com/appuio/component-openshift4-monitoring/v6.11.3/lib/openshift4-monitoring-prom.libsonnet
+        output_path: vendor/lib/prom.libsonnet
+      - type: https
+        source: https://raw.githubusercontent.com/appuio/component-openshift4-monitoring/v6.11.3/lib/openshift4-monitoring-alert-patching.libsonnet
+        output_path: vendor/lib/alert-patching.libsonnet
+
+  cilium:
+    install_method: olm
+    release: enterprise
+    __mock_enterprise: true
+    olm:
+      # util.version will use this parameter to return a "fake" version,
+      # falling back to `olm.full_version`.
+      __test_full_version: '1.16.16'
+      # 1.15.1 is the latest available OSS OLM version
+      full_version: '1.15.1'
+      source:
+        enterprise: https://github.com/isovalent/olm-for-cilium/archive/main.tar.gz
+
+    cilium_helm_values:
+      k8sServiceHost: 172.30.0.1
+      k8sServicePort: 443

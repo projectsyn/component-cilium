@@ -14,7 +14,8 @@ local util = import 'util.libsonnet';
 // `enterprise-bgp` for an example).
 // Notably, we must override this for most of the OLM processing, since we're
 // using the opensource OLM manifests for the mock enterprise test.
-local release = if std.get(params, '__mock_enterprise', false) then
+local mock_enterprise = std.get(params, '__mock_enterprise', false);
+local release = if mock_enterprise then
   'opensource'
 else
   params.release;
@@ -70,7 +71,25 @@ local olmFiles = std.foldl(
     kap.dir_files_list(olmDir)
   ),
   {
-    files: [],
+    files:
+      if mock_enterprise then [
+        {
+          filename: 'cluster-network-06-cilium-00002-cilium-ee-olm-overrides-configmap.yaml',
+          contents: {
+            apiVersion: 'v1',
+            kind: 'ConfigMap',
+            metadata: {
+              labels: {
+                name: 'cilium-ee-olm',
+              },
+              name: 'cilium-ee-olm-overrides',
+              namespace: 'cilium',
+            },
+
+          },
+        },
+      ]
+      else [],
     has_csv: false,
   }
 );
@@ -109,7 +128,7 @@ local patchManifests = function(file, has_csv)
                   '--zap-log-level=%s' % params.olm.log_level,
                 ],
                 env+:
-                  if release == 'opensource' then
+                  if params.release == 'opensource' then
                     (
                       if hasK8sHost then
                         [
@@ -172,7 +191,7 @@ local patchManifests = function(file, has_csv)
       },
     }
   else if (
-    release == 'enterprise'
+    params.release == 'enterprise'
     && file.contents.kind == 'ConfigMap'
     && file.contents.metadata.name == 'cilium-ee-olm-overrides'
     && file.contents.metadata.namespace == 'cilium'
