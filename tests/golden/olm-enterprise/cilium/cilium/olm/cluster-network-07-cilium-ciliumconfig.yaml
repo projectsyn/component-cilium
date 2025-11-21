@@ -26,7 +26,7 @@ spec:
     egressGatewayHA:
       enabled: false
   envoy:
-    enabled: false
+    enabled: true
   hubble:
     metrics:
       enabled:
