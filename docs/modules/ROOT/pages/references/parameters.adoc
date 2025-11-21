@@ -1,4 +1,4 @@
-:helm-minor-version: v1.16
+:current-minor-version: v1.17
 
 = Parameters
 
@@ -191,7 +191,7 @@ type:: object
 default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
 
 The configuration values of the underlying Cilium helm chart.
-See https://docs.cilium.io/en/{helm-minor-version}/helm-reference/[Opensource Cilium documentation] for supported values.
+See https://docs.cilium.io/en/{current-minor-version}/helm-reference/[Opensource Cilium documentation] for supported values.
 
 The component will pre-process certain Helm values to allow users to more gracefully upgrade to newer Cilium versions which remove deprecated Helm values.
 
@@ -268,7 +268,7 @@ l7Proxy: false
 ----
 
 Notably, the L7 proxy feature is disabled by default when egress gateway policies are enabled.
-This is recommended by the Cilium documentation, see also https://docs.cilium.io/en/{helm-minor-version}/network/egress-gateway/#incompatibility-with-other-features[the upstream documentation].
+This is recommended by the Cilium documentation, see also https://docs.cilium.io/en/{current-minor-version}/network/egress-gateway/#incompatibility-with-other-features[the upstream documentation].
 
 Additionally, BPF masquerading can't be disabled when the egress gateway feature is enabled.
 
@@ -441,7 +441,7 @@ The component's support for configuring BGP egress IPs through `egress_ip_ranges
 Announcing egress IPs via BGP is only supported in Isovalent Networking for Kubernetes.
 
 When the field is provided, and not an empty object, the component adds the contents as entries in `metadata.labels` of the resulting policies.
-In this case, the component configures the egress policies with https://docs.isovalent.com/v1.16/configuration-guide/networking/egress-gateway/introduction.html#requirements-for-egress-ip-and-ipam-feature[Cilium's Egress Gateawy IPAM] and `maxGatewayNodes: 1` in the `spec.egressGroups` entry.
+In this case, the component configures the egress policies with https://docs.isovalent.com/{current-minor-version}/configuration-guide/networking/egress-gateway/introduction.html#requirements-for-egress-ip-and-ipam-feature[Cilium's Egress Gateawy IPAM] and `maxGatewayNodes: 1` in the `spec.egressGroups` entry.
 
 Please note that policies which use EGW IPAM will ignore static routes on the active gateway node (as of Cilium 1.16.16 and Cilium 1.17.9).
 
@@ -767,7 +767,7 @@ default:: `false`
 
 Whether to enable the BGP control plane feature in Cilium.
 
-See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/[upstream BGP control plane documentation] for details on the architecture and the individual custom resources mentioned in this section.
+See the https://docs.cilium.io/en/{current-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/[upstream BGP control plane documentation] for details on the architecture and the individual custom resources mentioned in this section.
 
 === `bgp.enterprise`
 
@@ -816,7 +816,7 @@ Field `spec` is merged over the partial object generated from fields `nodeSelect
 
 The component validates that `CiliumBGPClusterConfig` resources only reference `CiliumBGPPeerConfig` resources which are defined in parameter `bgp.peer_configs`.
 
-See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-cluster-configuration[upstream documentation] for all available configuration options.
+See the https://docs.cilium.io/en/{current-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-cluster-configuration[upstream documentation] for all available configuration options.
 
 
 ==== Example
@@ -898,7 +898,7 @@ Field `spec` is merged over the partial object created from field `families`.
 
 The component validates that `CiliumBGPPeerConfig` resources only reference BGP auth secret `Secret` resources which are defined in parameter `bgp.auth_secrets`.
 
-See the https://docs.cilium.io/en/{helm-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-peer-configuration[upstream documentation] for details.
+See the https://docs.cilium.io/en/{current-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-peer-configuration[upstream documentation] for details.
 
 ==== Example
 
@@ -962,7 +962,7 @@ The namespace can be changed by setting Helm value `bgpControlPlane.secretsNames
 
 The component sets `metadata.namespace` to the configured `bgpControlPlane.secretsNamspace.name` for secrets defined through this parameter.
 
-See the https://docs.cilium.io/en/v1.16/network/bgp-control-plane/bgp-control-plane-v2/#md5-password[upstream documentation] for details.
+See the https://docs.cilium.io/en/{current-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#md5-password[upstream documentation] for details.
 
 === `bgp.node_config_overrides`
 
@@ -978,7 +978,7 @@ The component creates one `CiliumBGPNodeConfigOverride` for each entry in this p
 The key is used as `metadata.name` of the resulting object.
 The component expects that each value in this parameter is a valid partial `CiliumBGPNodeConfigOverride` resource and doesn't apply any processing.
 
-See the https://docs.cilium.io/en/v1.16/network/bgp-control-plane/bgp-control-plane-v2/#bgp-configuration-override[upstream documentation] for details.
+See the https://docs.cilium.io/en/{current-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-configuration-override[upstream documentation] for details.
 
 NOTE: The resource name must match the Kubernetes node name of the node for which the configuration is intended.
 
@@ -997,7 +997,7 @@ The component supports fields `metadata` and `advertisements` for each entry of 
 Field `metadata` is added to the resulting resource as is.
 Field `advertisements` is expected to be an object, and the values of the object are used for field `spec.advertisements` in the resulting resource without further processing.
 
-See the https://docs.cilium.io/en/v1.16/network/bgp-control-plane/bgp-control-plane-v2/#bgp-advertisements[upstream documentation] for details.
+See the https://docs.cilium.io/en/{current-minor-version}/network/bgp-control-plane/bgp-control-plane-v2/#bgp-advertisements[upstream documentation] for details.
 
 NOTE: The resource name must match the Kubernetes node name of the node for which the configuration is intended.
 
