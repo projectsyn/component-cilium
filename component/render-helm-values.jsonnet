@@ -99,8 +99,23 @@ local takeLastHubbleMetricPerOption =
     },
   };
 
+local rewriteLBIPAMRequireLBClass =
+  local requireLBClass = std.get(
+    params.cilium_helm_values, 'LBIPAM', { requireLBClass: false }
+  ).requireLBClass;
+  if util.version.minor >= 17 && requireLBClass then {
+    defaultLBServiceIPAM:
+      std.trace(
+        'Rewriting `LBIPAM.requireLBClass=true` to `defaultLBServiceIPAM=none` for Cilium >= 1.17',
+        'none'
+      ),
+  }
+  else
+    {};
+
 local cilium_values = std.prune(
-  params.cilium_helm_values +
+  rewriteLBIPAMRequireLBClass +
+  com.makeMergeable(params.cilium_helm_values) +
   replaceDeprecatedIPv4PodCIDR +
   renderPodCIDRList +
   forceBPFMasqueradeEgressGW +
