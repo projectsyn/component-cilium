@@ -16,6 +16,10 @@ parameters:
       source:
         enterprise: https://github.com/isovalent/olm-for-cilium/archive/main.tar.gz
 
+    cilium_helm_values:
+      image:
+        tag: v1.17.9-cee.1
+
     bgp:
       enabled: true
       enterprise: true
