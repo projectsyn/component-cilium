@@ -3,6 +3,8 @@ local kap = import 'lib/kapitan.libjsonnet';
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
+local util = import 'util.libsonnet';
+
 local replaceDeprecatedIPv4PodCIDR = {
   ipam+: {
     operator+:
@@ -60,7 +62,7 @@ local forceBPFMasqueradeEgressGW = {
 };
 
 local enterpriseBGPControlPlane =
-  if params.release != 'enterprise' then
+  if params.bgp.enterprise && params.release != 'enterprise' then
     std.trace('Cannot enable enterprise BGP control plane on opensource Cilium', {})
   else if params.bgp.enterprise then
     std.trace(
@@ -80,32 +82,70 @@ local enterpriseBGPControlPlane =
   else
     {};
 
+local takeLastHubbleMetricPerOption =
+  {
+    hubble+: {
+      metrics+: {
+        enabled: std.objectValues(std.foldl(
+          function(ms, e)
+            local opt = std.splitLimit(e, '|', 1)[0];
+            ms {
+              [opt]: e,
+            },
+          super.enabled,
+          {}
+        )),
+      },
+    },
+  };
+
+local rewriteLBIPAMRequireLBClass =
+  local requireLBClass = std.get(
+    params.cilium_helm_values, 'LBIPAM', { requireLBClass: false }
+  ).requireLBClass;
+  if util.version.minor >= 17 && requireLBClass then {
+    defaultLBServiceIPAM:
+      std.trace(
+        'Rewriting `LBIPAM.requireLBClass=true` to `defaultLBServiceIPAM=none` for Cilium >= 1.17',
+        'none'
+      ),
+  }
+  else
+    {};
+
 local cilium_values = std.prune(
-  params.cilium_helm_values +
+  rewriteLBIPAMRequireLBClass +
+  com.makeMergeable(params.cilium_helm_values) +
   replaceDeprecatedIPv4PodCIDR +
   renderPodCIDRList +
   forceBPFMasqueradeEgressGW +
-  enterpriseBGPControlPlane
+  enterpriseBGPControlPlane +
+  takeLastHubbleMetricPerOption
 );
+
+local cilium_enterprise = {
+  enterprise: {
+    egressGatewayHA: {
+      // Enable HA egress gateway on Cilium EE by default when the regular
+      // egress gateway is enabled.
+      // we do this before the user-provided values, so users can still
+      // enable the HA egress gateway without enabling the regular egress
+      // gateway.
+      enabled: cilium_values.egressGateway.enabled,
+    },
+  },
+} + com.makeMergeable(cilium_values);
+
 
 local helm_values = {
   opensource: cilium_values,
-  enterprise: {
-    cilium: {
-      enterprise: {
-        egressGatewayHA: {
-          // Enable HA egress gateway on Cilium EE by default when the regular
-          // egress gateway is enabled.
-          // we do this before the user-provided values, so users can still
-          // enable the HA egress gateway without enabling the regular egress
-          // gateway.
-          enabled: cilium_values.egressGateway.enabled,
-        },
-      },
-    } + com.makeMergeable(cilium_values),
-    'hubble-enterprise': std.prune(params.hubble_enterprise_helm_values),
-    'hubble-ui': std.prune(params.hubble_ui_helm_values),
-  },
+  enterprise:
+    if util.version.minor <= 16 then {
+      cilium: cilium_enterprise,
+      'hubble-enterprise': std.prune(params.hubble_enterprise_helm_values),
+      'hubble-ui': std.prune(params.hubble_ui_helm_values),
+    } else
+      cilium_enterprise,
 };
 
 local legacy_values =

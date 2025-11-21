@@ -114,7 +114,7 @@ enterprise: <CILIUM-ENTERPRISE-OLM-MANIFESTS-TARGZ-URL>
 
 The source for the OLM manifests.
 The component selects the `opensource` or `enterprise` field based on the value of component parameter `release`.
-The component doesn't provide the URL of the Cilium Enterprise OLM manifests `.tar.gz` archive.
+The component doesn't provide the URL of the Isovalent Networking for Kubernetes (previously "Cilium Enterprise") OLM manifests `.tar.gz` archive.
 Users must provide the URL themselves in their Project Syn configuration hierarchy.
 
 TIP: The component default is an invalid string (`<CILIUM-ENTERPRISE-OLM-MANIFESTS-TARGZ-URL>`) instead of `~` to make the Kapitan error message somewhat useful when the user hasn't reconfigured the chart repository.
@@ -199,8 +199,13 @@ Otherwise, the component will configure OpenShift to deploy kube-proxy.
 type:: object
 default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
 
+[NOTE]
+====
+The component currently doesn't support this parameter for Cilium >= 1.17
+====
+
 The configuration values for the Hubble Enterprise helm chart.
-See the https://docs.isovalent.com/operations-guide[Isovalent Cilium Enterprise documentation] for supported values.
+See the https://docs.isovalent.com/operations-guide[Isovalent Networking for Kubernetes documentation] for supported values.
 
 == `hubble_ui_helm_values`
 
@@ -208,24 +213,29 @@ See the https://docs.isovalent.com/operations-guide[Isovalent Cilium Enterprise 
 type:: object
 default:: https://github.com/projectsyn/component-cilium/blob/master/class/defaults.yml[See `class/defaults.yml`]
 
+[NOTE]
+====
+The component currently doesn't support this parameter for Cilium >= 1.17
+====
+
 The configuration values for the Hubble UI helm chart.
-See the https://docs.isovalent.com/operations-guide[Isovalent Cilium Enterprise documentation] for supported values.
+See the https://docs.isovalent.com/operations-guide[Isovalent Networking for Kubernetes documentation] for supported values.
 
 
 == `egress_gateway`
 
-This section allows users to configure the [Cilium EgressGatewayPolicy] feature.
+This section allows users to configure the https://docs.cilium.io/en/stable/network/egress-gateway/egress-gateway/[Cilium EgressGatewayPolicy] feature.
 
 [TIP]
 ====
 When deploying Cilium OSS, the component will generate `CiliumEgressGatewayPolicy` resources.
 
-When deploying Cilium EE, the component will generate `IsovalentEgressGatewayPolicy` resources.
+When deploying Isovalent Networking for Kubernetes (Cilium EE), the component will generate `IsovalentEgressGatewayPolicy` resources.
 ====
 
 [NOTE]
 ====
-The current implementation (and therefore examples shown here) has only been tested with Cilium EE.
+The current implementation (and therefore examples shown here) has only been tested with Isovalent Networking for Kubernetes.
 Please refer to the https://docs.cilium.io/en/stable/network/egress-gateway/#example-policy[example policy in the upstream documentation] for Cilium OSS.
 ====
 
@@ -253,7 +263,7 @@ This is recommended by the Cilium documentation, see also https://docs.cilium.io
 
 Additionally, BPF masquerading can't be disabled when the egress gateway feature is enabled.
 
-For Cilium EE, the component uses Helm value `egressGateway.enabled` for Helm value `enterprise.egressGatewayHA.enabled` by default.
+For Isovalent Networking for Kubernetes, the component uses Helm value `egressGateway.enabled` for Helm value `enterprise.egressGatewayHA.enabled` by default.
 It's possible to override this by explicitly setting `egressGateway.enabled=false` and `enterprise.egressGatewayHA.enabled=true` in the component's `cilium_helm_values`.
 
 === `egress_gateway.policies`
@@ -263,14 +273,14 @@ type:: object
 default:: `{}`
 
 This parameter allows users to deploy `CiliumEgressGatewayPolicy` resources.
-When deploying Cilium EE, the parameter will generate `IsovalentEgressGatewayPolicy` resources instead.
+When deploying Isovalent Networking for Kubernetes, the parameter will generate `IsovalentEgressGatewayPolicy` resources instead.
 
 Each key-value pair in the parameter is converted to a `CiliumEgressGatewayPolicy` (or `IsovalentEgressGatewayPolicy`) resource.
 Entries can be removed by setting the value to `null`.
 
 ==== Example
 
-NOTE: The examples are written for Cilium EE's `IsovalentEgressGatewayPolicy` resources.
+NOTE: The examples are written for Isovalent Networking for Kubernetes's `IsovalentEgressGatewayPolicy` resources.
 
 [source,yaml]
 ----
@@ -419,6 +429,7 @@ Policies which configure BGP egress IPs have an additional annotation `cilium.sy
 ====
 Field `bgp_policy_labels` is optional.
 The component's support for configuring BGP egress IPs through `egress_ip_ranges` is currently experimental.
+Announcing egress IPs via BGP is only supported in Isovalent Networking for Kubernetes.
 
 When the field is provided, and not an empty object, the component adds the contents as entries in `metadata.labels` of the resulting policies.
 In this case, the component configures the egress policies with https://docs.isovalent.com/v1.16/configuration-guide/networking/egress-gateway/introduction.html#requirements-for-egress-ip-and-ipam-feature[Cilium's Egress Gateawy IPAM] and `maxGatewayNodes: 1` in the `spec.egressGroups` entry.
@@ -648,11 +659,11 @@ spec:
 
 == `l2_announcements`
 
-This section allows users to configure the [Cilium L2 Announcements / L2 Aware LB] feature.
+This section allows users to configure the https://docs.cilium.io/en/stable/network/l2-announcements/#l2-announcements[Cilium L2 Announcements / L2 Aware LB] feature.
 
 [NOTE]
 ====
-The current implementation (and therefore examples shown here) has only been tested with Cilium EE.
+The current implementation (and therefore examples shown here) has only been tested with Isovalent Networking for Kubernetes.
 Please refer to the https://docs.cilium.io/en/stable/network/egress-gateway/#example-policy[example policy in the upstream documentation] for Cilium OSS.
 ====
 

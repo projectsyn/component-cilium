@@ -15,7 +15,7 @@ parameters:
     olm:
       # util.version will use this parameter to return a "fake" version,
       # falling back to `olm.full_version`.
-      __test_full_version: '1.16.16'
+      __test_full_version: '1.17.9'
       # 1.15.1 is the latest available OSS OLM version
       full_version: '1.15.1'
       source:

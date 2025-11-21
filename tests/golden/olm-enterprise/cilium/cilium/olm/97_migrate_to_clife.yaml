@@ -1,0 +1,123 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+  labels:
+    name: prepare-upgrade-to-clife
+  name: prepare-upgrade-to-clife
+rules:
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - '*'
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+  labels:
+    name: prepare-upgrade-to-clife
+  name: prepare-upgrade-to-clife
+  namespace: cilium
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+  labels:
+    name: prepare-upgrade-to-clife
+  name: prepare-upgrade-to-clife
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prepare-upgrade-to-clife
+subjects:
+  - kind: ServiceAccount
+    name: prepare-upgrade-to-clife
+    namespace: cilium
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+  labels:
+    name: prepare-upgrade-to-clife
+  name: prepare-upgrade-to-clife
+  namespace: cilium
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      labels:
+        name: prepare-upgrade-to-clife
+    spec:
+      containers:
+        - args:
+            - |
+              if ! kubectl -n cilium get sa clife-controller-manager &>/dev/null; then
+                echo "Preparing migration from cilium-ee-olm to clife-controller-manager..."
+                kubectl -n cilium delete deploy cilium-ee-olm --ignore-not-found=true
+                kubectl delete operator cilium-enterprise.cilium --ignore-not-found=true
+                kubectl delete operator cilium.cilium --ignore-not-found=true
+                kubectl -n cilium delete cm cilium-ee-olm --ignore-not-found=true
+                kubectl -n cilium delete cm cilium-olm --ignore-not-found=true
+                for object in $(kubectl -n cilium get serviceaccount,role,rolebinding,deploy,daemonset,configmap,secret -o yaml | \
+                    yq '.items[]
+                       | select( (.metadata.ownerReferences // []) | map(.kind == "CiliumConfig") | contains([true]) )
+                       | (.kind + "/" + .metadata.name)')
+                do
+                  kubectl -n cilium patch $object --type json -p='[{"op": "remove", "path": "/metadata/ownerReferences"}]'
+                done
+                for object in $(kubectl -n cilium get serviceaccount,role,rolebinding,clusterrole,clusterrolebinding,deploy,daemonset,configmap,secret -o yaml | \
+                    yq '.items[]
+                    | select(.metadata.annotations."meta.helm.sh/release-name" == "cilium-enterprise")
+                    | (.kind + "/" + .metadata.name)')
+                do
+                  kubectl -n cilium patch $object --type json -p='[{"op": "replace", "path": "/metadata/annotations/meta.helm.sh~1release-name", "value": "cilium-release"}]'
+                done
+                kubectl -n cilium delete secret -l owner=helm
+                kubectl -n cilium patch ciliumconfig cilium-enterprise --type json -p='[{"op": "remove", "path": "/metadata/finalizers"}]'
+                kubectl -n cilium delete ciliumconfig cilium-enterprise
+                kubectl delete crd ciliumconfigs.cilium.io
+                kubectl api-resources --api-group=cilium.io
+                # NOTE(sg): We need to delete the cilium DaemonSet because
+                # otherwise the clife OLM operator doesn't correctly
+                # remove the envoy ports from the DaemonSet.
+                kubectl -n cilium delete ds cilium --cascade=orphan
+                kubectl -n syn delete pods syn-argocd-application-controller-0
+              else
+                echo "clife-controller-manager is already present on the cluster, doing nothing."
+              fi
+          command:
+            - bash
+            - -e
+            - -c
+          env:
+            - name: HOME
+              value: /home
+          image: quay.io/appuio/oc:v4.19@sha256:7c8ca828b449da69b8de6e2248e7e1b25d2557b0ca12b50cd392238e91908887
+          imagePullPolicy: IfNotPresent
+          name: prepare-upgrade-to-clife
+          ports: []
+          stdin: false
+          tty: false
+          volumeMounts:
+            - mountPath: /home
+              name: home
+          workingDir: /home
+      imagePullSecrets: []
+      initContainers: []
+      restartPolicy: OnFailure
+      serviceAccountName: prepare-upgrade-to-clife
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: home

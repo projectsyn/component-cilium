@@ -72,9 +72,9 @@ data:
   hubble-export-file-max-backups: '5'
   hubble-export-file-max-size-mb: '10'
   hubble-listen-address: :4244
-  hubble-metrics: httpV2:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
-    dns:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
+  hubble-metrics: dns:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
     drop:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
+    httpV2:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
   hubble-metrics-server: :9965
   hubble-metrics-server-enable-tls: 'false'
   hubble-socket-path: /var/run/cilium/hubble.sock
