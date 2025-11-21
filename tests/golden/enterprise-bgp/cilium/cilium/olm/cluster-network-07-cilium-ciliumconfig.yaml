@@ -29,7 +29,7 @@ spec:
       egressGatewayHA:
         enabled: false
     envoy:
-      enabled: false
+      enabled: true
     hubble:
       metrics:
         enabled:
@@ -42,6 +42,8 @@ spec:
         enabled: true
       tls:
         enabled: false
+    image:
+      tag: v1.17.9-cee.1
     ipam:
       mode: cluster-pool
       operator:
