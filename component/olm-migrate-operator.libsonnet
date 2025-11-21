@@ -75,8 +75,8 @@ local job =
                   if ! kubectl -n %(namespace)s get sa %(sa)s &>/dev/null; then
                     echo "Preparing migration from %(old)s to %(new)s..."
                     kubectl -n %(namespace)s delete deploy %(old)s --ignore-not-found=true
-                    kubectl delete operator cilium-enterprise.cilium --ignore-not-found=true
-                    kubectl delete operator cilium.cilium --ignore-not-found=true
+                    kubectl delete operator cilium-enterprise.cilium --ignore-not-found=true || true
+                    kubectl delete operator cilium.cilium --ignore-not-found=true || true
                     kubectl -n %(namespace)s delete cm cilium-ee-olm --ignore-not-found=true
                     kubectl -n %(namespace)s delete cm cilium-olm --ignore-not-found=true
                     for object in $(kubectl -n %(namespace)s get serviceaccount,role,rolebinding,deploy,daemonset,configmap,secret -o yaml | \
