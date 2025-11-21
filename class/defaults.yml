@@ -14,10 +14,6 @@ parameters:
     # Enterprise is currently only supported for "helm"
     release: opensource
 
-    =_egressgw_l7proxy:
-      "True": false
-      "False": true
-
     cilium_helm_values:
       bgpControlPlane:
         enabled: ${cilium:bgp:enabled}
@@ -61,7 +57,7 @@ parameters:
       k8sClientRateLimit:
         qps: 15
         burst: 30
-      l7Proxy: ${cilium:_egressgw_l7proxy:${cilium:egress_gateway:enabled}}
+      l7Proxy: true
       prometheus:
         enabled: true
         serviceMonitor:
