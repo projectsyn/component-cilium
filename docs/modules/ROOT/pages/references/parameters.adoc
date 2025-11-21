@@ -202,6 +202,15 @@ If the `kubeProxyReplacement` Helm value is set to `true` or `strict` the compon
 Otherwise, the component will configure OpenShift to deploy kube-proxy.
 ====
 
+[NOTE]
+====
+The component will render custom resource API versions based on the value of Helm value `image.tag` if it's present.
+
+The component will also use that version to make other version-dependent decisions, such as whether to enable the dedicated Envoy daemonset by default.
+
+This feature has been introduced to allow downgrading to Cilium 1.16 on OpenShift without having to migrate back to the deprecated `cilium-ee-olm` OLM operator.
+====
+
 == `hubble_enterprise_helm_values`
 
 [horizontal]

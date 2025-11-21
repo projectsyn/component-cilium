@@ -7,7 +7,6 @@ local params = inv.parameters.cilium;
 local isOpenshift = std.member([ 'openshift4', 'oke' ], inv.parameters.facts.distribution);
 
 // Parse cilium version
-
 local parse_version(ver) =
   local verparts = std.split(ver, '.');
   local parseOrError(val, typ) =
@@ -25,7 +24,7 @@ local parse_version(ver) =
     minor: parseOrError(verparts[1], 'minor'),
   };
 
-local version = parse_version(
+local manifestsVersion = parse_version(
   if params.install_method == 'helm' then
     local chart = if params.release == 'opensource'
     then
@@ -36,6 +35,17 @@ local version = parse_version(
   else
     std.get(params.olm, '__test_full_version', params.olm.full_version)
 );
+
+local version =
+  if
+    std.objectHas(params.cilium_helm_values, 'image') &&
+    std.objectHas(params.cilium_helm_values.image, 'tag')
+  then
+    parse_version(
+      std.splitLimit(params.cilium_helm_values.image.tag, '-', 1)[0]
+    )
+  else
+    manifestsVersion;
 
 // CiliumLoadBalancerIPPool
 
@@ -66,5 +76,6 @@ local render_ip_pools(pools) = com.generateResources(
 {
   isOpenshift: isOpenshift,
   version: version,
+  manifestsVersion: manifestsVersion,
   ipPool: render_ip_pools,
 }
