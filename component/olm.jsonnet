@@ -62,7 +62,7 @@ local patchDeploymentContainerName =
   // for the mock enterprise OLM test for 1.17 and newer, we patch the OLM
   // deployment to use container name `manager` so the OLM enterprise
   // deployment patching logic applies.
-  if mock_enterprise && util.version.minor >= 17 then
+  if mock_enterprise && util.manifestsVersion.minor >= 17 then
     {
       spec+: {
         template+: {
@@ -100,7 +100,7 @@ local olmFiles = std.foldl(
   ),
   {
     files:
-      if mock_enterprise && util.version.minor <= 16 then [
+      if mock_enterprise && util.manifestsVersion.minor <= 16 then [
         {
           filename: 'cluster-network-06-cilium-00002-cilium-ee-olm-overrides-configmap.yaml',
           contents: {
@@ -129,7 +129,7 @@ local metadata_name_map = {
     OlmRole: 'cilium-olm',
     OlmClusterRole: 'cilium-cilium-olm',
   },
-  enterprise: if util.version.minor >= 17 then {
+  enterprise: if util.manifestsVersion.minor >= 17 then {
     CiliumConfig: 'ciliumconfig',
     Deployment: 'clife-controller-manager',
     OlmClusterRole: 'clife-manager-role',
@@ -214,7 +214,7 @@ local patchManifests = function(file, has_csv)
     // cases.
     // NOTE(sg): CLife (1.17+) doesn't nest the Cilium Helm values in
     // top-level key `spec.cilium` anymore.
-    if util.version.minor <= 16 && params.release == 'enterprise' then {
+    if util.manifestsVersion.minor <= 16 && params.release == 'enterprise' then {
       cilium+: patch,
     } else
       patch;
@@ -289,7 +289,7 @@ local patchManifests = function(file, has_csv)
     // OLM role doesn't exist for CLife OLM operator (1.17+) -> drop the
     // opensource OLM role file for the olm-enterprise tests
     mock_enterprise &&
-    util.version.minor >= 17 &&
+    util.manifestsVersion.minor >= 17 &&
     file.contents.kind == 'Role' &&
     file.contents.metadata.namespace == 'cilium' &&
     file.contents.metadata.name == metadata_name_map.opensource.OlmRole
@@ -297,7 +297,7 @@ local patchManifests = function(file, has_csv)
     null
   else if (
     // OLM role needs to be patched for Cilium <= 1.16
-    util.version.minor <= 16 &&
+    util.manifestsVersion.minor <= 16 &&
     file.contents.kind == 'Role' &&
     file.contents.metadata.namespace == 'cilium' &&
     file.contents.metadata.name == metadata_name_map[release].OlmRole
@@ -338,7 +338,7 @@ local patchManifests = function(file, has_csv)
       },
     }
   else if (
-    util.version.minor <= 16 &&
+    util.manifestsVersion.minor <= 16 &&
     file.contents.kind == 'ClusterRole' &&
     file.contents.metadata.name == metadata_name_map[release].OlmClusterRole
   ) then
@@ -354,7 +354,7 @@ local patchManifests = function(file, has_csv)
       },
     }
   else if (
-    util.version.minor >= 17 &&
+    util.manifestsVersion.minor >= 17 &&
     file.contents.kind == 'Namespace' &&
     file.contents.metadata.name == 'cilium'
   ) then
@@ -379,7 +379,7 @@ std.foldl(
     std.map(function(obj) patchManifests(obj, olmFiles.has_csv), olmFiles.files),
   ),
   {
-    [if util.version.minor >= 17 && migrate_to_clife then '97_migrate_to_clife']:
+    [if util.manifestsVersion.minor >= 17 && migrate_to_clife then '97_migrate_to_clife']:
       import 'olm-migrate-operator.libsonnet',
     '99_cleanup': (import 'cleanup.libsonnet'),
   }

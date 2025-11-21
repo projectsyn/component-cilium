@@ -147,7 +147,7 @@ local cilium_enterprise = {
 local helm_values = {
   opensource: cilium_values,
   enterprise:
-    if util.version.minor <= 16 then {
+    if util.manifestsVersion.minor <= 16 then {
       cilium: cilium_enterprise,
       'hubble-enterprise': std.prune(params.hubble_enterprise_helm_values),
       'hubble-ui': std.prune(params.hubble_ui_helm_values),
