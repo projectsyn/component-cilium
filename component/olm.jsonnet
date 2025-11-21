@@ -350,39 +350,7 @@ local patchManifests = function(file, has_csv)
             resources: [ 'leases' ],
             verbs: [ 'create', 'get', 'update', 'list', 'delete' ],
           },
-        ] + if util.version.minor <= 15 then [
-          // cilium <= 1.15 uses a clusterrole and clusterrolebinding for the
-          // hubble certgen cronjob. This is changed to a role and rolebinding
-          // for 1.16.
-          // The OLM operator doesn't have permissions to create the
-          // clusterrole and clusterrolebinding out of the box, so we patch
-          // the OLM operator clusterrole to have the rules that need to be
-          // created for the certgen cronjob.
-          {
-            apiGroups: [ '' ],
-            resources: [ 'secrets' ],
-            verbs: [ 'create' ],
-          },
-          {
-            apiGroups: [ '' ],
-            resources: [ 'secrets' ],
-            resourceNames: [
-              'hubble-server-certs',
-              'hubble-relay-client-certs',
-              'hubble-relay-server-certs',
-            ],
-            verbs: [ 'update' ],
-          },
-          {
-            apiGroups: [ '' ],
-            resources: [ 'secrets' ],
-            resourceNames: [ 'cilium-ca' ],
-            verbs: [
-              'get',
-              'update',
-            ],
-          },
-        ] else [],
+        ],
       },
     }
   else if (
@@ -402,38 +370,6 @@ local patchManifests = function(file, has_csv)
   else
     file;
 
-local kubeSystemSecretRO = [
-  kube.Role(metadata_name_map[release].OlmRole) {
-    metadata+: {
-      namespace: 'kube-system',
-    },
-    rules: [
-      {
-        apiGroups: [ '' ],
-        resources: [ 'secrets' ],
-        verbs: [ 'get', 'list', 'watch' ],
-      },
-    ],
-  },
-  kube.RoleBinding(metadata_name_map[release].OlmRole) {
-    metadata+: {
-      namespace: 'kube-system',
-    },
-    roleRef: {
-      apiGroup: 'rbac.authorization.k8s.io',
-      kind: 'Role',
-      name: metadata_name_map[release].OlmRole,
-    },
-    subjects: [
-      {
-        kind: 'ServiceAccount',
-        namespace: 'cilium',
-        name: metadata_name_map[release].OlmRole,
-      },
-    ],
-  },
-];
-
 local migrate_to_clife = params.olm.migrate_to_clife;
 
 std.foldl(
@@ -445,7 +381,6 @@ std.foldl(
   {
     [if util.version.minor >= 17 && migrate_to_clife then '97_migrate_to_clife']:
       import 'olm-migrate-operator.libsonnet',
-    [if util.version.minor <= 14 then '98_fixup_bgp_controlpane_rbac']: kubeSystemSecretRO,
     '99_cleanup': (import 'cleanup.libsonnet'),
   }
 )
