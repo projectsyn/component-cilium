@@ -88,6 +88,10 @@ spec:
                 kubectl -n cilium delete ciliumconfig cilium-enterprise
                 kubectl delete crd ciliumconfigs.cilium.io
                 kubectl api-resources --api-group=cilium.io
+                # NOTE(sg): We need to delete the cilium DaemonSet because
+                # otherwise the clife OLM operator doesn't correctly
+                # remove the envoy ports from the DaemonSet.
+                kubectl -n cilium delete ds cilium --cascade=orphan
                 kubectl -n syn delete pods syn-argocd-application-controller-0
               else
                 echo "clife-controller-manager is already present on the cluster, doing nothing."

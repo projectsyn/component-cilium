@@ -98,6 +98,10 @@ local job =
                     kubectl -n %(namespace)s delete ciliumconfig %(cilium_config)s
                     kubectl delete crd ciliumconfigs.cilium.io
                     kubectl api-resources --api-group=cilium.io
+                    # NOTE(sg): We need to delete the cilium DaemonSet because
+                    # otherwise the clife OLM operator doesn't correctly
+                    # remove the envoy ports from the DaemonSet.
+                    kubectl -n %(namespace)s delete ds cilium --cascade=orphan
                     kubectl -n syn delete pods syn-argocd-application-controller-0
                   else
                     echo "%(new)s is already present on the cluster, doing nothing."
