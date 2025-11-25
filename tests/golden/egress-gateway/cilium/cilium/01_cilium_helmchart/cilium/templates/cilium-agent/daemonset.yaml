@@ -111,14 +111,6 @@ spec:
               hostPort: 9962
               name: prometheus
               protocol: TCP
-            - containerPort: 9964
-              hostPort: 9964
-              name: envoy-metrics
-              protocol: TCP
-            - containerPort: 9901
-              hostPort: 9901
-              name: envoy-admin
-              protocol: TCP
             - containerPort: 9965
               hostPort: 9965
               name: hubble-metrics
@@ -171,6 +163,9 @@ spec:
             successThreshold: 1
           terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
+            - mountPath: /var/run/cilium/envoy/sockets
+              name: envoy-sockets
+              readOnly: false
             - mountPath: /host/proc/sys/net
               name: host-proc-sys-net
             - mountPath: /host/proc/sys/kernel
@@ -410,6 +405,10 @@ spec:
             path: /run/xtables.lock
             type: FileOrCreate
           name: xtables-lock
+        - hostPath:
+            path: /var/run/cilium/envoy/sockets
+            type: DirectoryOrCreate
+          name: envoy-sockets
         - name: clustermesh-secrets
           projected:
             defaultMode: 256

@@ -264,13 +264,9 @@ egressGateway:
   enabled: true
 bpf:
   masquerade: true
-l7Proxy: false
 ----
 
-Notably, the L7 proxy feature is disabled by default when egress gateway policies are enabled.
-This is recommended by the Cilium documentation, see also https://docs.cilium.io/en/{current-minor-version}/network/egress-gateway/#incompatibility-with-other-features[the upstream documentation].
-
-Additionally, BPF masquerading can't be disabled when the egress gateway feature is enabled.
+NOTE: BPF masquerading can't be disabled when the egress gateway feature is enabled.
 
 For Isovalent Networking for Kubernetes, the component uses Helm value `egressGateway.enabled` for Helm value `enterprise.egressGatewayHA.enabled` by default.
 It's possible to override this by explicitly setting `egressGateway.enabled=false` and `enterprise.egressGatewayHA.enabled=true` in the component's `cilium_helm_values`.
