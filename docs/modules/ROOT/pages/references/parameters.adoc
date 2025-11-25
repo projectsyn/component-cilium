@@ -197,7 +197,7 @@ The component will pre-process certain Helm values to allow users to more gracef
 
 [NOTE]
 ====
-On OpenShift 4, the component will deploy a Patch which controls whether OpenShift deploys kube-proxy based on the value of `cilium_helm_values.kubeProxyReplacement`.
+On OpenShift 4, the component will deploy an Espejote `ManagedResource` which controls whether OpenShift deploys kube-proxy based on the value of `cilium_helm_values.kubeProxyReplacement`.
 If the `kubeProxyReplacement` Helm value is set to `true` or `strict` the component will configure OpenShift to not deploy kube-proxy.
 Otherwise, the component will configure OpenShift to deploy kube-proxy.
 ====
