@@ -10,7 +10,6 @@ data:
   bpf-lb-external-clusterip: 'false'
   bpf-lb-map-max: '65536'
   bpf-lb-sock: 'false'
-  bpf-lb-sock-terminate-pod-connections: 'false'
   bpf-map-dynamic-size-ratio: '0.0025'
   bpf-policy-map-max: '16384'
   bpf-root: /sys/fs/bpf
@@ -64,6 +63,7 @@ data:
   enable-vtep: 'false'
   enable-well-known-identities: 'false'
   enable-xt-socket-fallback: 'true'
+  envoy-access-log-buffer-size: '4096'
   envoy-base-id: '0'
   envoy-keep-cap-netbindservice: 'false'
   external-envoy-proxy: 'false'
