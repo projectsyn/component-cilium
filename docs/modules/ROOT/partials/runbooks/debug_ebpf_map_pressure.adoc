@@ -23,3 +23,36 @@ kubectl -n cilium exec -it $AGENT_POD --as=system:admin -- cilium-dbg policy sel
 . Check output for any policies that match a large amount of endpoints and investigate if you can tune the associated network policy to reduce the amount of matched endpoints.
 
 See the upstream troubleshooting documentation for more details on this map: https://docs.cilium.io/en/stable/operations/troubleshooting/#policymap-pressure-and-overflow[Cilium OSS -- Policy map pressure and overflow].
+
+=== Investigate `cilium_ct_any4_global` or `cilium_ct4_global`
+
+. Count CT map entries by source IP
++
+[source,bash]
+----
+NODE=<node name of affected node> <1>
+AGENT_POD=$(kubectl -n cilium get pods --field-selector=spec.nodeName=$NODE \
+  -l app.kubernetes.io/name=cilium-agent -oname)
+kubectl -n cilium exec -t $AGENT_POD --as=system:admin -- cilium-dbg bpf ct list global | \
+  cut -d' ' -f3 | cut -d: -f1 | sort | uniq -c | sort -n <1>
+----
+<1> This will print source IPs with the highest count of CT map entries at the bottom
+
+. Find the pods associated with the source IPs with the highest CT map entry count
++
+[source,bash]
+----
+IP=<the IP>
+kubectl get pods -Aowide | grep "${IP}"
+----
++
+TIP: If you find misbehaved pods with this command, inform their owner about the issue.
+
+. If the CT map is completely full, flushing it may resolve the issue
++
+[source,bash]
+----
+kubectl -n cilium exec -t $AGENT_POD --as=system:admin -- cilium-dbg bpf ct flush global
+----
++
+TIP: Observe the map pressure metric after flushing the map to see if it continues to fill up.
