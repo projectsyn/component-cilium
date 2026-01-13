@@ -18,6 +18,7 @@ spec:
         container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         container.apparmor.security.beta.kubernetes.io/mount-cgroup: unconfined
+        kubectl.kubernetes.io/default-container: cilium-agent
       labels:
         app.kubernetes.io/name: cilium-agent
         app.kubernetes.io/part-of: cilium
@@ -54,7 +55,11 @@ spec:
                 resourceFieldRef:
                   divisor: '1'
                   resource: limits.memory
-          image: quay.io/cilium/cilium:v1.17.12@sha256:f525e12698149b3958024599493d9cc56fadbc46c9250cbced8016e9b9b679e5
+            - name: KUBE_CLIENT_BACKOFF_BASE
+              value: '1'
+            - name: KUBE_CLIENT_BACKOFF_DURATION
+              value: '120'
+          image: quay.io/cilium/cilium:v1.18.6@sha256:42ec562a5ff6c8a860c0639f5a7611685e253fd9eb2d2fcdade693724c9166a4
           imagePullPolicy: IfNotPresent
           lifecycle:
             postStart:
@@ -149,7 +154,7 @@ spec:
               level: s0
               type: spc_t
           startupProbe:
-            failureThreshold: 105
+            failureThreshold: 300
             httpGet:
               host: 127.0.0.1
               httpHeaders:
@@ -206,7 +211,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.namespace
-          image: quay.io/cilium/cilium:v1.17.12@sha256:f525e12698149b3958024599493d9cc56fadbc46c9250cbced8016e9b9b679e5
+          image: quay.io/cilium/cilium:v1.18.6@sha256:42ec562a5ff6c8a860c0639f5a7611685e253fd9eb2d2fcdade693724c9166a4
           imagePullPolicy: IfNotPresent
           name: config
           terminationMessagePolicy: FallbackToLogsOnError
@@ -225,7 +230,7 @@ spec:
               value: /run/cilium/cgroupv2
             - name: BIN_PATH
               value: /var/lib/cni/bin
-          image: quay.io/cilium/cilium:v1.17.12@sha256:f525e12698149b3958024599493d9cc56fadbc46c9250cbced8016e9b9b679e5
+          image: quay.io/cilium/cilium:v1.18.6@sha256:42ec562a5ff6c8a860c0639f5a7611685e253fd9eb2d2fcdade693724c9166a4
           imagePullPolicy: IfNotPresent
           name: mount-cgroup
           securityContext:
@@ -255,7 +260,7 @@ spec:
           env:
             - name: BIN_PATH
               value: /var/lib/cni/bin
-          image: quay.io/cilium/cilium:v1.17.12@sha256:f525e12698149b3958024599493d9cc56fadbc46c9250cbced8016e9b9b679e5
+          image: quay.io/cilium/cilium:v1.18.6@sha256:42ec562a5ff6c8a860c0639f5a7611685e253fd9eb2d2fcdade693724c9166a4
           imagePullPolicy: IfNotPresent
           name: apply-sysctl-overwrites
           securityContext:
@@ -281,7 +286,7 @@ spec:
             - /bin/bash
             - -c
             - --
-          image: quay.io/cilium/cilium:v1.17.12@sha256:f525e12698149b3958024599493d9cc56fadbc46c9250cbced8016e9b9b679e5
+          image: quay.io/cilium/cilium:v1.18.6@sha256:42ec562a5ff6c8a860c0639f5a7611685e253fd9eb2d2fcdade693724c9166a4
           imagePullPolicy: IfNotPresent
           name: mount-bpf-fs
           securityContext:
@@ -312,7 +317,7 @@ spec:
                   key: write-cni-conf-when-ready
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/cilium:v1.17.12@sha256:f525e12698149b3958024599493d9cc56fadbc46c9250cbced8016e9b9b679e5
+          image: quay.io/cilium/cilium:v1.18.6@sha256:42ec562a5ff6c8a860c0639f5a7611685e253fd9eb2d2fcdade693724c9166a4
           imagePullPolicy: IfNotPresent
           name: clean-cilium-state
           securityContext:
@@ -338,7 +343,7 @@ spec:
               name: cilium-run
         - command:
             - /install-plugin.sh
-          image: quay.io/cilium/cilium:v1.17.12@sha256:f525e12698149b3958024599493d9cc56fadbc46c9250cbced8016e9b9b679e5
+          image: quay.io/cilium/cilium:v1.18.6@sha256:42ec562a5ff6c8a860c0639f5a7611685e253fd9eb2d2fcdade693724c9166a4
           imagePullPolicy: IfNotPresent
           name: install-cni-binaries
           resources:
