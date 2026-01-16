@@ -79,11 +79,16 @@ local patchDeploymentContainerName =
   else
     {};
 
+local olm_patch_upgrades = params.olm.auto_patch_upgrades;
+// TODO(sg): Figure out if we can do this more gracefully
+local bootstrap_done =
+  local dynfacts = std.get(inv.parameters, 'dynamic_facts', { kubernetesVersion: {} });
+  std.objectHas(dynfacts.kubernetesVersion, 'gitCommit');
+
 local olmFiles = std.foldl(
   function(status, file)
     status {
       files+: [ file ],
-      has_csv: status.has_csv || (file.contents.kind == 'ClusterServiceVersion'),
     },
 
   std.filterMap(
@@ -118,7 +123,6 @@ local olmFiles = std.foldl(
         },
       ]
       else [],
-    has_csv: false,
   }
 );
 
@@ -141,7 +145,7 @@ local metadata_name_map = {
   },
 };
 
-local patchManifests = function(file, has_csv)
+local patchManifests = function(file)
   local hasK8sHost = std.objectHas(helm.cilium_values, 'k8sServiceHost');
   local hasK8sPort = std.objectHas(helm.cilium_values, 'k8sServicePort');
   local deploymentPatch = {
@@ -249,38 +253,46 @@ local patchManifests = function(file, has_csv)
     file.contents.kind == 'Deployment'
     && file.contents.metadata.name == metadata_name_map[release].Deployment
     && file.contents.metadata.namespace == 'cilium'
-  ) then
-    file {
-      contents+: deploymentPatch,
-    }
-  else if (
+  ) then (
+    if olm_patch_upgrades && bootstrap_done then null
+    else
+      file {
+        contents+: deploymentPatch,
+      }
+  ) else if (
     file.contents.kind == 'ClusterServiceVersion' &&
-    file.contents.metadata.namespace == 'cilium'
-  ) then
-    file {
-      contents+: {
-        spec+: {
-          install+: {
-            spec+: {
-              deployments: [
-                if d.name == metadata_name_map[release].Deployment then
-                  d + deploymentPatch
-                else
-                  d
-                for d in super.deployments
-              ],
-            },
-          },
-        },
-      },
-    }
-  else if (
-    file.contents.kind == 'Subscription' &&
     file.contents.metadata.namespace == 'cilium'
   ) then
     null
   else if (
-    !has_csv &&
+    file.contents.kind == 'Subscription' &&
+    file.contents.metadata.namespace == 'cilium'
+  ) then (
+    if olm_patch_upgrades then
+      file {
+        contents+: {
+          spec+: std.prune({
+            installPlanApproval: 'Manual',
+            config+: {
+              env+: [
+                if hasK8sHost then {
+                  name: 'KUBERNETES_SERVICE_HOST',
+                  value: helm.cilium_values.k8sServiceHost,
+                },
+                if hasK8sPort then {
+                  name: 'KUBERNETES_SERVICE_PORT',
+                  value: helm.cilium_values.k8sServicePort,
+                },
+              ],
+              resources+: params.olm.resources,
+            },
+          }),
+        },
+      }
+    else
+      null
+  ) else if (
+    !olm_patch_upgrades &&
     file.contents.kind == 'OperatorGroup' &&
     file.contents.metadata.namespace == 'cilium'
   ) then
@@ -376,11 +388,11 @@ std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
   std.filter(
     function(obj) obj != null,
-    std.map(function(obj) patchManifests(obj, olmFiles.has_csv), olmFiles.files),
+    std.map(function(obj) patchManifests(obj), olmFiles.files),
   ),
   {
     [if util.manifestsVersion.minor >= 17 && migrate_to_clife then '97_migrate_to_clife']:
       import 'olm-migrate-operator.libsonnet',
-    '99_cleanup': (import 'cleanup.libsonnet'),
+    [if !olm_patch_upgrades then '99_cleanup']: (import 'cleanup.libsonnet'),
   }
 )
