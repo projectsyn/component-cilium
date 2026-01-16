@@ -130,6 +130,7 @@ parameters:
       migrate_to_clife: true
       upgrade_strategy:
         generate_subscription: true
+        generate_olm_deployment: false
       resources:
         requests:
           cpu: 100m

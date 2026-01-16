@@ -80,6 +80,8 @@ local patchDeploymentContainerName =
     {};
 
 local wants_subscription = params.olm.upgrade_strategy.generate_subscription;
+local generate_deployment =
+  params.olm.upgrade_strategy.generate_olm_deployment;
 
 local olmFiles = std.foldl(
   function(status, file)
@@ -250,7 +252,7 @@ local patchManifests = function(file)
     && file.contents.metadata.name == metadata_name_map[release].Deployment
     && file.contents.metadata.namespace == 'cilium'
   ) then (
-    if wants_subscription then null
+    if wants_subscription && !generate_deployment then null
     else
       file {
         contents+: deploymentPatch,
