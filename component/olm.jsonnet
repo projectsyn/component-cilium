@@ -80,6 +80,10 @@ local patchDeploymentContainerName =
     {};
 
 local olm_patch_upgrades = params.olm.auto_patch_upgrades;
+// TODO(sg): Figure out if we can do this more gracefully
+local bootstrap_done =
+  local dynfacts = std.get(inv.parameters, 'dynamic_facts', { kubernetesVersion: {} });
+  std.objectHas(dynfacts.kubernetesVersion, 'gitCommit');
 
 local olmFiles = std.foldl(
   function(status, file)
@@ -250,7 +254,7 @@ local patchManifests = function(file)
     && file.contents.metadata.name == metadata_name_map[release].Deployment
     && file.contents.metadata.namespace == 'cilium'
   ) then (
-    if olm_patch_upgrades then null
+    if olm_patch_upgrades && bootstrap_done then null
     else
       file {
         contents+: deploymentPatch,
