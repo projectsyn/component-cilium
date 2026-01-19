@@ -131,6 +131,8 @@ parameters:
       upgrade_strategy:
         generate_subscription: false
         generate_olm_deployment: false
+        upgrade_job_hook: true
+        upgrade_job_selector: {}
       resources:
         requests:
           cpu: 100m

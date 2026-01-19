@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-upgrade-approval
+  name: cilium-upgrade-approval
+  namespace: appuio-openshift-upgrade-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-upgrade-approval
+  name: cilium-upgrade-approval
+  namespace: cilium
+rules:
+  - apiGroups:
+      - operators.coreos.com
+    resources:
+      - installplans
+    verbs:
+      - get
+      - list
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-upgrade-approval
+  name: cilium-upgrade-approval
+  namespace: cilium
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cilium-upgrade-approval
+subjects:
+  - kind: ServiceAccount
+    name: cilium-upgrade-approval
+    namespace: appuio-openshift-upgrade-controller
+---
+apiVersion: v1
+data:
+  approve: |
+    #!/bin/bash
+    cilium_installplan=$(kubectl -n "${CILIUM_NAMESPACE}" get installplan -ojson | \
+      jq -r --argjson upgrade_job "${JOB_metadata_creationTimestamp}" \
+        '.items | sort_by(.metadata.creationTimestamp) | reverse
+        | [.[] |
+           select((.spec.approved != true)
+           and (.metadata.creationTimestamp < $upgrade_job))
+          ][0] | .metadata.name')
+
+    if [ "${cilium_installplan}" != "null" ]; then
+      kubectl patch installplan "${cilium_installplan}" -n "${CILIUM_NAMESPACE}" \
+        --type merge --patch '{"spec":{"approved":true}}'
+    fi
+kind: ConfigMap
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-upgrade-approval
+  name: cilium-upgrade-approval
+  namespace: appuio-openshift-upgrade-controller
+---
+apiVersion: managedupgrade.appuio.io/v1beta1
+kind: UpgradeJobHook
+metadata:
+  name: cilium-upgrade-approval
+  namespace: appuio-openshift-upgrade-controller
+spec:
+  events:
+    - Start
+  selector: {}
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+            - args: []
+              command:
+                - /usr/local/bin/approve
+              env:
+                - name: CILIUM_NAMESPACE
+                  value: cilium
+              image: quay.io/appuio/oc:v4.20@sha256:d20dd4a3c9b0f41a2fe3fa61664e58c87ad721f4415e4594de3856f9a9249a56
+              imagePullPolicy: IfNotPresent
+              name: approve
+              ports: []
+              stdin: false
+              tty: false
+              volumeMounts:
+                - mountPath: /usr/local/bin/approve
+                  name: scripts
+                  readOnly: true
+                  subPath: approve
+          priorityClassName: system-cluster-critical
+          restartPolicy: Never
+          serviceAccountName: cilium-upgrade-approval
+          volumes:
+            - configMap:
+                defaultMode: 360
+                name: cilium-upgrade-approval
+              name: scripts

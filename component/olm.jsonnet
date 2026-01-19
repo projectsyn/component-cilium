@@ -381,6 +381,7 @@ local patchManifests = function(file)
     file;
 
 local migrate_to_clife = params.olm.migrate_to_clife;
+local ujhook = params.olm.upgrade_strategy.upgrade_job_hook;
 
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
@@ -392,5 +393,7 @@ std.foldl(
     [if util.manifestsVersion.minor >= 17 && migrate_to_clife then '97_migrate_to_clife']:
       import 'olm-migrate-operator.libsonnet',
     [if !wants_subscription then '99_cleanup']: (import 'cleanup.libsonnet'),
+    [if wants_subscription && ujhook then '99_olm_approval_upgradejobhook']:
+      import 'olm-maintenance.libsonnet',
   }
 )

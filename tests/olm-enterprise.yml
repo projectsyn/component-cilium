@@ -1,3 +1,6 @@
+applications:
+  - openshift-upgrade-controller
+
 parameters:
   kapitan:
     dependencies:
@@ -26,3 +29,6 @@ parameters:
     cilium_helm_values:
       k8sServiceHost: 172.30.0.1
       k8sServicePort: 443
+
+  openshift_upgrade_controller:
+    namespace: appuio-openshift-upgrade-controller
