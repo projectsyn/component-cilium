@@ -20,6 +20,8 @@ parameters:
       full_version: '1.15.1'
       source:
         enterprise: https://github.com/isovalent/olm-for-cilium/archive/main.tar.gz
+      upgrade_strategy:
+        generate_subscription: true
 
     cilium_helm_values:
       k8sServiceHost: 172.30.0.1

@@ -129,7 +129,7 @@ parameters:
       full_version: ${cilium:olm:version}.${cilium:olm:patchlevel}
       migrate_to_clife: true
       upgrade_strategy:
-        generate_subscription: true
+        generate_subscription: false
         generate_olm_deployment: false
       resources:
         requests:
