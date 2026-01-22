@@ -184,6 +184,21 @@ default:: `info`
 
 https://github.com/uber-go/zap[Zap] log level for the OLM operator.
 
+== `olm.migrate_to_clife`
+
+[horizontal]
+type:: bool
+default:: `true`
+
+Whether the component deploys an ArgoCD `PreSync` hook job which automates the migration from the old Cilium EE OLM operator (for Cilium <= 1.16) to the new CLife controller manager (for Cilium >= 1.17).
+
+[TIP]
+====
+We recommend disabling this feature once all clusters in a Project Syn fleet are migrated to CLife.
+
+Disabling this feature makes ArgoCD syncs faster and less complex.
+====
+
 == `cilium_helm_values`
 
 [horizontal]
