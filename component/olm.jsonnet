@@ -393,6 +393,8 @@ std.foldl(
   {
     [if util.manifestsVersion.minor >= 17 && migrate_to_clife then '97_migrate_to_clife']:
       import 'olm-migrate-operator.libsonnet',
+    [if wants_subscription then '98_unmanage_olm_deployment']:
+      import 'olm-unmanage-deployment.libsonnet',
     [if !wants_subscription then '99_cleanup']: (import 'cleanup.libsonnet'),
     [if wants_subscription && ujhook then '99_olm_approval_upgradejobhook']:
       import 'olm-maintenance.libsonnet',
