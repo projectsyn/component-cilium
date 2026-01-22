@@ -227,6 +227,13 @@ default:: `false`
 When this parameter is set to true, the component deploys the OLM subscription provided by the upstream OLM tarball.
 The subscription is always patched to have `installPlanApproval=Manual`.
 
+[WARNING]
+====
+It's not recommended to enable this feature before upgrading to Cilium 1.17 and migrating the new CLife OLM controller.
+
+The automatic migration procedure from Cilium EE OLM to CLife that's provided by the component (see parameter `olm.migrate_to_clife`) doesn't work correctly when `generate_subscription=true`.
+====
+
 === `olm.upgrade_strategy.generate_olm_deployment`
 
 [horizontal]
