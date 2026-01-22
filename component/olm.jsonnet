@@ -269,10 +269,10 @@ local patchManifests = function(file)
     if wants_subscription then
       file {
         contents+: {
-          spec+: std.prune({
+          spec+: {
             installPlanApproval: 'Manual',
             config+: {
-              env+: [
+              env+: std.prune([
                 if hasK8sHost then {
                   name: 'KUBERNETES_SERVICE_HOST',
                   value: helm.cilium_values.k8sServiceHost,
@@ -281,10 +281,11 @@ local patchManifests = function(file)
                   name: 'KUBERNETES_SERVICE_PORT',
                   value: helm.cilium_values.k8sServicePort,
                 },
-              ],
+              ]),
               resources+: params.olm.resources,
             },
-          }),
+            startingCSV:: null,
+          },
         },
       }
     else
