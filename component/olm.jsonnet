@@ -84,12 +84,11 @@ local wants_subscription =
     std.trace(
       '[WARN] Deploying the OLM subscription interfere with the upgrade to Cilium 1.17.'
       + " Especially the migration from Cilium EE OLM to CLife isn't fully supported when the OLM subscription is deployed!",
-      params.olm.upgrade_strategy.generate_subscription
+      params.olm.generate_subscription
     )
   else
-    params.olm.upgrade_strategy.generate_subscription;
-local generate_deployment =
-  params.olm.upgrade_strategy.generate_olm_deployment;
+    params.olm.generate_subscription;
+local generate_deployment = params.olm.generate_olm_deployment;
 
 local olmFiles = std.foldl(
   function(status, file)

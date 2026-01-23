@@ -128,9 +128,9 @@ parameters:
       patchlevel: "1"
       full_version: ${cilium:olm:version}.${cilium:olm:patchlevel}
       migrate_to_clife: true
+      generate_subscription: false
+      generate_olm_deployment: false
       upgrade_strategy:
-        generate_subscription: false
-        generate_olm_deployment: false
         upgrade_job_hook: true
         upgrade_job_selector: {}
       resources:
