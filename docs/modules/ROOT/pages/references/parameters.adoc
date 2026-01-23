@@ -208,7 +208,6 @@ type:: bool
 default:: `false`
 
 When this parameter is set to true, the component deploys the OLM subscription provided by the upstream OLM tarball.
-The subscription is always patched to have `installPlanApproval=Manual`.
 
 [WARNING]
 ====
@@ -244,6 +243,7 @@ default::
 +
 [source,yaml]
 ----
+install_plan_approval: Manual
 upgrade_job_hook: true
 upgrade_job_selector: {}
 ----
@@ -251,13 +251,25 @@ upgrade_job_selector: {}
 This parameter controls how the component configures the Cilium OLM subscription, if `olm.generate_subscription=true`.
 See the documentation for individual fields below.
 
+=== `olm.upgrade_strategy.install_plan_approval`
+
+[horizontal]
+type:: string
+default:: `Manual`
+allowed:: `Automatic`, `Manual`
+
+This parameter allows users to customize whether OLM install plans are approved automatically or not.
+By default, the component configures `Manual` approval to avoid Cilium restarts at arbitrary times when a new patch release is available.
+
+NOTE: The component raises an error if a value other than `Automatic` or `Manual` is provided in this parameter.
+
 === `olm.upgrade_strategy.upgrade_job_hook`
 
 [horizontal]
 type:: bool
 default:: `true`
 
-When `olm.upgrade_strategy.generate_subscription=true` and this parameter is set to true, the component will attempt to deploy an https://github.com/appuio/openshift-upgrade-controller/[openshift-upgrade-controller] `UpgradeJobHook` which automatically approves the latest pending install plan that was created before the active `UpgradeJob` was created.
+When `olm.generate_subscription=true`, `olm.upgrade_strategy.install_plan_approval=Manual`, and this parameter is set to true, the component will attempt to deploy an https://github.com/appuio/openshift-upgrade-controller/[openshift-upgrade-controller] `UpgradeJobHook` which approves the latest pending install plan that was created before the active `UpgradeJob` was created.
 This effectively implements Cilium patch upgrades as part of scheduled OpenShift maintenance windows.
 
 The component will raise an error if this is set to true on a cluster where the OpenShift upgrade controller isn't deployed via Project Syn.

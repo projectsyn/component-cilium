@@ -89,6 +89,14 @@ local wants_subscription =
   else
     params.olm.generate_subscription;
 local generate_deployment = params.olm.generate_olm_deployment;
+local ip_approval =
+  if !std.member(
+    [ 'Automatic', 'Manual' ],
+    params.olm.upgrade_strategy.install_plan_approval
+  ) then
+    error 'parameter `olm.upgrade_strategy.install_plan_approval` must be one of `Automatic` or `Manual`'
+  else
+    params.olm.upgrade_strategy.install_plan_approval;
 
 local olmFiles = std.foldl(
   function(status, file)
@@ -277,7 +285,7 @@ local patchManifests = function(file)
       file {
         contents+: {
           spec+: {
-            installPlanApproval: 'Manual',
+            installPlanApproval: ip_approval,
             config+: {
               env+: std.prune([
                 if hasK8sHost then {
@@ -389,7 +397,9 @@ local patchManifests = function(file)
     file;
 
 local migrate_to_clife = params.olm.migrate_to_clife;
-local ujhook = params.olm.upgrade_strategy.upgrade_job_hook;
+local ujhook =
+  params.olm.upgrade_strategy.upgrade_job_hook
+  && ip_approval == 'Manual';
 
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },

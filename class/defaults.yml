@@ -131,6 +131,7 @@ parameters:
       generate_subscription: false
       generate_olm_deployment: false
       upgrade_strategy:
+        install_plan_approval: Manual
         upgrade_job_hook: true
         upgrade_job_selector: {}
       resources:
