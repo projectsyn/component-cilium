@@ -1,21 +1,19 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   annotations:
     argocd.argoproj.io/hook: PreSync
   labels:
-    name: cleanup-old-clusterserviceversions
-  name: cleanup-old-clusterserviceversions
-  namespace: cilium
+    name: unmanage-olm-deployment
+  name: unmanage-olm-deployment
 rules:
   - apiGroups:
-      - operators.coreos.com
+      - apps
     resources:
-      - clusterserviceversions
+      - deployments
     verbs:
       - get
-      - list
-      - delete
+      - patch
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -23,26 +21,25 @@ metadata:
   annotations:
     argocd.argoproj.io/hook: PreSync
   labels:
-    name: cleanup-old-clusterserviceversions
-  name: cleanup-old-clusterserviceversions
+    name: unmanage-olm-deployment
+  name: unmanage-olm-deployment
   namespace: cilium
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   annotations:
     argocd.argoproj.io/hook: PreSync
   labels:
-    name: cleanup-old-clusterserviceversions
-  name: cleanup-old-clusterserviceversions
-  namespace: cilium
+    name: unmanage-olm-deployment
+  name: unmanage-olm-deployment
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cleanup-old-clusterserviceversions
+  kind: ClusterRole
+  name: unmanage-olm-deployment
 subjects:
   - kind: ServiceAccount
-    name: cleanup-old-clusterserviceversions
+    name: unmanage-olm-deployment
     namespace: cilium
 ---
 apiVersion: batch/v1
@@ -52,8 +49,8 @@ metadata:
     argocd.argoproj.io/hook: PreSync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
   labels:
-    name: cleanup-old-clusterserviceversions
-  name: cleanup-old-clusterserviceversions
+    name: unmanage-olm-deployment
+  name: unmanage-olm-deployment
   namespace: cilium
 spec:
   completions: 1
@@ -61,23 +58,22 @@ spec:
   template:
     metadata:
       labels:
-        name: cleanup-old-clusterserviceversions
+        name: unmanage-olm-deployment
     spec:
       containers:
         - args:
             - |
-              kubectl -n cilium get clusterserviceversion -ojson \
-                | jq '.items[] | select(.spec.version | test("^1.15.1[+]") | not) | .metadata.name' \
-                | xargs --no-run-if-empty kubectl -n cilium delete clusterserviceversions
+              kubectl -n cilium label deploy clife-controller-manager argocd.argoproj.io/instance-
           command:
-            - sh
+            - bash
+            - -e
             - -c
           env:
             - name: HOME
               value: /home
           image: quay.io/appuio/oc:v4.20@sha256:d20dd4a3c9b0f41a2fe3fa61664e58c87ad721f4415e4594de3856f9a9249a56
           imagePullPolicy: IfNotPresent
-          name: cleanup-old-clusterserviceversions
+          name: unmanage-olm-deployment
           ports: []
           stdin: false
           tty: false
@@ -88,7 +84,7 @@ spec:
       imagePullSecrets: []
       initContainers: []
       restartPolicy: OnFailure
-      serviceAccountName: cleanup-old-clusterserviceversions
+      serviceAccountName: unmanage-olm-deployment
       terminationGracePeriodSeconds: 30
       volumes:
         - emptyDir: {}

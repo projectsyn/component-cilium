@@ -184,6 +184,104 @@ default:: `info`
 
 https://github.com/uber-go/zap[Zap] log level for the OLM operator.
 
+NOTE: This parameter has no effect when `olm.upgrade_strategy.generate_subscription=true`.
+
+== `olm.migrate_to_clife`
+
+[horizontal]
+type:: bool
+default:: `true`
+
+Whether the component deploys an ArgoCD `PreSync` hook job which automates the migration from the old Cilium EE OLM operator (for Cilium <= 1.16) to the new CLife controller manager (for Cilium >= 1.17).
+
+[TIP]
+====
+We recommend disabling this feature once all clusters in a Project Syn fleet are migrated to CLife.
+
+Disabling this feature makes ArgoCD syncs faster and less complex.
+====
+
+=== `olm.generate_subscription`
+
+[horizontal]
+type:: bool
+default:: `false`
+
+When this parameter is set to true, the component deploys the OLM subscription provided by the upstream OLM tarball.
+
+[WARNING]
+====
+It's not recommended to enable this feature before upgrading to Cilium 1.17 and migrating the new CLife OLM controller.
+
+The automatic migration procedure from Cilium EE OLM to CLife that's provided by the component (see parameter `olm.migrate_to_clife`) doesn't work correctly when `generate_subscription=true`.
+====
+
+=== `olm.generate_olm_deployment`
+
+[horizontal]
+type:: bool
+default:: `false`
+
+This parameter has no effect unless `olm.generate_subscription=true`.
+When this is set to true, the OLM manager deployment is rendered while `olm.generate_subscription=true`.
+By default, this is set to `false`, since we don't want ArgoCD and OLM fighting over the OLM deployment after cluster bootstrapping.
+
+[NOTE]
+====
+This must be set to `true` when this component is used to render the initial Cilium manifests which are copied into the openshift-installer's bootstrap manifests directory.
+Otherwise, initial cluster bootstrapping will fail because Cilium won't get deployed during bootstrapping.
+====
+
+TIP: For VSHN Managed OpenShift, the install instructions and guided setup automatically set this parameter as necessary.
+
+
+== `olm.upgrade_strategy`
+
+[horizontal]
+type:: object
+default::
++
+[source,yaml]
+----
+install_plan_approval: Manual
+upgrade_job_hook: true
+upgrade_job_selector: {}
+----
+
+This parameter controls how the component configures the Cilium OLM subscription, if `olm.generate_subscription=true`.
+See the documentation for individual fields below.
+
+=== `olm.upgrade_strategy.install_plan_approval`
+
+[horizontal]
+type:: string
+default:: `Manual`
+allowed:: `Automatic`, `Manual`
+
+This parameter allows users to customize whether OLM install plans are approved automatically or not.
+By default, the component configures `Manual` approval to avoid Cilium restarts at arbitrary times when a new patch release is available.
+
+NOTE: The component raises an error if a value other than `Automatic` or `Manual` is provided in this parameter.
+
+=== `olm.upgrade_strategy.upgrade_job_hook`
+
+[horizontal]
+type:: bool
+default:: `true`
+
+When `olm.generate_subscription=true`, `olm.upgrade_strategy.install_plan_approval=Manual`, and this parameter is set to true, the component will attempt to deploy an https://github.com/appuio/openshift-upgrade-controller/[openshift-upgrade-controller] `UpgradeJobHook` which approves the latest pending install plan that was created before the active `UpgradeJob` was created.
+This effectively implements Cilium patch upgrades as part of scheduled OpenShift maintenance windows.
+
+The component will raise an error if this is set to true on a cluster where the OpenShift upgrade controller isn't deployed via Project Syn.
+
+=== `olm.upgrade_strategy.upgrade_job_selector`
+
+[horizontal]
+type:: object
+default:: `{}`
+
+This parameter allows users to customize for which `UpgradeJob` resources the `UpgradeJobHook` is applied.
+
 == `cilium_helm_values`
 
 [horizontal]

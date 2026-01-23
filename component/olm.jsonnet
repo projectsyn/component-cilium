@@ -79,11 +79,29 @@ local patchDeploymentContainerName =
   else
     {};
 
+local wants_subscription =
+  if util.version.minor <= 16 then
+    std.trace(
+      '[WARN] Deploying the OLM subscription interfere with the upgrade to Cilium 1.17.'
+      + " Especially the migration from Cilium EE OLM to CLife isn't fully supported when the OLM subscription is deployed!",
+      params.olm.generate_subscription
+    )
+  else
+    params.olm.generate_subscription;
+local generate_deployment = params.olm.generate_olm_deployment;
+local ip_approval =
+  if !std.member(
+    [ 'Automatic', 'Manual' ],
+    params.olm.upgrade_strategy.install_plan_approval
+  ) then
+    error 'parameter `olm.upgrade_strategy.install_plan_approval` must be one of `Automatic` or `Manual`'
+  else
+    params.olm.upgrade_strategy.install_plan_approval;
+
 local olmFiles = std.foldl(
   function(status, file)
     status {
       files+: [ file ],
-      has_csv: status.has_csv || (file.contents.kind == 'ClusterServiceVersion'),
     },
 
   std.filterMap(
@@ -118,7 +136,6 @@ local olmFiles = std.foldl(
         },
       ]
       else [],
-    has_csv: false,
   }
 );
 
@@ -141,7 +158,7 @@ local metadata_name_map = {
   },
 };
 
-local patchManifests = function(file, has_csv)
+local patchManifests = function(file)
   local hasK8sHost = std.objectHas(helm.cilium_values, 'k8sServiceHost');
   local hasK8sPort = std.objectHas(helm.cilium_values, 'k8sServicePort');
   local deploymentPatch = {
@@ -249,38 +266,47 @@ local patchManifests = function(file, has_csv)
     file.contents.kind == 'Deployment'
     && file.contents.metadata.name == metadata_name_map[release].Deployment
     && file.contents.metadata.namespace == 'cilium'
-  ) then
-    file {
-      contents+: deploymentPatch,
-    }
-  else if (
+  ) then (
+    if wants_subscription && !generate_deployment then null
+    else
+      file {
+        contents+: deploymentPatch,
+      }
+  ) else if (
     file.contents.kind == 'ClusterServiceVersion' &&
-    file.contents.metadata.namespace == 'cilium'
-  ) then
-    file {
-      contents+: {
-        spec+: {
-          install+: {
-            spec+: {
-              deployments: [
-                if d.name == metadata_name_map[release].Deployment then
-                  d + deploymentPatch
-                else
-                  d
-                for d in super.deployments
-              ],
-            },
-          },
-        },
-      },
-    }
-  else if (
-    file.contents.kind == 'Subscription' &&
     file.contents.metadata.namespace == 'cilium'
   ) then
     null
   else if (
-    !has_csv &&
+    file.contents.kind == 'Subscription' &&
+    file.contents.metadata.namespace == 'cilium'
+  ) then (
+    if wants_subscription then
+      file {
+        contents+: {
+          spec+: {
+            installPlanApproval: ip_approval,
+            config+: {
+              env+: std.prune([
+                if hasK8sHost then {
+                  name: 'KUBERNETES_SERVICE_HOST',
+                  value: helm.cilium_values.k8sServiceHost,
+                },
+                if hasK8sPort then {
+                  name: 'KUBERNETES_SERVICE_PORT',
+                  value: helm.cilium_values.k8sServicePort,
+                },
+              ]),
+              resources+: params.olm.resources,
+            },
+            startingCSV:: null,
+          },
+        },
+      }
+    else
+      null
+  ) else if (
+    !wants_subscription &&
     file.contents.kind == 'OperatorGroup' &&
     file.contents.metadata.namespace == 'cilium'
   ) then
@@ -371,16 +397,23 @@ local patchManifests = function(file, has_csv)
     file;
 
 local migrate_to_clife = params.olm.migrate_to_clife;
+local ujhook =
+  params.olm.upgrade_strategy.upgrade_job_hook
+  && ip_approval == 'Manual';
 
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
   std.filter(
     function(obj) obj != null,
-    std.map(function(obj) patchManifests(obj, olmFiles.has_csv), olmFiles.files),
+    std.map(function(obj) patchManifests(obj), olmFiles.files),
   ),
   {
     [if util.manifestsVersion.minor >= 17 && migrate_to_clife then '97_migrate_to_clife']:
       import 'olm-migrate-operator.libsonnet',
-    '99_cleanup': (import 'cleanup.libsonnet'),
+    [if wants_subscription then '98_unmanage_olm_deployment']:
+      import 'olm-unmanage-deployment.libsonnet',
+    [if !wants_subscription then '99_cleanup']: (import 'cleanup.libsonnet'),
+    [if wants_subscription && ujhook then '99_olm_approval_upgradejobhook']:
+      import 'olm-maintenance.libsonnet',
   }
 )
