@@ -80,7 +80,7 @@ local patchDeploymentContainerName =
     {};
 
 local wants_subscription =
-  if util.version.minor <= 16 then
+  if util.version.minor <= 16 && params.olm.generate_subscription then
     std.trace(
       '[WARN] Deploying the OLM subscription interfere with the upgrade to Cilium 1.17.'
       + " Especially the migration from Cilium EE OLM to CLife isn't fully supported when the OLM subscription is deployed!",
