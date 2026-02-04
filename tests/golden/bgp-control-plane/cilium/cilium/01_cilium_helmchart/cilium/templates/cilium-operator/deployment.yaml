@@ -83,11 +83,10 @@ spec:
             timeoutSeconds: 3
           resources:
             limits:
-              cpu: 100m
-              memory: 250Mi
+              memory: 500Mi
             requests:
               cpu: 100m
-              memory: 250Mi
+              memory: 300Mi
           terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
             - mountPath: /tmp/cilium/config-map

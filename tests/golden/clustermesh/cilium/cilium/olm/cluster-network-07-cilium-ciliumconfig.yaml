@@ -69,11 +69,10 @@ spec:
         enabled: true
     resources:
       limits:
-        cpu: 100m
-        memory: 250Mi
+        memory: 500Mi
       requests:
         cpu: 100m
-        memory: 250Mi
+        memory: 300Mi
   prometheus:
     enabled: true
     serviceMonitor:
