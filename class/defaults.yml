@@ -70,10 +70,9 @@ parameters:
         resources:
           requests:
             cpu: 100m
-            memory: 250Mi
+            memory: 300Mi
           limits:
-            cpu: 100m
-            memory: 250Mi
+            memory: 500Mi
       clustermesh:
         apiserver:
           metrics:
