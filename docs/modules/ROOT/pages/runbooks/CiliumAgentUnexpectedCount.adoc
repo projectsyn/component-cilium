@@ -1,0 +1,38 @@
+== CiliumAgentUnexpectedCount
+
+include::partial$runbooks/contribution_note.adoc[]
+
+== icon:glasses[] Overview
+
+This alert fires if a cluster has a mismatch between the number of Cilium agent pods and nodes for more than 5 minutes.
+
+This usually indicates that the Cilium agent `DaemonSet` is misconfigured or missing.
+
+== icon:bug[] Steps for debugging
+
+. Check the Cilium agent `DaemonSet`
++
+[source,bash]
+----
+kubectl -n cilium get ds -l app.kubernetes.io/name=cilium-agent
+----
+
+.. If the `DaemonSet` is missing, check the OLM operator logs (or Helm deployment status)
++
+[source,bash]
+----
+kubectl -n cilium logs deployment/clife-controller-manager <1>
+----
+<1> For Cilium 1.16, use `deployment/cilium-ee-olm`.
+
+.. If the `DaemonSet` is present, find nodes which don't have a Cilium agent pod and check them for scheduling issues or untolerated taints
++
+[source,bash]
+----
+for node in $(kubectl get nodes -oname); do
+  pod=$(kubectl -oname -n cilium get pods -l app.kubernetes.io/name=cilium-agent --field-selector spec.nodeName="${node#node/}")
+  if [ "${pod}" == "" ]; then
+    echo "Cilium agent missing on node ${node}"
+  fi
+done
+----

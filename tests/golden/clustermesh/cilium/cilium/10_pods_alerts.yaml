@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-pods
+  name: cilium-pods
+spec:
+  groups:
+    - name: cilium-pods.rules
+      rules:
+        - alert: CiliumAgentUnexpectedCount
+          annotations:
+            description: |
+              The cluster has had {{ $value }} Cilium agents for the last 5m
+              instead of the expected {{ query "count(kube_node_info)" }}.
+            message: Number of Cilium agents doesn't match node count
+            runbook_url: https://hub.syn.tools/cilium/runbooks/CiliumAgentUnexpectedCount.html
+          expr: count(kube_pod_labels{namespace="cilium", label_app_kubernetes_io_name="cilium-agent"})
+            != count(kube_node_info)
+          for: 5m
+          labels:
+            severity: critical
+            syn: 'true'
+            syn_component: cilium

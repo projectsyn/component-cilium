@@ -149,6 +149,45 @@ local ebpf_alerts = prom.PrometheusRule('cilium-ebpf') {
   },
 };
 
+local pods_group = {
+  name: 'cilium-pods.rules',
+  rules: [
+    {
+      local this = self,
+      alert: 'CiliumAgentUnexpectedCount',
+      expr: 'count(kube_pod_labels{namespace="cilium", label_app_kubernetes_io_name="cilium-agent"}) != count(kube_node_info)',
+      'for': '5m',
+      labels: {
+        severity: 'critical',
+      },
+      annotations: {
+        runbook_url:
+          'https://hub.syn.tools/cilium/runbooks/CiliumAgentUnexpectedCount.html',
+        message: "Number of Cilium agents doesn't match node count",
+        description: |||
+          The cluster has had {{ $value }} Cilium agents for the last %s
+          instead of the expected {{ query "count(kube_node_info)" }}.
+        ||| % this['for'],
+      },
+    },
+  ],
+};
+
+local pods_alerts = prom.PrometheusRule('cilium-pods') {
+  spec+: {
+    groups: [
+      alertpatching.filterPatchRules(
+        pods_group,
+        ignoreNames=ignoreNames,
+        patches=params.alerts.patches,
+        preserveRecordingRules=true,
+        patchNames=false,
+      ),
+    ],
+  },
+};
+
+
 local additional_group =
   local parseRuleName(rname) =
     local rparts = std.splitLimit(rname, ':', 1);
@@ -186,6 +225,8 @@ local additional_alerts = prom.PrometheusRule('cilium-custom') {
     '10_clustermesh_alerts']: clustermesh_alerts,
   [if std.length(ebpf_alerts.spec.groups[0].rules) > 0 then
     '10_ebpf_alerts']: ebpf_alerts,
+  [if std.length(pods_alerts.spec.groups[0].rules) > 0 then
+    '10_pods_alerts']: pods_alerts,
   [if std.length(additional_group.rules) > 0 then
     '10_custom_alerts']: additional_alerts,
 }
