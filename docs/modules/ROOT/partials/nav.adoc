@@ -9,6 +9,8 @@
 ** xref:how-tos/openshift4/upgrade-cilium-oss-to-cilium-enterprise.adoc[Upgrade Cilium OSS to Cilium Enterprise]
 
 .Runbooks
+* Cilium pods
+** xref:runbooks/CiliumAgentUnexpectedCOunt.adoc[]
 * Cluster mesh
 ** xref:runbooks/CiliumClustermeshRemoteClusterNotReady.adoc[]
 ** xref:runbooks/CiliumKVStoreMeshRemoteClusterNotReady.adoc[]
