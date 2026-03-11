@@ -1,0 +1,45 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-ebpf
+  name: cilium-ebpf
+spec:
+  groups:
+    - name: cilium-ebpf.rules
+      rules:
+        - alert: CiliumBpfMapUtilizationHigh
+          annotations:
+            description: |
+              BPF map utilization for map {{ $labels.map_name }} has been above
+              50% on node {{ $labels.node }} for the last 10m.
+            message: High BPF map utilization on {{ $labels.node }}
+            runbook_url: https://hub.syn.tools/cilium/runbooks/CiliumBpfMapPressureHigh.html
+          expr: cilium_bpf_map_pressure > 0.5
+          for: 10m
+          labels:
+            severity: warning
+        - alert: CiliumBpfMapUtilizationExtremelyHigh
+          annotations:
+            description: |
+              BPF map utilization for map {{ $labels.map_name }} has been above
+              90% on node {{ $labels.node }} for the last 10m.
+            message: Extremely High BPF map utilization on {{ $labels.node }}
+            runbook_url: https://hub.syn.tools/cilium/runbooks/CiliumBpfMapPressureExtremelyHigh.html
+          expr: cilium_bpf_map_pressure > 0.9
+          for: 10m
+          labels:
+            severity: critical
+        - alert: CiliumBpfOperationErrorRateHigh
+          annotations:
+            description: |
+              BPF error rate for map {{ $labels.map_name }} has been above
+              50% on node {{ $labels.node }} for the last 10m.
+            message: High BPF error rate on {{ $labels.node }}
+            runbook_url: https://hub.syn.tools/cilium/runbooks/CiliumBpfOperationErrorRateHigh.html
+          expr: (rate(cilium_bpf_map_ops_total{outcome="fail"}[1m]) / rate(cilium_bpf_map_ops_total{}[1m]))
+            > 0.5
+          for: 10m
+          labels:
+            severity: critical
