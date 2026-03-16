@@ -6,8 +6,7 @@ local params = inv.parameters.cilium;
 
 local clustermesh_enabled =
   std.get(params.cilium_helm_values.clustermesh, 'config', { enabled: false }).enabled;
-local egress_gateway_enabled =
-  std.get(params, 'egress_gateway', { enabled: false }).enabled;
+local egress_gateway_enabled = params.egress_gateway.enabled;
 local transparent_encryption_enabled =
   std.get(params.cilium_helm_values, 'encryption', { enabled: false }).enabled;
 
