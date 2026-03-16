@@ -11,6 +11,10 @@ The component assumes that prometheus-operator will be present on the target clu
 
 See the https://docs.cilium.io/en/v1.11/operations/metrics/#cilium-agent[Cilium docs] for available agent metrics.
 
+=== Enabled features recording rule
+
+The component renders a PrometheusRule named `cilium-features` that emits one series for each managed feature via the `feature` label (`clustermesh`, `egress-gateway`, `transparent-encryption`) with value `1` when enabled and `0` when disabled, which makes it easy to use in alerts and/or dashboards.
+
 == Aggregated permissions
 
 The component creates the following `ClusterRoles` which are aggregated to the cluster's default `ClusterRoles`:

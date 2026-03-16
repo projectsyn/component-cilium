@@ -43,6 +43,7 @@ jobs:
           - hubble-access
           - lib-ipcalc
           - olm-enterprise
+          - transparent-encryption
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
@@ -68,6 +69,7 @@ jobs:
           - hubble-access
           - lib-ipcalc
           - olm-enterprise
+          - transparent-encryption
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
