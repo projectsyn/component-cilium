@@ -10,7 +10,7 @@
 
 .Runbooks
 * Cilium pods
-** xref:runbooks/CiliumAgentUnexpectedCOunt.adoc[]
+** xref:runbooks/CiliumAgentUnexpectedCount.adoc[]
 * Cluster mesh
 ** xref:runbooks/CiliumClustermeshRemoteClusterNotReady.adoc[]
 ** xref:runbooks/CiliumKVStoreMeshRemoteClusterNotReady.adoc[]
