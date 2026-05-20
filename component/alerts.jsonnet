@@ -187,6 +187,61 @@ local pods_alerts = prom.PrometheusRule('cilium-pods') {
   },
 };
 
+// PrometheusRule to detect when the configured shadow range nodes are not all present.
+local shadowrange_get_nodes =
+  local egress_ip_range(range) =
+    local obj = std.get(params.egress_gateway.egress_ip_ranges, range, {});
+    if obj == null then {} else obj;
+  local shadow_ranges(range) =
+    local obj = std.get(egress_ip_range(range), 'shadow_ranges', {});
+    if obj == null then {} else obj;
+
+  std.uniq(std.sort(std.flatMap(
+    function(range) std.objectFields(shadow_ranges(range)),
+    std.objectFields(params.egress_gateway.egress_ip_ranges)
+  )));
+
+local shadowrange_group =
+  local nodes = {
+    string: std.join('|', shadowrange_get_nodes),
+    count: std.length(shadowrange_get_nodes),
+  };
+  {
+    name: 'cilium-shadowrange.rules',
+    rules: [
+      {
+        local this = self,
+        alert: 'CiliumShadowRangeNodeMissing',
+        expr: 'sum by (instance) (max by (pod) (node_cpu_info{instance=~"%(string)s"})) != %(count)d' % nodes,
+        'for': '5m',
+        labels: {
+          severity: 'critical',
+        },
+        annotations: {
+          message: "Number of nodes doesn't match shadow range count",
+          description: |||
+            The cluster has had {{ $value }} matching infra nodes for the last %s
+            instead of the expected {{ query "count(kube_node_info)" }}.
+            There was probably a node replaced but the shadow range was not updated.
+          ||| % this['for'],
+        },
+      },
+    ],
+  };
+
+local shadowrange_alerts = prom.PrometheusRule('cilium-shadowrange') {
+  spec+: {
+    groups: [
+      alertpatching.filterPatchRules(
+        shadowrange_group,
+        ignoreNames=ignoreNames,
+        patches=params.alerts.patches,
+        preserveRecordingRules=true,
+        patchNames=false,
+      ),
+    ],
+  },
+};
 
 local additional_group =
   local parseRuleName(rname) =
@@ -227,6 +282,8 @@ local additional_alerts = prom.PrometheusRule('cilium-custom') {
     '10_ebpf_alerts']: ebpf_alerts,
   [if std.length(pods_alerts.spec.groups[0].rules) > 0 then
     '10_pods_alerts']: pods_alerts,
+  [if std.length(shadowrange_get_nodes) > 0 then
+    '10_shadowrange_alerts']: shadowrange_alerts,
   [if std.length(additional_group.rules) > 0 then
     '10_custom_alerts']: additional_alerts,
 }
