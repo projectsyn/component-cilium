@@ -9,7 +9,7 @@ local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
 // NOTE(sg): This expects that each shadow range fully fits into a /24.
-local egress_ip_shadow_ranges =
+local shadow_range_config =
   // Helper to extract the /24 prefix of the IP range passed as `range`. The
   // function raises an error if the provided range spans multiple /24.
   local extract_prefix(prefix, hostname, range) =
@@ -57,7 +57,7 @@ local egress_ip_shadow_ranges =
   // Transform egress_ip_ranges.<range>.shadow_ranges into the format expected
   // by the systemd service (and script) managed in component
   // openshift4-nodes.
-  local config = std.foldl(
+  std.foldl(
     // Collect egress interface IP ranges by node. This object can be used to
     // generate the configmap that openshift4-nodes expects.
     function(data, egress_range)
@@ -101,12 +101,13 @@ local egress_ip_shadow_ranges =
     {}
   );
 
+local egress_ip_shadow_ranges =
   // generate 1 configmap for all egress ranges.
   local configmap =
     kube.ConfigMap('eip-shadow-ranges') {
       data: {
-        [hostname]: std.manifestJsonMinified(config[hostname])
-        for hostname in std.objectFields(config)
+        [hostname]: std.manifestJsonMinified(shadow_range_config[hostname])
+        for hostname in std.objectFields(shadow_range_config)
       },
     };
 
@@ -194,4 +195,5 @@ local egress_ip_shadow_ranges =
 
 {
   manifests: egress_ip_shadow_ranges,
+  config: shadow_range_config,
 }
