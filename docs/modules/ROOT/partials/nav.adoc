@@ -18,3 +18,5 @@
 ** xref:runbooks/CiliumBpfMapPressureHigh.adoc[]
 ** xref:runbooks/CiliumBpfMapPressureExtremelyHigh.adoc[]
 ** xref:runbooks/CiliumBpfOperationErrorRateHigh.adoc[]
+* Egress Gateway
+** xref:runbooks/CiliumShadowRangeNodeMissing.adoc[]

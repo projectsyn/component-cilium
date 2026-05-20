@@ -1,0 +1,29 @@
+= CiliumShadowRangeNodeMissing
+
+include::partial$runbooks/contribution_note.adoc[]
+
+== icon:glasses[] Overview
+
+This alert fires if the expected and actual count of nodes that are configure to host an Egress Gateway shadow range don't match for more than 5 minutes.
+
+This usually indicates that the egress gateway shadow range config wasn't updated when nodes were replaced.
+
+== icon:bug[] Steps for debugging
+
+. Check the Egress Gateway shadow range configmap for the expected nodes
++
+[source,bash]
+----
+kubectl -n cilium get cm eip-shadow-ranges -oyaml | yq '.data|keys'
+----
+
+. Check the cluster for the actual nodes
++
+[source,bash]
+----
+kubectl get nodes
+----
+
+== icon:wrench[] Remediation
+
+Update the egress gateway shadow range config in the cluster's Project Syn config to map the shadow ranges to the updated set of nodes (usually infra nodes for VSHN Managed OpenShift).

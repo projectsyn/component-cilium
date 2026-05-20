@@ -189,16 +189,19 @@ local pods_alerts = prom.PrometheusRule('cilium-pods') {
   },
 };
 
-local shadowrange_group =
+local egw_group =
   {
-    name: 'cilium-shadowrange.rules',
+    name: 'cilium-egress-gateway.rules',
     rules: [
       {
         local this = self,
         alert: 'CiliumShadowRangeNodeMissing',
         expr:
-          'max by (instance) (node_cpu_info{instance=~"%(string)s"}) == 0'
-          % std.join('|', std.objectFields(egw_shadow_ranges.config)),
+          'sum (kube_node_info{instance=~"%(sel)s"})) != %(count)s'
+          % {
+            sel: std.join('|', std.objectFields(egw_shadow_ranges.config)),
+            count: std.length(egw_shadow_ranges.config),
+          },
         'for': '5m',
         labels: {
           severity: 'critical',
@@ -206,21 +209,28 @@ local shadowrange_group =
         annotations: {
           message: 'A node which hosts a shadow egress IP range is missing',
           description: |||
-            Node {{ $labels.instance }} which hosts a shadow egress IP range
-            has been missing for the last %s. Most likely this node was
-            replaced but the shadow range was not updated.
-          ||| % this['for'],
+            The cluster should have %(count)s nodes which host a shadow egress
+            IP range, but had {{ $value }} for the last %(for)s. Most likely
+            one or more nodes were replaced but the shadow range was not
+            updated.
+
+            The shadow range configmap currently has nodes %(nodes)s.
+          ||| % {
+            'for': this['for'],
+            count: std.length(egw_shadow_ranges.config),
+            nodes: std.join(', ', std.objectFields(egw_shadow_ranges.config)),
+          },
           runbook_url: 'https://hub.syn.tools/cilium/CiliumShadowRangeNodeMissing.html',
         },
       },
     ],
   };
 
-local shadowrange_alerts = prom.PrometheusRule('cilium-shadowrange') {
+local egw_alerts = prom.PrometheusRule('cilium-egress-gateway') {
   spec+: {
     groups: [
       alertpatching.filterPatchRules(
-        shadowrange_group,
+        egw_group,
         ignoreNames=ignoreNames,
         patches=params.alerts.patches,
         preserveRecordingRules=true,
@@ -270,7 +280,7 @@ local additional_alerts = prom.PrometheusRule('cilium-custom') {
   [if std.length(pods_alerts.spec.groups[0].rules) > 0 then
     '10_pods_alerts']: pods_alerts,
   [if std.length(egw_shadow_ranges.config) > 0 then
-    '10_shadowrange_alerts']: shadowrange_alerts,
+    '10_egress_gateway_alerts']: egw_alerts,
   [if std.length(additional_group.rules) > 0 then
     '10_custom_alerts']: additional_alerts,
 }
