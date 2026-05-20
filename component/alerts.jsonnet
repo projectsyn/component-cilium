@@ -3,6 +3,8 @@ local kap = import 'lib/kapitan.libjsonnet';
 local prom = import 'lib/prom.libsonnet';
 local util = import 'util.libsonnet';
 
+local egw_shadow_ranges = import 'egress-gateway-shadow-ranges.libsonnet';
+
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
@@ -187,43 +189,28 @@ local pods_alerts = prom.PrometheusRule('cilium-pods') {
   },
 };
 
-// PrometheusRule to detect when the configured shadow range nodes are not all present.
-local shadowrange_get_nodes =
-  local egress_ip_range(range) =
-    local obj = std.get(params.egress_gateway.egress_ip_ranges, range, {});
-    if obj == null then {} else obj;
-  local shadow_ranges(range) =
-    local obj = std.get(egress_ip_range(range), 'shadow_ranges', {});
-    if obj == null then {} else obj;
-
-  std.uniq(std.sort(std.flatMap(
-    function(range) std.objectFields(shadow_ranges(range)),
-    std.objectFields(params.egress_gateway.egress_ip_ranges)
-  )));
-
 local shadowrange_group =
-  local nodes = {
-    string: std.join('|', shadowrange_get_nodes),
-    count: std.length(shadowrange_get_nodes),
-  };
   {
     name: 'cilium-shadowrange.rules',
     rules: [
       {
         local this = self,
         alert: 'CiliumShadowRangeNodeMissing',
-        expr: 'sum by (instance) (max by (pod) (node_cpu_info{instance=~"%(string)s"})) != %(count)d' % nodes,
+        expr:
+          'max by (instance) (node_cpu_info{instance=~"%(string)s"}) == 0'
+          % std.join('|', std.objectFields(egw_shadow_ranges.config)),
         'for': '5m',
         labels: {
           severity: 'critical',
         },
         annotations: {
-          message: "Number of nodes doesn't match shadow range count",
+          message: 'A node which hosts a shadow egress IP range is missing',
           description: |||
-            The cluster has had {{ $value }} matching infra nodes for the last %s
-            instead of the expected {{ query "count(kube_node_info)" }}.
-            There was probably a node replaced but the shadow range was not updated.
+            Node {{ $labels.instance }} which hosts a shadow egress IP range
+            has been missing for the last %s. Most likely this node was
+            replaced but the shadow range was not updated.
           ||| % this['for'],
+          runbook_url: 'https://hub.syn.tools/cilium/CiliumShadowRangeNodeMissing.html',
         },
       },
     ],
@@ -282,7 +269,7 @@ local additional_alerts = prom.PrometheusRule('cilium-custom') {
     '10_ebpf_alerts']: ebpf_alerts,
   [if std.length(pods_alerts.spec.groups[0].rules) > 0 then
     '10_pods_alerts']: pods_alerts,
-  [if std.length(shadowrange_get_nodes) > 0 then
+  [if std.length(egw_shadow_ranges.config) > 0 then
     '10_shadowrange_alerts']: shadowrange_alerts,
   [if std.length(additional_group.rules) > 0 then
     '10_custom_alerts']: additional_alerts,
