@@ -20,8 +20,8 @@ spec:
               The shadow range configmap currently has nodes infra-8344, infra-87c9, infra-eba2.
             message: A node which hosts a shadow egress IP range is missing
             runbook_url: https://hub.syn.tools/cilium/CiliumShadowRangeNodeMissing.html
-          expr: sum (kube_node_info{instance=~"infra-8344|infra-87c9|infra-eba2"}))
-            != 3
+          expr: sum (kube_node_info{node=~"infra-8344|infra-87c9|infra-eba2"}) !=
+            3
           for: 5m
           labels:
             severity: critical

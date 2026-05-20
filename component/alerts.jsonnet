@@ -197,7 +197,7 @@ local egw_group =
         local this = self,
         alert: 'CiliumShadowRangeNodeMissing',
         expr:
-          'sum (kube_node_info{instance=~"%(sel)s"})) != %(count)s'
+          'sum (kube_node_info{node=~"%(sel)s"}) != %(count)s'
           % {
             sel: std.join('|', std.objectFields(egw_shadow_ranges.config)),
             count: std.length(egw_shadow_ranges.config),
