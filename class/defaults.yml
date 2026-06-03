@@ -154,4 +154,4 @@ parameters:
       oc:
         registry: quay.io
         repository: appuio/oc
-        tag: v4.20@sha256:d20dd4a3c9b0f41a2fe3fa61664e58c87ad721f4415e4594de3856f9a9249a56
+        tag: v4.20@sha256:18bdc537518609264a863b8246166f750e894567ad47278b3ec1b7230240a6a0
