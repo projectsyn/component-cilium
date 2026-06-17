@@ -71,6 +71,7 @@ local hook = {
     events: [ 'Start' ],
     template: {
       spec: {
+        activeDeadlineSeconds: 900,
         template: {
           spec: {
             restartPolicy: 'Never',
