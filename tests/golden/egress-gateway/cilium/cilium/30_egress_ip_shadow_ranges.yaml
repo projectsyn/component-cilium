@@ -37,7 +37,7 @@ spec:
             - -c
             - 'trap : TERM INT; sleep infinity & wait'
           env: []
-          image: quay.io/appuio/oc:v4.21@sha256:84981acb5c9448946557ecf16d370603947928f6a215b548cfda52689d8c1fd3
+          image: quay.io/appuio/oc:v4.21@sha256:7589c4c11a06cb8f024aedcc702c43750d9e343472007a114507e6494197ba4c
           imagePullPolicy: IfNotPresent
           name: sleep
           ports: []
