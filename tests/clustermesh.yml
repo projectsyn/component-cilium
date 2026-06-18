@@ -1,6 +1,5 @@
 applications:
   - espejote
-  - openshift4-config
 
 parameters:
   kapitan:
@@ -19,7 +18,7 @@ parameters:
     namespace: syn-espejote
 
   openshift4_config:
-    networking:
+    networkCustomization:
       enabled: false
 
   facts:

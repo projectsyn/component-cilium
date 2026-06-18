@@ -11,28 +11,6 @@ local fullReplacement = std.member(
   params.cilium_helm_values.kubeProxyReplacement
 );
 
-local configmap = {
-  apiVersion: 'v1',
-  kind: 'ConfigMap',
-  metadata: {
-    annotations: {
-      'syn.tools/source': 'https://github.com/projectsyn/component-cilium.git',
-    },
-    labels: {
-      'app.kubernetes.io/part-of': 'syn',
-      'app.kubernetes.io/component': 'cilium',
-      [inv.parameters.openshift4_config.networking.labelOperator]: '',
-    },
-    name: 'cilium-kubeproxy',
-    namespace: 'openshift-config',
-  },
-  data: {
-    spec: std.manifestJson({
-      deployKubeProxy: !fullReplacement,
-    }),
-  },
-};
-
 local metadataPatch = {
   annotations+: {
     'syn.tools/source': 'https://github.com/projectsyn/component-cilium.git',
@@ -55,10 +33,30 @@ local patch = {
   },
 };
 
+local configmap = {
+  apiVersion: 'v1',
+  kind: 'ConfigMap',
+  metadata: {
+    annotations: {
+      'syn.tools/source': 'https://github.com/projectsyn/component-cilium.git',
+    },
+    labels: {
+      'app.kubernetes.io/part-of': 'syn',
+      'app.kubernetes.io/component': 'cilium',
+      [inv.parameters.openshift4_config.networkCustomization.labelOperator]: '',
+    },
+    name: 'cilium-kubeproxy',
+    namespace: 'openshift-config',
+  },
+  data: {
+    spec: std.manifestJson(patch.spec),
+  },
+};
+
 if util.isOpenshift then
   {
     '99_networkoperator_kube_proxy_patch':
-      if util.supportsOperatorConfigmaps then
+      if util.openshiftHasGlobalNetworkOperatorManager then
         configmap
       else [
         obj {

@@ -6,11 +6,9 @@ local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
 local isOpenshift = std.member([ 'openshift4', 'oke' ], inv.parameters.facts.distribution);
-local supportsOperatorConfigmaps =
-  if !isOpenshift then
-    false
-  else
-    std.get(std.get(inv.parameters.openshift4_config, 'networking', {}), 'enabled', false);
+local openshiftHasGlobalNetworkOperatorManager =
+  local openshift4_config = std.get(inv.parameters, 'openshift4_config', {});
+  isOpenshift && std.get(std.get(openshift4_config, 'networkCustomization', {}), 'enabled', false);
 
 // Parse cilium version
 local parse_version(ver) =
@@ -81,7 +79,7 @@ local render_ip_pools(pools) = com.generateResources(
 
 {
   isOpenshift: isOpenshift,
-  supportsOperatorConfigmaps: supportsOperatorConfigmaps,
+  openshiftHasGlobalNetworkOperatorManager: openshiftHasGlobalNetworkOperatorManager,
   version: version,
   manifestsVersion: manifestsVersion,
   ipPool: render_ip_pools,
