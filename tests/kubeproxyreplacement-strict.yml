@@ -17,6 +17,11 @@ parameters:
   espejote:
     namespace: syn-espejote
 
+  openshift4_config:
+    networkCustomization:
+      enabled: true
+      labelOperator: 'networking.openshift-config.syn.tools/include-operator'
+
   facts:
     distribution: openshift4
 

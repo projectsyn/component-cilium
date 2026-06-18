@@ -17,6 +17,10 @@ parameters:
   espejote:
     namespace: syn-espejote
 
+  openshift4_config:
+    networkCustomization:
+      enabled: false
+
   facts:
     distribution: openshift4
 
