@@ -103,7 +103,7 @@ spec:
           env:
             - name: HOME
               value: /home
-          image: quay.io/appuio/oc:v4.21@sha256:7589c4c11a06cb8f024aedcc702c43750d9e343472007a114507e6494197ba4c
+          image: quay.io/appuio/oc:v4.21@sha256:a82f834bd5ee382410df764230acfde64457f8b545117766b29bb69ff2a6a89a
           imagePullPolicy: IfNotPresent
           name: prepare-upgrade-to-clife
           ports: []
