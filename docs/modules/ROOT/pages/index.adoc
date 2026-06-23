@@ -13,7 +13,10 @@ See the https://docs.cilium.io/en/v1.11/operations/metrics/#cilium-agent[Cilium 
 
 === Enabled features recording rule
 
-The component renders a PrometheusRule named `cilium-features` that emits one series for each managed feature via the `feature` label (`clustermesh`, `egress-gateway`, `transparent-encryption`) with value `1` when enabled and `0` when disabled, which makes it easy to use in alerts and/or dashboards.
+When component parameter `release` is set to `enterprise`, the component renders a `PrometheusRule` named `cilium-features`.
+This `PrometheusRule` emits one time series for each managed feature via the `feature` label.
+The component currently knows features `clustermesh`, `egress-gateway`, and `transparent-encryption`.
+Each feature time series has value `1` when the feature is enabled and `0` otherwise, which makes it easy to use in alerts and/or dashboards.
 
 == Aggregated permissions
 

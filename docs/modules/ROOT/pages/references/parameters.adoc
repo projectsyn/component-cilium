@@ -1180,7 +1180,10 @@ The LoadBalancer IP address management (LB IPAM) feature is under active develop
 This section allows users to configure alerts for Cilium.
 The component expects that an externally-managed Prometheus stack is running on the target cluster.
 For OpenShift 4, the component makes use of the component libraries provided by https://github.com/appuio/component-openshift4-monitoring.git[component `openshift4-monitoring`].
-On other distributions, the component expects that a component library `prom.libsonnet` is available, for example via https://github.com/projectsyn/component-prometheus.git[component `prometheus`].
+On other distributions, the component checks for the presence of https://github.com/projectsyn/component-prometheus.git[component `prometheus`], and uses the `prometheus.libsonnet` library provided by that component.
+If the component is compiled for a cluster that's not OpenShift and which doesn't include `component-prometheus`, no alerts are rendered.
+
+NOTE: Currently, `alerts.ignoreNames` and `alerts.patches` don't have any effect unless the component is compiled for OpenShift.
 
 === `alerts.ignoreNames`
 
