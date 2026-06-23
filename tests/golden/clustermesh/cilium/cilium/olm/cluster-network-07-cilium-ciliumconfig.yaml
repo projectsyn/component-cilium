@@ -34,7 +34,7 @@ spec:
   egressGateway:
     enabled: false
   endpointRoutes:
-    enabled: true
+    enabled: false
   envoy:
     enabled: false
   hubble:

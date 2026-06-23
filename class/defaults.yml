@@ -25,7 +25,7 @@ parameters:
           # See also https://github.com/projectsyn/component-cilium/pull/117.
           name: ${cilium:_namespace}
       endpointRoutes:
-        enabled: true
+        enabled: false
       hubble:
         metrics:
           enabled:

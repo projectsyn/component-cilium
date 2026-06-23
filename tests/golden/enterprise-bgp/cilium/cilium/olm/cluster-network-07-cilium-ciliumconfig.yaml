@@ -20,7 +20,7 @@ spec:
     egressGateway:
       enabled: false
     endpointRoutes:
-      enabled: true
+      enabled: false
     enterprise:
       bgpControlPlane:
         enabled: true
