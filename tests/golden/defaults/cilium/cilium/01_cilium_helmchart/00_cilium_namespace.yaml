@@ -4,4 +4,7 @@ metadata:
   annotations: {}
   labels:
     name: cilium
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/warn: privileged
   name: cilium

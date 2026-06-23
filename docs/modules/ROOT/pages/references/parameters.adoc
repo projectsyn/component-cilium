@@ -39,6 +39,15 @@ The Cilium OLM is a thin wrapper around Helm, because of this the Helm values ar
 
 NOTE: The component doesn't support the opensource OLM installation anymore, since the newest available opensource OLM tarball is for Cilium 1.15.1.
 
+[TIP]
+====
+The component creates namespace `cilium`.
+For non-OpenShift distributions, the component adds https://kubernetes.io/docs/concepts/security/pod-security-admission/#pod-security-admission-labels-for-namespaces[Pod Security Admission] labels on the namespace to allow pods to use the https://kubernetes.io/docs/concepts/security/pod-security-standards/#privileged[`privileged` Pod Security Standard].
+This ensures that the component can be used to manage Cilium on clusters that enforce Pod Security Standards.
+
+On OpenShift, the `cilium` namespace is provided through the OLM install manifests with suitable labels and annotations.
+====
+
 == `release`
 
 [horizontal]
