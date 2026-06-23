@@ -1,7 +1,11 @@
 local com = import 'lib/commodore.libjsonnet';
 local kap = import 'lib/kapitan.libjsonnet';
-local prom = import 'lib/prom.libsonnet';
 local util = import 'util.libsonnet';
+
+local prom = if util.isOpenshift then
+  import 'lib/prom.libsonnet'
+else
+  import 'lib/prometheus.libsonnet';
 
 local egw_shadow_ranges = import 'egress-gateway-shadow-ranges.libsonnet';
 
@@ -272,15 +276,22 @@ local additional_alerts = prom.PrometheusRule('cilium-custom') {
   },
 };
 
-{
-  [if clustermesh_enabled && std.length(clustermesh_group.rules) > 0 then
-    '10_clustermesh_alerts']: clustermesh_alerts,
-  [if std.length(ebpf_alerts.spec.groups[0].rules) > 0 then
-    '10_ebpf_alerts']: ebpf_alerts,
-  [if std.length(pods_alerts.spec.groups[0].rules) > 0 then
-    '10_pods_alerts']: pods_alerts,
-  [if std.length(egw_shadow_ranges.config) > 0 then
-    '10_egress_gateway_alerts']: egw_alerts,
-  [if std.length(additional_group.rules) > 0 then
-    '10_custom_alerts']: additional_alerts,
-}
+if util.isOpenshift || std.member(inv.applications, 'prometheus') then
+  {
+    [if clustermesh_enabled && std.length(clustermesh_group.rules) > 0 then
+      '10_clustermesh_alerts']: clustermesh_alerts,
+    [if std.length(ebpf_alerts.spec.groups[0].rules) > 0 then
+      '10_ebpf_alerts']: ebpf_alerts,
+    [if std.length(pods_alerts.spec.groups[0].rules) > 0 then
+      '10_pods_alerts']: pods_alerts,
+    [if std.length(egw_shadow_ranges.config) > 0 then
+      '10_egress_gateway_alerts']: egw_alerts,
+    [if std.length(additional_group.rules) > 0 then
+      '10_custom_alerts']: additional_alerts,
+  }
+else
+  std.trace(
+    "Component Cilium compiled for cluster that's not OpenShift4 "
+    + "and doesn't have component-prometheus: not rendering alerting rules!",
+    {}
+  )
