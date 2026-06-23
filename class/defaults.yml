@@ -24,9 +24,6 @@ parameters:
           # when installing Cilium with OLM without patching the OLM RBAC.
           # See also https://github.com/projectsyn/component-cilium/pull/117.
           name: ${cilium:_namespace}
-      cni:
-        binPath: /var/lib/cni/bin
-        confPath: /var/run/multus/cni/net.d
       endpointRoutes:
         enabled: true
       hubble:

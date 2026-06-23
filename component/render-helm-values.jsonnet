@@ -158,6 +158,16 @@ local overrideServiceMonitor =
   else
     {};
 
+local openshiftCNIPaths = if util.isOpenshift then
+  {
+    cni+: {
+      binPath: '/var/lib/cni/bin',
+      confPath: '/var/run/multus/cni/net.d',
+    },
+  }
+else
+  {};
+
 local cilium_values = std.prune(
   rewriteLBIPAMRequireLBClass +
   envoyDefault +
@@ -167,7 +177,8 @@ local cilium_values = std.prune(
   forceBPFMasqueradeEgressGW +
   enterpriseBGPControlPlane +
   takeLastHubbleMetricPerOption +
-  overrideServiceMonitor
+  overrideServiceMonitor +
+  openshiftCNIPaths
 );
 
 local cilium_enterprise = {
