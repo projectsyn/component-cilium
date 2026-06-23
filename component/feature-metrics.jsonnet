@@ -1,5 +1,15 @@
 local kap = import 'lib/kapitan.libjsonnet';
-local prom = import 'lib/prom.libsonnet';
+local util = import 'util.libsonnet';
+
+local inv = kap.inventory();
+
+local prom = if util.isOpenshift then
+  import 'lib/prom.libsonnet'
+else
+  assert
+    std.member(inv.applications, 'prometheus')
+    : 'Cilium Enterprise feature metrics rendering requires component-prometheus!';
+  import 'lib/prometheus.libsonnet';
 
 local inv = kap.inventory();
 local params = inv.parameters.cilium;
@@ -37,6 +47,9 @@ local feature_record = prom.PrometheusRule('cilium-features') {
   },
 };
 
-{
-  [if std.length(feature_group.rules) > 0 then '10_cilium_features_metrics']: feature_record,
-}
+if params.release == 'enterprise' then
+  {
+    [if std.length(feature_group.rules) > 0 then '10_cilium_features_metrics']: feature_record,
+  }
+else
+  std.trace('Compiling component with Cilium OSS: not rendering enterprise feature metrics', {})
