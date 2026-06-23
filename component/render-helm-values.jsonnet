@@ -119,6 +119,45 @@ local envoyDefault = {
   },
 };
 
+local overrideServiceMonitor =
+  if !util.isOpenshift && !std.member(inv.applications, 'prometheus') then
+    std.trace(
+      "Compiling component for non-OpenShift cluster that doesn't have "
+      + 'component-prometheus: disabling rendering of ServiceMonitors',
+      {
+        hubble+: {
+          metrics+: {
+            serviceMonitor: {
+              enabled: false,
+            },
+          },
+        },
+        prometheus+: {
+          serviceMonitor: {
+            enabled: false,
+          },
+        },
+        operator+: {
+          prometheus+: {
+            serviceMonitor: {
+              enabled: false,
+            },
+          },
+        },
+        clustermesh+: {
+          apiserver+: {
+            metrics+: {
+              serviceMonitor: {
+                enabled: false,
+              },
+            },
+          },
+        },
+      }
+    )
+  else
+    {};
+
 local cilium_values = std.prune(
   rewriteLBIPAMRequireLBClass +
   envoyDefault +
@@ -127,7 +166,8 @@ local cilium_values = std.prune(
   renderPodCIDRList +
   forceBPFMasqueradeEgressGW +
   enterpriseBGPControlPlane +
-  takeLastHubbleMetricPerOption
+  takeLastHubbleMetricPerOption +
+  overrideServiceMonitor
 );
 
 local cilium_enterprise = {
