@@ -6,6 +6,7 @@ local inv = kap.inventory();
 local params = inv.parameters.cilium;
 
 local isOpenshift = std.member([ 'openshift4', 'oke' ], inv.parameters.facts.distribution);
+local isTalos = std.member([ 'talos' ], inv.parameters.facts.distribution);
 local openshiftHasGlobalNetworkOperatorManager =
   local openshift4_config = std.get(inv.parameters, 'openshift4_config', {});
   isOpenshift && std.get(std.get(openshift4_config, 'networkCustomization', {}), 'enabled', false);
@@ -79,6 +80,7 @@ local render_ip_pools(pools) = com.generateResources(
 
 {
   isOpenshift: isOpenshift,
+  isTalos: isTalos,
   openshiftHasGlobalNetworkOperatorManager: openshiftHasGlobalNetworkOperatorManager,
   version: version,
   manifestsVersion: manifestsVersion,

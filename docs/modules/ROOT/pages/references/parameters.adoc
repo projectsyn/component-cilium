@@ -311,6 +311,25 @@ Otherwise, the component will configure OpenShift to deploy kube-proxy.
 
 [NOTE]
 ====
+The component will inject mandatory Helm values for certain Kubernetes distributions based on the value of inventory parameter `facts.distribution`.
+Currently, the component knows distributions "OpenShift 4" (OCP or OKE) and "Talos".
+
+For OpenShift 4, the component injects the following Helm values:
+
+* `cni.binPath=/var/lib/cni/bin`
+* `cni.confPath=/var/run/multus/cni/net.d`
+
+For Talos, the component injects the following Helm values:
+
+* `ipam.mode=kubernetes`
+* `bpf.hostLegacyRouting=true` (if `bpf.masquerade=true`).
+See this https://github.com/cilium/cilium/pull/36852[GitHub PR] for details regarding this configuration.
+* `cgroup.autoMount.enabled=false` and `cgroup.hostRoot=/sys/fs/cgroup`
+* reduced Linux capability sets (removing the `SYS_MODULE` capability for some Cilium agent containers).
+====
+
+[NOTE]
+====
 The component will render custom resource API versions based on the value of Helm value `image.tag` if it's present.
 
 The component will also use that version to make other version-dependent decisions, such as whether to enable the dedicated Envoy daemonset by default.

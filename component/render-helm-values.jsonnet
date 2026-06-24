@@ -168,6 +168,62 @@ local openshiftCNIPaths = if util.isOpenshift then
 else
   {};
 
+// NOTE(sg): this applies mandatory Helm values as documented in
+// https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium#without-kube-proxy-2
+local talosMandatoryConfigs = if util.isTalos then
+  {
+    bpf+: {
+      // NOTE(sg): bpf.hostLegacyRouting is required when `bpf.masquerade` is
+      // enabled in order to make the Talos hosts' caching DNS resolver (which
+      // is exposed locally on 169.254.116.108 on each host) available from
+      // the coredns pods.  See also
+      // https://github.com/cilium/cilium/pull/36852.
+      [if super.bpf.masquerade then 'hostLegacyRouting']: true,
+    },
+    cgroup+: {
+      autoMount: {
+        enabled: false,
+      },
+      hostRoot: '/sys/fs/cgroup',
+    },
+    ipam+: {
+      // NOTE(sg): Cilium on Talos must use IPAM mode `kubernetes`. This also
+      // means that we don't configure the Pod CIDR via component-cilium.
+      // Instead, the Pod CIDR defined is defined through the Talos cluster /
+      // CAPI cluster.
+      mode: 'kubernetes',
+    },
+    // NOTE(sg): we need to remove `SYS_MODULE` capability from the Cilium
+    // containers.
+    // TODO(sg): how to ensure that we update this list with additional
+    // capabilities introduced in the upstream Chart?
+    securityContext+: {
+      capabilities+: {
+        ciliumAgent: [
+          'CHOWN',
+          'KILL',
+          'NET_ADMIN',
+          'NET_RAW',
+          'IPC_LOCK',
+          'SYS_ADMIN',
+          'SYS_RESOURCE',
+          'DAC_OVERRIDE',
+          'FOWNER',
+          'SETGID',
+          'SETUID',
+        ],
+        cleanCiliumState: [
+          'NET_ADMIN',
+          'SYS_ADMIN',
+          'SYS_RESOURCE',
+        ],
+      },
+    },
+  }
+else
+  {};
+
+
 local cilium_values = std.prune(
   rewriteLBIPAMRequireLBClass +
   envoyDefault +
@@ -178,7 +234,8 @@ local cilium_values = std.prune(
   enterpriseBGPControlPlane +
   takeLastHubbleMetricPerOption +
   overrideServiceMonitor +
-  openshiftCNIPaths
+  openshiftCNIPaths +
+  talosMandatoryConfigs
 );
 
 local cilium_enterprise = {
