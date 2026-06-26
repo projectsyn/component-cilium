@@ -27,7 +27,7 @@ parameters:
 
     cilium_helm_values:
       image:
-        tag: v1.17.9-cee.1
+        tag: v1.18.11-cee.1
 
     bgp:
       enabled: true

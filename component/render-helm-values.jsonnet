@@ -223,10 +223,28 @@ local talosMandatoryConfigs = if util.isTalos then
 else
   {};
 
+local rewriteLocalRedirectPolicy =
+  if
+    util.version.minor >= 18
+    && std.objectHas(params.cilium_helm_values, 'localRedirectPolicy')
+  then
+    std.trace(
+      'Rewriting deprecated Helm value `localRedirectPolicy` to `localRedirectPolicies.enabled`',
+      {
+        localRedirectPolicies: {
+          enabled: params.cilium_helm_values.localRedirectPolicy,
+        },
+        localRedirectPolicy:: params.cilium_helm_values.localRedirectPolicy,
+      }
+    )
+  else
+    {};
+
 
 local cilium_values = std.prune(
   rewriteLBIPAMRequireLBClass +
   envoyDefault +
+  rewriteLocalRedirectPolicy +
   com.makeMergeable(params.cilium_helm_values) +
   replaceDeprecatedIPv4PodCIDR +
   renderPodCIDRList +
