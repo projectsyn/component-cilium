@@ -44,6 +44,7 @@ jobs:
           - lib-ipcalc
           - olm-enterprise
           - transparent-encryption
+          - talos
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
@@ -70,6 +71,7 @@ jobs:
           - lib-ipcalc
           - olm-enterprise
           - transparent-encryption
+          - talos
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
