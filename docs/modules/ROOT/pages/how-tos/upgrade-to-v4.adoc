@@ -1,0 +1,116 @@
+= Upgrade component-cilium to v4
+
+== Notable changes
+
+=== Breaking changes
+
+* The Helm value `ipam.operator.clusterPoolIPv4PodCIDRList` is changed to `[10.0.0.0/8]` in the component defaults to match the Helm chart default value
+* The Helm value `ipam.operator.clusterPoolIPv4MaskSize` is changed to `24` in the component defaults to match the Helm chart default value
+* The Helm value `endpointRoutes.enabled` is changed to `false` in the component defaults to match the Helm chart default value
+
+[NOTE]
+====
+We keep explicit defaults for these Helm values.
+This ensures that any potential changes in the Helm chart defaults don't impact existing clusters; in particular potential changes to the Pod CIDR values.
+====
+
+=== Other changes
+
+* OpenShift-specific values for Helm values `cni.binPath` and `cni.confPath` have been moved from component defaults to an OpenShift-specific Helm values overlay applied by the component.
+
+== Preserving the old defaults globally for a Project Syn environment
+
+=== Prerequisites
+
+* Access to your Project Syn environment's global defaults repository
+* Knowledge of how to upgrade a component globally in your environment
+* Knowledge of how to trigger catalog compilations / rollouts globally in your environment
+
+=== Steps
+
+. Add the following configuration in a suitable file in your Project Syn global defaults repository
++
+[source,yaml]
+----
+parameters:
+  cilium:
+    cilium_helm_values:
+      endpointRoutes:
+        enabled: true
+      ipam: <1>
+        operator:
+          clusterPoolIPv4MaskSize: 23
+          ~clusterPoolIPv4PodCIDRList: <2>
+            - 10.128.0.0/14
+----
+<1> We strongly recommend ensuring that you don't modify the `ipam.operator` configurations for existing clusters.
+If you do change these configurations, you'll most likely have to delete all existing pods to restore connectivity.
+<2> We use `~clusterPoolIPv4PodCIDRList` to override the parameter so that the list entry that's added in the component defaults is dropped.
++
+[TIP]
+====
+If you add this configuration in a low priority class in your global defaults, you can omit any sections that you're customizing already in a higher priority class.
+====
+
+. Commit and push the changes in the global defaults repository
+
+. Update the component through your usual mechanisms.
+
+. Trigger cluster compilations through your usual mechanisms.
+
+== Preserving the old defaults for an individual cluster or tenant
+
+=== Prerequisites
+
+* Push access to the cluster's tenant repository
+* Working Commodore installation
+
+=== Steps
+
+. Compile the cluster catalog for the cluster that you want to update
++
+[source,bash]
+----
+CLUSTER_ID=<c-the-cluster-1234> <1>
+----
+<1> Adjust with the cluster's ID
++
+[source,bash]
+----
+commodore catalog compile $CLUSTER_ID
+----
+
+. Update the cluster's or tenant's configuration with the old defaults and update the component
++
+[source,yaml]
+----
+parameters:
+  components:
+    cilium:
+      version: v4.0.0 <1>
+  cilium:
+    cilium_helm_values:
+      endpointRoutes:
+        enabled: true
+      ipam: <2>
+        operator:
+          clusterPoolIPv4MaskSize: 23
+          ~clusterPoolIPv4PodCIDRList: <3>
+            - 10.128.0.0/14
+----
+<1> Check the component's https://github.com/projectsyn/component-cilium/releases[GitHub releases] for the latest v4 version.
+We always recommend updating to recent patch versions of components.
+<2> We strongly recommend ensuring that you don't modify the `ipam.operator` configurations for existing clusters.
+If you do change these configurations, you'll most likely have to delete all existing pods to restore connectivity.
+<3> We use `~clusterPoolIPv4PodCIDRList` to override the parameter so that the list entry that's added in the component defaults is dropped.
++
+IMPORTANT: Omit any fields that you're configuring already through your Project Syn hierarchy.
+
+. Commit and push the changes in the tenant repository
+
+. Compile the cluster and verify that there's no unwanted changes in the resulting diff
++
+[source,bash]
+----
+commodore catalog compile $CLUSTER_ID --push --interactive
+----

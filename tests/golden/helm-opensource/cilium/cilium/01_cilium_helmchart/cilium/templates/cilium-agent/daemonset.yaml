@@ -224,7 +224,7 @@ spec:
             - name: CGROUP_ROOT
               value: /run/cilium/cgroupv2
             - name: BIN_PATH
-              value: /var/lib/cni/bin
+              value: /opt/cni/bin
           image: quay.io/cilium/cilium:v1.17.17@sha256:fcda42ceafa241f6745e3a619a6a923b449262fae33fdb76a4a797c9e9266116
           imagePullPolicy: IfNotPresent
           name: mount-cgroup
@@ -254,7 +254,7 @@ spec:
               rm /hostbin/cilium-sysctlfix
           env:
             - name: BIN_PATH
-              value: /var/lib/cni/bin
+              value: /opt/cni/bin
           image: quay.io/cilium/cilium:v1.17.17@sha256:fcda42ceafa241f6745e3a619a6a923b449262fae33fdb76a4a797c9e9266116
           imagePullPolicy: IfNotPresent
           name: apply-sysctl-overwrites
@@ -391,11 +391,11 @@ spec:
             type: DirectoryOrCreate
           name: cilium-cgroup
         - hostPath:
-            path: /var/lib/cni/bin
+            path: /opt/cni/bin
             type: DirectoryOrCreate
           name: cni-path
         - hostPath:
-            path: /var/run/multus/cni/net.d
+            path: /etc/cni/net.d
             type: DirectoryOrCreate
           name: etc-cni-netd
         - hostPath:

@@ -15,16 +15,13 @@ spec:
       metrics:
         serviceMonitor:
           enabled: false
-  cni:
-    binPath: /var/lib/cni/bin
-    confPath: /var/run/multus/cni/net.d
   egressGateway:
     enabled: false
   encryption:
     enabled: true
     type: wireguard
   endpointRoutes:
-    enabled: true
+    enabled: false
   envoy:
     enabled: false
   hubble:
@@ -42,9 +39,9 @@ spec:
   ipam:
     mode: cluster-pool
     operator:
-      clusterPoolIPv4MaskSize: 23
+      clusterPoolIPv4MaskSize: 24
       clusterPoolIPv4PodCIDRList:
-        - 10.128.0.0/14
+        - 10.0.0.0/8
   k8sClientRateLimit:
     burst: 30
     qps: 15

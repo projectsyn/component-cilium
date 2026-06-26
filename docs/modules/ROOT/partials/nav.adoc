@@ -5,6 +5,7 @@
 
 * xref:how-tos/upgrade-cilium-enterprise.adoc[Upgrade Cilium Enterprise]
 * xref:how-tos/migrate-to-self-service-namespace-egress-ips.adoc[Migrate to self service for namespace egress IPs]
+* xref:how-tos/upgrade-to-v4.adoc[]
 * OpenShift 4
 ** xref:how-tos/openshift4/upgrade-cilium-oss-to-cilium-enterprise.adoc[Upgrade Cilium OSS to Cilium Enterprise]
 
