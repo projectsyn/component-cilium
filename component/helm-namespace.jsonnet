@@ -7,7 +7,7 @@ local inv = kap.inventory();
 // The hiera parameters for the component
 local params = inv.parameters.cilium;
 
-local additionalOpenshiftMeta =
+local additionalMeta =
   if util.isOpenshift then
     {
       labels+: {
@@ -20,11 +20,17 @@ local additionalOpenshiftMeta =
       },
     }
   else
-    {};
+    {
+      labels+: {
+        'pod-security.kubernetes.io/audit': 'privileged',
+        'pod-security.kubernetes.io/enforce': 'privileged',
+        'pod-security.kubernetes.io/warn': 'privileged',
+      },
+    };
 
 // Define outputs below
 {
   '00_cilium_namespace': kube.Namespace(params._namespace) {
-    metadata+: additionalOpenshiftMeta,
+    metadata+: additionalMeta,
   },
 }
