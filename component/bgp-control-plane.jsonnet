@@ -14,8 +14,12 @@ local apiVersion = if params.bgp.enterprise then (
   else
     'isovalent.com/v1alpha1'
 )
-else
-  'cilium.io/v2alpha1';
+else (
+  if util.version.minor >= 18 then
+    'cilium.io/v2'
+  else
+    'cilium.io/v2alpha1'
+);
 
 local CiliumBGPClusterConfig(name) =
   kube._Object(apiVersion, '%sBGPClusterConfig' % crd_prefix, name) {
