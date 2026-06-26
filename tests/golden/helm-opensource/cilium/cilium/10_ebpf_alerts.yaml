@@ -3,6 +3,7 @@ kind: PrometheusRule
 metadata:
   annotations: {}
   labels:
+    monitoring.syn.tools/enabled: 'true'
     name: cilium-ebpf
   name: cilium-ebpf
 spec:

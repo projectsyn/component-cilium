@@ -21,3 +21,5 @@ spec:
           for: 5m
           labels:
             severity: critical
+            syn: 'true'
+            syn_component: cilium

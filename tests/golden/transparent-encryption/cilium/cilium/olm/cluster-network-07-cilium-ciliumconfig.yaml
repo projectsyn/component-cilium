@@ -14,7 +14,7 @@ spec:
     apiserver:
       metrics:
         serviceMonitor:
-          enabled: true
+          enabled: false
   cni:
     binPath: /var/lib/cni/bin
     confPath: /var/run/multus/cni/net.d
@@ -34,7 +34,7 @@ spec:
         - drop:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
         - httpV2:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
       serviceMonitor:
-        enabled: true
+        enabled: false
     relay:
       enabled: true
     tls:
@@ -56,7 +56,7 @@ spec:
     prometheus:
       enabled: false
       serviceMonitor:
-        enabled: true
+        enabled: false
     resources:
       limits:
         memory: 500Mi
@@ -66,4 +66,4 @@ spec:
   prometheus:
     enabled: true
     serviceMonitor:
-      enabled: true
+      enabled: false
