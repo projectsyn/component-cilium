@@ -142,10 +142,10 @@ parameters:
     charts:
       cilium:
         source: https://helm.cilium.io
-        version: "1.17.17"
+        version: "1.18.11"
       cilium-enterprise:
         source: "<CILIUM-ENTERPRISE-CHART-REPO-URL>" # Configure the Chart repository URL in your global defaults
-        version: "1.17.9"
+        version: "1.18.11"
 
     images:
       oc:

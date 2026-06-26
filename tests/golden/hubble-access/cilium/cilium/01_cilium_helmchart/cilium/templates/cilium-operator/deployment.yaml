@@ -59,7 +59,7 @@ spec:
                   key: debug
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/operator-generic:v1.17.17@sha256:062146cfdedd27e09281741bc8b79bf3c269851382e7dc2bbd937639843fd53c
+          image: quay.io/cilium/operator-generic:v1.18.11@sha256:00d6032de7b3e6ff8a1a990d29beaef5f9d01e40e87dc49b6c9b6c1fe080a327
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -87,6 +87,11 @@ spec:
             requests:
               cpu: 100m
               memory: 300Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
             - mountPath: /tmp/cilium/config-map
@@ -97,9 +102,21 @@ spec:
         kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       restartPolicy: Always
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: cilium-operator
       tolerations:
-        - operator: Exists
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+        - key: node.kubernetes.io/not-ready
+          operator: Exists
+        - key: node.cloudprovider.kubernetes.io/uninitialized
+          operator: Exists
+        - key: node.cilium.io/agent-not-ready
+          operator: Exists
       volumes:
         - configMap:
             name: cilium-config
