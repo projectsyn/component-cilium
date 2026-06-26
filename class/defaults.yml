@@ -2,7 +2,9 @@ parameters:
   cilium:
     =_metadata:
       multi_tenant: true
-    =_namespace: cilium
+    _namespace: cilium
+    _want_nonstandard_namespace: false
+
     release_name: cilium
 
     # Used when rendering the Helm chart

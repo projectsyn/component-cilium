@@ -28,9 +28,19 @@ local additionalMeta =
       },
     };
 
-// Define outputs below
-{
-  '00_cilium_namespace': kube.Namespace(params._namespace) {
-    metadata+: additionalMeta,
-  },
-}
+assert
+  params._namespace != 'cilium' == params._want_nonstandard_namespace
+  : 'If you want to deploy Cilium to a namespace other than `cilium`, '
+    + 'you must set component parameter `_want_nonstandard_namespace` to `true`!';
+
+if params._namespace == 'kube-system' then
+  std.trace(
+    'User requested deploying Cilium to `kube-system`, not generating namespace manifest',
+    {}
+  )
+else
+  {
+    '00_cilium_namespace': kube.Namespace(params._namespace) {
+      metadata+: additionalMeta,
+    },
+  }

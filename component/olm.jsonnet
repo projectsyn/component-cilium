@@ -401,6 +401,10 @@ local ujhook =
   params.olm.upgrade_strategy.upgrade_job_hook
   && ip_approval == 'Manual';
 
+assert
+  params._namespace == 'cilium'
+  : 'The component only supports namespace `cilium` for install method OLM!';
+
 std.foldl(
   function(files, file) files { [std.strReplace(file.filename, '.yaml', '')]: file.contents },
   std.filter(
