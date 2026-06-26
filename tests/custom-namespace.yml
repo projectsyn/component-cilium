@@ -1,0 +1,4 @@
+parameters:
+  cilium:
+    _want_nonstandard_namespace: true
+    _namespace: kube-system
