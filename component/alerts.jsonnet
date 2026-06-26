@@ -161,7 +161,7 @@ local pods_group = {
     {
       local this = self,
       alert: 'CiliumAgentUnexpectedCount',
-      expr: 'count(kube_pod_labels{namespace="cilium", label_app_kubernetes_io_name="cilium-agent"}) != count(kube_node_info)',
+      expr: 'count(kube_pod_labels{namespace="%s", label_app_kubernetes_io_name="cilium-agent"}) != count(kube_node_info)' % params._namespace,
       'for': '5m',
       labels: {
         severity: 'critical',
