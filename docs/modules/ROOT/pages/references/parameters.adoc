@@ -12,7 +12,19 @@ See component version v2.x for older Cilium versions.
 The parent key for all of the following parameters is `cilium`.
 
 [NOTE]
-The namespace is `cilium` and currently non configurable.
+====
+The component uses namespace `cilium` by default.
+
+We don't recommend changing the parameter, but if you really need to adjust the namespace for some reason, it's possible with the following configuration for `install_method=helm`:
+
+[source,yaml]
+----
+_want_nonstandard_namespace: true
+_namespace: <desired namespace>
+----
+
+If you configure the namespace to `kube-system` through this mechanism, please note that the component won't generate a manifest for the namespace.
+====
 
 == `install_method`
 
