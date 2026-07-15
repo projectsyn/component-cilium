@@ -87,7 +87,7 @@ spec:
               env:
                 - name: CILIUM_NAMESPACE
                   value: cilium
-              image: quay.io/appuio/oc:v4.21@sha256:fbeb7f8a59bec803ede015f15fc725ee74f4b989c9ceeb652d5b3dd84aa68510
+              image: quay.io/appuio/oc:v4.21@sha256:03b030e034568b946e448e824514f0b594f5cddd8abe898672fb24ef495222c9
               imagePullPolicy: IfNotPresent
               name: approve
               ports: []
