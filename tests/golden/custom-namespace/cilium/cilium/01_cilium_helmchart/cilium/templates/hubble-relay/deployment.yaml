@@ -37,7 +37,7 @@ spec:
             - serve
           command:
             - hubble-relay
-          image: quay.io/cilium/hubble-relay:v1.18.11@sha256:6ec25d68c8cc0bf9c5d2f321149016eaa7d4a371475805b0b7fb61bcebad972c
+          image: quay.io/cilium/hubble-relay:v1.18.12@sha256:308b186791faf8a8a9322ce64d2e12f66fa82a3f4659e7a79b31829b6195df61
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 12
