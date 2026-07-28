@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations: {}
+  labels:
+    name: cilium-egress-gateway
+  name: cilium-egress-gateway
+spec:
+  groups:
+    - name: cilium-egress-gateway.rules
+      rules:
+        - alert: CiliumShadowRangeNodeMissing
+          annotations:
+            description: |
+              The cluster should have 3 nodes which host a shadow egress
+              IP range, but had {{ $value }} for the last 5m. Most likely
+              one or more nodes were replaced but the shadow range was not
+              updated.
+
+              The shadow range configmap currently has nodes infra-8344, infra-87c9, infra-eba2.
+            message: A node which hosts a shadow egress IP range is missing
+            runbook_url: https://hub.syn.tools/cilium/CiliumShadowRangeNodeMissing.html
+          expr: sum (kube_node_info{node=~"infra-8344|infra-87c9|infra-eba2"}) !=
+            3
+          for: 5m
+          labels:
+            severity: critical
