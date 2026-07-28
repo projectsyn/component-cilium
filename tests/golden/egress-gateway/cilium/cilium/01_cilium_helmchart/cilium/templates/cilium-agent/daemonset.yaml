@@ -19,8 +19,6 @@ spec:
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         container.apparmor.security.beta.kubernetes.io/mount-cgroup: unconfined
         kubectl.kubernetes.io/default-container: cilium-agent
-        prometheus.io/port: '9962'
-        prometheus.io/scrape: 'true'
       labels:
         app.kubernetes.io/name: cilium-agent
         app.kubernetes.io/part-of: cilium
