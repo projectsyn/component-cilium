@@ -4,6 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/name: hubble-relay
     app.kubernetes.io/part-of: cilium
+    helm.sh/chart: cilium-1.20.1
     k8s-app: hubble-relay
   name: hubble-relay
   namespace: cilium
@@ -22,6 +23,7 @@ spec:
       labels:
         app.kubernetes.io/name: hubble-relay
         app.kubernetes.io/part-of: cilium
+        helm.sh/chart: cilium-1.20.1
         k8s-app: hubble-relay
     spec:
       affinity:
@@ -37,7 +39,7 @@ spec:
             - serve
           command:
             - hubble-relay
-          image: quay.io/cilium/hubble-relay:v1.18.13@sha256:039c374b59cf4be4ecee1b3e1ec11316180a82c1eb33a55b4ee00a0da4999ad3
+          image: quay.io/cilium/hubble-relay:v1.20.1@sha256:59be0ae7d475ab9011a5e954618c0f27b5778b17140381425b308b55ba4917f4
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 12
@@ -59,6 +61,7 @@ spec:
             capabilities:
               drop:
                 - ALL
+            readOnlyRootFilesystem: true
             runAsGroup: 65532
             runAsNonRoot: true
             runAsUser: 65532
@@ -72,6 +75,8 @@ spec:
             periodSeconds: 3
           terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
             - mountPath: /etc/hubble-relay
               name: config
               readOnly: true
@@ -86,6 +91,8 @@ spec:
       serviceAccountName: hubble-relay
       terminationGracePeriodSeconds: 1
       volumes:
+        - emptyDir: {}
+          name: tmp-volume
         - configMap:
             items:
               - key: config.yaml

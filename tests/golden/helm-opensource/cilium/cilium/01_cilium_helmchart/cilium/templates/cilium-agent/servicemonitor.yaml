@@ -4,6 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/name: cilium-agent
     app.kubernetes.io/part-of: cilium
+    helm.sh/chart: cilium-1.20.1
   name: cilium-agent
   namespace: cilium
 spec:
