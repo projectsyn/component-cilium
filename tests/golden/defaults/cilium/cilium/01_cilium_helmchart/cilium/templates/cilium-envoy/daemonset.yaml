@@ -63,7 +63,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.namespace
-          image: quay.io/cilium/cilium-envoy:v1.36.9-1782267392-edeb3f2af56c37c407efa1f63f0b32f595399bbc@sha256:767101fb8a5e38f055778cb43b7aa8eed80450b37f8121effac3d9de9e06dc99
+          image: quay.io/cilium/cilium-envoy:v1.36.9-1786864149-07e8503ff34b9190d7bbe4e57d4e185c4ef8b1de@sha256:beccdf3c119f299cf696885188584bbd0531d74bca08096113207999aff95e87
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 10
