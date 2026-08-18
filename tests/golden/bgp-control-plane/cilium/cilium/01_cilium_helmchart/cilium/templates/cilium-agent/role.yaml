@@ -3,6 +3,7 @@ kind: Role
 metadata:
   labels:
     app.kubernetes.io/part-of: cilium
+    helm.sh/chart: cilium-1.20.1
   name: cilium-config-agent
   namespace: cilium
 rules:
@@ -20,6 +21,7 @@ kind: Role
 metadata:
   labels:
     app.kubernetes.io/part-of: cilium
+    helm.sh/chart: cilium-1.20.1
   name: cilium-bgp-control-plane-secrets
   namespace: cilium
 rules:
@@ -37,6 +39,7 @@ kind: Role
 metadata:
   labels:
     app.kubernetes.io/part-of: cilium
+    helm.sh/chart: cilium-1.20.1
   name: cilium-tlsinterception-secrets
   namespace: cilium-secrets
 rules:
