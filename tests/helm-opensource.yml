@@ -5,8 +5,18 @@ parameters:
   kapitan:
     dependencies:
       - type: https
-        source: https://raw.githubusercontent.com/projectsyn/component-prometheus/refs/heads/master/lib/prometheus.libsonnet
+        source: https://raw.githubusercontent.com/projectsyn/component-prometheus/master/lib/prometheus-alert-patching.libsonnet
+        output_path: vendor/lib/alert-patching.libsonnet
+      - type: https
+        source: https://raw.githubusercontent.com/projectsyn/component-prometheus/master/lib/prometheus-prom.libsonnet
+        output_path: vendor/lib/prom.libsonnet
+      - type: https
+        source: https://raw.githubusercontent.com/projectsyn/component-prometheus/master/lib/prometheus.libsonnet
         output_path: vendor/lib/prometheus.libsonnet
+
+  prometheus:
+    alerts:
+      ignoreNames: []
 
   cilium:
     install_method: helm

@@ -1,8 +1,8 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  annotations: {}
   labels:
+    monitoring.syn.tools/enabled: 'true'
     name: cilium-egress-gateway
   name: cilium-egress-gateway
 spec:
@@ -25,3 +25,5 @@ spec:
           for: 5m
           labels:
             severity: critical
+            syn: 'true'
+            syn_component: cilium
