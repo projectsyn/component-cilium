@@ -21,6 +21,8 @@ spec:
           for: 10m
           labels:
             severity: warning
+            syn: 'true'
+            syn_component: cilium
         - alert: CiliumBpfMapUtilizationExtremelyHigh
           annotations:
             description: |
@@ -32,6 +34,8 @@ spec:
           for: 10m
           labels:
             severity: critical
+            syn: 'true'
+            syn_component: cilium
         - alert: CiliumBpfOperationErrorRateHigh
           annotations:
             description: |
@@ -44,3 +48,5 @@ spec:
           for: 10m
           labels:
             severity: critical
+            syn: 'true'
+            syn_component: cilium
