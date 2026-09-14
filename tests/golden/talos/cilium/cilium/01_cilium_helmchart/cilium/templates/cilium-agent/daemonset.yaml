@@ -194,6 +194,9 @@ spec:
               readOnly: true
             - mountPath: /run/xtables.lock
               name: xtables-lock
+            - mountPath: /var/lib/cilium/tls/hubble
+              name: hubble-tls
+              readOnly: true
             - mountPath: /tmp
               name: tmp
       hostNetwork: true
@@ -417,6 +420,20 @@ spec:
             path: /proc/sys/kernel
             type: Directory
           name: host-proc-sys-kernel
+        - name: hubble-tls
+          projected:
+            defaultMode: 256
+            sources:
+              - secret:
+                  items:
+                    - key: tls.crt
+                      path: server.crt
+                    - key: tls.key
+                      path: server.key
+                    - key: ca.crt
+                      path: client-ca.crt
+                  name: hubble-server-certs
+                  optional: true
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 2

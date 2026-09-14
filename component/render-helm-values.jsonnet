@@ -240,6 +240,30 @@ local rewriteLocalRedirectPolicy =
   else
     {};
 
+local cmHubbleTLS =
+  if params.deploy_cert_manager_ca then
+    {
+      hubble+: {
+        tls+: {
+          enabled: true,
+          auto+: {
+            enabled: true,
+            method: 'certmanager',
+            // NOTE(sg): We keep this lower than CA renewal window (120d), to
+            // ensure that the Hubble certs get renewed at least once after
+            // the CA has been renewed and before the old CA cert expires.
+            certValidityDuration: 90,
+            certManagerIssuerRef: {
+              group: 'cert-manager.io',
+              kind: 'Issuer',
+              name: 'cilium-ca',
+            },
+          },
+        },
+      },
+    }
+  else
+    {};
 
 local cilium_values = std.prune(
   rewriteLBIPAMRequireLBClass +
@@ -253,7 +277,8 @@ local cilium_values = std.prune(
   takeLastHubbleMetricPerOption +
   overrideServiceMonitor +
   openshiftCNIPaths +
-  talosMandatoryConfigs
+  talosMandatoryConfigs +
+  cmHubbleTLS
 );
 
 local cilium_enterprise = {
