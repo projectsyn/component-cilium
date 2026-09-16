@@ -11,7 +11,7 @@ spec:
   internalTrafficPolicy: Local
   ports:
     - name: peer-service
-      port: 80
+      port: 443
       protocol: TCP
       targetPort: 4244
   selector:
