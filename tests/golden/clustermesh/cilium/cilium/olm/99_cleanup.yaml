@@ -75,7 +75,7 @@ spec:
           env:
             - name: HOME
               value: /home
-          image: quay.io/appuio/oc:v4.21@sha256:a469482c400ff65c21f70e0bc33a03cecec3d91ba3d310bbf8c5d74b3e600e88
+          image: quay.io/appuio/oc:v4.21@sha256:94d6a992c85586942b6e135a921e3911c5e2611ab10be6fa31268dab89c895f8
           imagePullPolicy: IfNotPresent
           name: cleanup-old-clusterserviceversions
           ports: []
