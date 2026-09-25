@@ -4,6 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/name: cilium-operator
     app.kubernetes.io/part-of: cilium
+    helm.sh/chart: cilium-1.20.2
     io.cilium/app: operator
     name: cilium-operator
   name: cilium-operator
@@ -25,6 +26,7 @@ spec:
       labels:
         app.kubernetes.io/name: cilium-operator
         app.kubernetes.io/part-of: cilium
+        helm.sh/chart: cilium-1.20.2
         io.cilium/app: operator
         name: cilium-operator
     spec:
@@ -59,24 +61,28 @@ spec:
                   key: debug
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/operator-generic:v1.18.14@sha256:6a77082c3938edad0433f53c46a90b8da08c9e4a9a255e51a1c2ff410db60104
+          image: quay.io/cilium/operator-generic:v1.20.2@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
               host: 127.0.0.1
               path: /healthz
-              port: 9234
+              port: health
               scheme: HTTP
             initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 3
           name: cilium-operator
+          ports:
+            - containerPort: 9234
+              hostPort: 9234
+              name: health
           readinessProbe:
             failureThreshold: 5
             httpGet:
               host: 127.0.0.1
               path: /healthz
-              port: 9234
+              port: health
               scheme: HTTP
             initialDelaySeconds: 0
             periodSeconds: 5
