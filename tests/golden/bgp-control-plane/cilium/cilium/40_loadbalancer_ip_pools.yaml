@@ -1,4 +1,4 @@
-apiVersion: cilium.io/v2alpha1
+apiVersion: cilium.io/v2
 kind: CiliumLoadBalancerIPPool
 metadata:
   annotations:
@@ -15,7 +15,7 @@ spec:
     matchLabels:
       syn.tools/load-balancer-class: cilium
 ---
-apiVersion: cilium.io/v2alpha1
+apiVersion: cilium.io/v2
 kind: CiliumLoadBalancerIPPool
 metadata:
   annotations:

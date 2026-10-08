@@ -393,6 +393,16 @@ local patchManifests = function(file)
         },
       },
     }
+  else if (
+    util.manifestsVersion.minor >= 19 &&
+    file.contents.kind == 'ServiceAccount' &&
+    file.contents.metadata.name == 'clife-controller-manager'
+  ) then
+    std.prune(file {
+      contents+: {
+        imagePullSecrets: null,
+      },
+    })
   else
     file;
 
