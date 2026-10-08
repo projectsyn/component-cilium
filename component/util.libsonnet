@@ -55,7 +55,8 @@ local version =
 // CiliumLoadBalancerIPPool
 
 local CiliumLoadBalancerIPPool(name) =
-  kube._Object('cilium.io/v2alpha1', 'CiliumLoadBalancerIPPool', name) {
+  local apiVersion = if version.minor >= 18 then 'v2' else 'v2alpha1';
+  kube._Object('cilium.io/%s' % apiVersion, 'CiliumLoadBalancerIPPool', name) {
     metadata+: {
       annotations+: {
         'argocd.argoproj.io/sync-options': 'SkipDryRunOnMissingResource=true',
