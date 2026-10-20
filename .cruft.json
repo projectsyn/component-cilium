@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/projectsyn/commodore-component-template.git",
-  "commit": "09e48126cbaac4b52080c9827483a0a9d4d7040f",
+  "commit": "e181d48cf389cc0db56825e47044d881c8e91e4d",
   "checkout": "main",
   "context": {
     "cookiecutter": {
@@ -25,7 +25,7 @@
       "github_name": "component-cilium",
       "github_url": "https://github.com/projectsyn/component-cilium",
       "_template": "https://github.com/projectsyn/commodore-component-template.git",
-      "_commit": "09e48126cbaac4b52080c9827483a0a9d4d7040f"
+      "_commit": "e181d48cf389cc0db56825e47044d881c8e91e4d"
     }
   },
   "directory": null
