@@ -4,6 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/name: cilium-operator
     app.kubernetes.io/part-of: cilium
+    helm.sh/chart: cilium-1.20.3
     io.cilium/app: operator
     name: cilium-operator
   name: cilium-operator
@@ -25,6 +26,7 @@ spec:
       labels:
         app.kubernetes.io/name: cilium-operator
         app.kubernetes.io/part-of: cilium
+        helm.sh/chart: cilium-1.20.3
         io.cilium/app: operator
         name: cilium-operator
     spec:
@@ -59,7 +61,7 @@ spec:
                   key: debug
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/operator-generic:v1.19.9@sha256:a234406be11ad1bb1d41b111fba2cfe81a099b6c26b2634af95f42f295d35655
+          image: quay.io/cilium/operator-generic:v1.20.3@sha256:efdd8d89d6d8f63d21a065fa2f9e17614a2b3ac9371b221af9355f63829e2dbc
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
