@@ -1,3 +1,6 @@
+applications:
+  - espejote
+
 parameters:
   facts:
     distribution: openshift4

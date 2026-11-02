@@ -120,6 +120,15 @@ parameters:
 
     deploy_cert_manager_ca: false
 
+    enterprise:
+      registry:
+        hostname: containers.isovalent.com
+        credentials:
+          # options: "static", "direct-eso", "projectsyn"
+          type: static
+          username: ?{vaultkv:${cluster:tenant}/${cluster:name}/isovalent/username}
+          access_token: ?{vaultkv:${cluster:tenant}/${cluster:name}/isovalent/access_token}
+
     olm:
       source:
         opensource: https://github.com/isovalent/olm-for-cilium/archive/main.tar.gz
