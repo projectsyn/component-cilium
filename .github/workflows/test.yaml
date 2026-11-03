@@ -45,6 +45,7 @@ jobs:
           - transparent-encryption
           - talos
           - custom-namespace
+          - projectsyn-registry-credentials
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
@@ -73,6 +74,7 @@ jobs:
           - transparent-encryption
           - talos
           - custom-namespace
+          - projectsyn-registry-credentials
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
