@@ -1,0 +1,27 @@
+apiVersion: config.openshift.io/v1
+kind: ImageTagMirrorSet
+metadata:
+  annotations: {}
+  labels:
+    name: containers-isovalent-com
+  name: containers-isovalent-com
+spec:
+  imageTagMirrors:
+    - mirrorSourcePolicy: NeverContactSource
+      mirrors:
+        - icr-mirror.example.com
+      source: containers.isovalent.com
+---
+apiVersion: config.openshift.io/v1
+kind: ImageDigestMirrorSet
+metadata:
+  annotations: {}
+  labels:
+    name: containers-isovalent-com
+  name: containers-isovalent-com
+spec:
+  imageDigestMirrors:
+    - mirrorSourcePolicy: NeverContactSource
+      mirrors:
+        - icr-mirror.example.com
+      source: containers.isovalent.com

@@ -380,7 +380,43 @@ local ocp_credentials_manifests = {
   },
 };
 
+local registry_mirror =
+  if params.enterprise.registry.hostname != 'containers.isovalent.com' then
+    {
+      isovalent_registry_mirror_config: [
+        kube._Object(
+          'config.openshift.io/v1',
+          'ImageTagMirrorSet',
+          'containers-isovalent-com'
+        ) {
+          spec: {
+            imageTagMirrors: [ {
+              mirrorSourcePolicy: 'NeverContactSource',
+              mirrors: [ params.enterprise.registry.hostname ],
+              source: 'containers.isovalent.com',
+            } ],
+          },
+        },
+        kube._Object(
+          'config.openshift.io/v1',
+          'ImageDigestMirrorSet',
+          'containers-isovalent-com'
+        ) {
+          spec: {
+            imageDigestMirrors: [ {
+              mirrorSourcePolicy: 'NeverContactSource',
+              mirrors: [ params.enterprise.registry.hostname ],
+              source: 'containers.isovalent.com',
+            } ],
+          },
+        },
+      ],
+    }
+  else
+    {};
+
 if !util.isOpenshift then
   error 'Isovalent credentials management NYI for non-OpenShift'
 else
   ocp_credentials_manifests[credentials_type]
+  + registry_mirror
