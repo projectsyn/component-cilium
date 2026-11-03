@@ -1296,6 +1296,80 @@ The CA certificate is configured with a lifetime of 2 years.
 
 When the parameter is set to `true`, the component also deploys cert-manager resources to issue mTLS certificates for Hubble Relay and configures Hubble to use mTLS for connections between Hubble Relay and the Cilium agents.
 
+== `enterprise`
+
+[horizontal]
+type:: object
+
+This parameter holds configurations that are only applicable when the component is configured with `release: enterprise`.
+
+=== `registry`
+
+[horizontal]
+type:: object
+default::
++
+[source,yaml]
+----
+hostname: containers.isovalent.com
+credentials:
+  type: static
+  username: ?{vaultkv:${cluster:tenant}/${cluster:name}/isovalent/username}
+  access_token: ?{vaultkv:${cluster:tenant}/${cluster:name}/isovalent/access_token}
+----
+
+[IMPORTANT]
+====
+Currently, the component only supports configuring credentials on OpenShift.
+====
+
+[NOTE]
+====
+Currently, the component doesn't modify the Cilium manifests themselves to use the provided registry hostname.
+====
+
+This parameter enables users to configure credentials for `containers.isovalent.com`.
+Container images for Isovalent Networking for Kubernetes (previously "Cilium Enterprise") v1.19 and newer are only available from `containers.isovalent.com`.
+Pulling images from `containers.isovalent.com` requires credentials.
+
+The component supports multiple different credentials types (configured in field `credentials.type`):
+
+static::
+The `static` credential type uses credentials stored in Vault.
+This credentials type is suitable for deployments which use a registry mirror that's configured with arbitrary static credentials.
+For this credentials type, the component deploys an Espejote `ManagedResource` which renders the provided credentials into a `dockerconfigjson`.
+
+direct-eso::
+The `direct-eso` credential type uses https://hub.syn.tools/external-secrets-operator[External Secrets Operator] to manage the short-lived access tokens for `containers.isovalent.com`.
+This credentials type is only supported when field `hostname` is set to `containers.isovalent.com`.
+The component configures an ESO webhook generator which queries the registry.isovalent.com API for new access tokens, and an `ExternalSecret` resource which uses the generator to refresh and render the pull secret.
++
+The `ExternalSecret` is configured to refresh the registry access token every 30 days (`720h`).
+Currently, the refresh interval is hard-coded in the component.
++
+The ESO webhook generator is currently hard-coded to make a `POST` request to `https://registry.isovalent.com/access/api/v1/tokens` with the current access token.
+This configuration should be suitable as long as the Isovalent registry is backed by JFrog Artifactory.
+
+projectsyn::
+The `projectsyn` credential type configures the pull secret with the provided registry hostname and username and sets the password to the SHA-256 hexdigest of the cluster's Steward token.
+This credentials type is implemented as an Espejote `ManagedResource` and is only supported when  field `hostname` is set to a value other than `containers.isovalent.com`.
+
+NOTE: Any other value for field `credentials.type` results in a compilation error.
+
+On OpenShift, the component renders the credentials as a `kubernetes.io/dockerconfigjson` secret in namespace `openshift-config` which is labeled with `pull-secret.openshift-config.syn.tools/include=""`.
+The secret is picked up by the Espejote `ManagedResource` deployed by https://hub.syn.tools/openshift4-config/how-tos/pull-secret-config.html[component-openshift4-config] and added to the OpenShift cluster-wide pull secret because of the label.
+
+Additionally, on OpenShift, the component deploys an `ImageTagMirrorSet` and `ImageDigestMirrorSet` if field `hostname` is set to a value other than `containers.isovalent.com`.
+The two resources are configured with `mirrorSourcePolicy: NeverContactSource`, so that clusters that are configured with a mirror (which therefore don't have valid credentials for `containers.isovalent.com`) never try to fetch images directly from `containers.isovalent.com`.
+This enables users to configure a registry mirror for `containers.isovalent.com` without having to find and modify each Helm value that references `containers.isovalent.com`.
+
+IMPORTANT: On OpenShift, changing the value of `registry.hostname` triggers node drains because such changes apply, remove, or modify the `ImageTagMirrorSet` and `ImageDigestMirrorSet` resources.
+
+[TIP]
+====
+If you're using https://hub.syn.tools/registry-cache/[component-registry-cache] to deploy a pull-through registry cache for `containers.isovalent.com`, you can use that component's https://hub.syn.tools/registry-cache/references/parameters.html#_externalhtpasswdsecret[`projectsynHtpasswd`] feature to generate a `htpasswd` file that is suitable for credentials type `projectsyn`.
+====
+
 == Example
 
 [source,yaml]
