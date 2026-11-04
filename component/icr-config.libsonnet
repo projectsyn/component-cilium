@@ -73,6 +73,12 @@ local pull_secret_managed_resource(syn) =
   [
     esp.managedResource('cilium-pull-secret', 'openshift-config') {
       spec: {
+        applyOptions: {
+          // NOTE(sg): We set apply option force=true, so that the
+          // managedresource can properly revert external changes to the
+          // target secret.
+          force: true,
+        },
         serviceAccountRef: {
           name: sa.metadata.name,
         },
