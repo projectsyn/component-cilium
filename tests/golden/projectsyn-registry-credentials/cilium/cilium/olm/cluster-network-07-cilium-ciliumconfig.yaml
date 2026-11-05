@@ -1,0 +1,71 @@
+apiVersion: cilium.io/v1alpha1
+kind: CiliumConfig
+metadata:
+  name: cilium
+  namespace: cilium
+spec:
+  bgpControlPlane:
+    enabled: false
+    secretsNamespace:
+      name: cilium
+  bpf:
+    masquerade: true
+  clustermesh:
+    apiserver:
+      metrics:
+        serviceMonitor:
+          enabled: true
+  cni:
+    binPath: /var/lib/cni/bin
+    confPath: /var/run/multus/cni/net.d
+  egressGateway:
+    enabled: false
+  endpointRoutes:
+    enabled: false
+  enterprise:
+    egressGatewayHA:
+      enabled: false
+  envoy:
+    enabled: true
+  hubble:
+    metrics:
+      enabled:
+        - dns:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
+        - drop:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
+        - httpV2:sourceContext=workload|namespace|reserved-identity;destinationContext=workload|namespace|reserved-identity
+      serviceMonitor:
+        enabled: true
+    relay:
+      enabled: true
+    tls:
+      enabled: false
+  ipam:
+    mode: cluster-pool
+    operator:
+      clusterPoolIPv4MaskSize: 24
+      clusterPoolIPv4PodCIDRList:
+        - 10.0.0.0/8
+  k8sClientRateLimit:
+    burst: 30
+    qps: 15
+  k8sServiceHost: 172.30.0.1
+  k8sServicePort: 443
+  kubeProxyReplacement: 'true'
+  l2announcements:
+    enabled: false
+  l7Proxy: true
+  operator:
+    prometheus:
+      enabled: false
+      serviceMonitor:
+        enabled: true
+    resources:
+      limits:
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 300Mi
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true

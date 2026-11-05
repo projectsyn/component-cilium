@@ -14,6 +14,7 @@ parameters:
       - ${_base_directory}/component/alerts.jsonnet
       - ${_base_directory}/component/rbac.jsonnet
       - ${_base_directory}/component/cert-manager-ca.jsonnet
+      - ${_base_directory}/component/enterprise.jsonnet
     olm:
       dependencies:
         - type: https

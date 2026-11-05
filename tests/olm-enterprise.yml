@@ -1,5 +1,7 @@
 applications:
   - openshift-upgrade-controller
+  - espejote
+  - external-secrets-operator
 
 parameters:
   facts:
@@ -16,6 +18,9 @@ parameters:
       - type: https
         source: https://raw.githubusercontent.com/projectsyn/component-espejote/master/lib/espejote.libsonnet
         output_path: vendor/lib/espejote.libsonnet
+      - type: https
+        source: https://raw.githubusercontent.com/projectsyn/component-external-secrets-operator/master/lib/external-secrets-operator.libsonnet
+        output_path: vendor/lib/external-secrets-operator.libsonnet
 
   espejote:
     namespace: syn-espejote
@@ -37,6 +42,11 @@ parameters:
     cilium_helm_values:
       k8sServiceHost: 172.30.0.1
       k8sServicePort: 443
+
+    enterprise:
+      registry:
+        credentials:
+          type: direct-eso
 
   openshift_upgrade_controller:
     namespace: appuio-openshift-upgrade-controller
