@@ -71,7 +71,7 @@ spec:
           env:
             - name: HOME
               value: /home
-          image: quay.io/appuio/oc:v4.22@sha256:0bcefd308c7efa7d7f7b460b68f43efc886e333cc8ee0c6ca20e8e05a182b76b
+          image: quay.io/appuio/oc:v4.22@sha256:2e867c0c31babcdc1300b568e35ec42d1121b252c52dc04505b70dce7ada3026
           imagePullPolicy: IfNotPresent
           name: unmanage-olm-deployment
           ports: []
