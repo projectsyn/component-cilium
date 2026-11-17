@@ -4,6 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/name: cilium-operator
     app.kubernetes.io/part-of: cilium
+    helm.sh/chart: cilium-1.20.5
     io.cilium/app: operator
     name: cilium-operator
   name: cilium-operator
@@ -25,6 +26,7 @@ spec:
       labels:
         app.kubernetes.io/name: cilium-operator
         app.kubernetes.io/part-of: cilium
+        helm.sh/chart: cilium-1.20.5
         io.cilium/app: operator
         name: cilium-operator
     spec:
@@ -59,7 +61,7 @@ spec:
                   key: debug
                   name: cilium-config
                   optional: true
-          image: quay.io/cilium/operator-generic:v1.19.11@sha256:1844dfff32907db51b4dd929c2eea6612225f0fb5ce0394b511187f571c7e394
+          image: quay.io/cilium/operator-generic:v1.20.5@sha256:c6e7de6665aa9701db86c4fe46828a75a0d167afe084a9ffb5bce34b2c4fa8c4
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -114,6 +116,8 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
         - key: node-role.kubernetes.io/master
+          operator: Exists
+        - key: node-role.kubernetes.io/etcd
           operator: Exists
         - key: node.kubernetes.io/not-ready
           operator: Exists
